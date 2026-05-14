@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, CalendarCheck, Download, MessagesSquare, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { rangeIST } from "@/lib/date";
@@ -85,7 +86,8 @@ export default async function RecapPage() {
       .select("id, body, question_id")
       .eq("user_id", userId);
     answered = rs ?? [];
-  } catch {
+  } catch (err) {
+    rethrowIfRedirect(err);
     envOk = false;
   }
 

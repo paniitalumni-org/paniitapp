@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 import { OnboardingWizard } from "./onboarding-wizard";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,8 @@ export default async function OnboardPage() {
       .maybeSingle();
     if (profile?.onboarded) redirect("/agenda");
     return <OnboardingWizard initial={profile ?? null} />;
-  } catch {
+  } catch (err) {
+    rethrowIfRedirect(err);
     // env not configured yet; still render the wizard so it can be reviewed
     return <OnboardingWizard initial={null} />;
   }

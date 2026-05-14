@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,8 @@ export default async function LandingPage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) redirect("/agenda");
-  } catch {
+  } catch (err) {
+    rethrowIfRedirect(err);
     // env not yet configured — fall through to landing
   }
 

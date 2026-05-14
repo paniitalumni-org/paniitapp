@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { TopBar } from "@/components/features/top-bar";
 import { BottomNav } from "@/components/features/bottom-nav";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,8 @@ export default async function AuthedLayout({ children }: { children: React.React
       .eq("id", user.id)
       .maybeSingle();
     if (!profile?.onboarded) redirect("/onboard");
-  } catch {
+  } catch (err) {
+    rethrowIfRedirect(err);
     // env not configured; allow render so layout is reviewable
   }
 

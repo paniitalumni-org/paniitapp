@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarClock, MessagesSquare, Megaphone, ShieldAlert, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 import { AnnouncementComposer } from "./announcement-composer";
 
 export const dynamic = "force-dynamic";
@@ -95,7 +96,8 @@ export default async function AdminPage() {
         upvotes: number | null;
         session: { title: string } | null;
       }>) ?? [];
-  } catch {
+  } catch (err) {
+    rethrowIfRedirect(err);
     envOk = false;
   }
 
