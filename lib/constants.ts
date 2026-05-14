@@ -1,0 +1,91 @@
+export const IIT_CAMPUSES = [
+  "IIT Bombay",
+  "IIT Delhi",
+  "IIT Kanpur",
+  "IIT Kharagpur",
+  "IIT Madras",
+  "IIT Roorkee",
+  "IIT Guwahati",
+  "IIT Hyderabad",
+  "IIT Gandhinagar",
+  "IIT Ropar",
+  "IIT Bhubaneswar",
+  "IIT Indore",
+  "IIT Mandi",
+  "IIT Patna",
+  "IIT Jodhpur",
+  "IIT BHU (Varanasi)",
+  "IIT (ISM) Dhanbad",
+  "IIT Tirupati",
+  "IIT Palakkad",
+  "IIT Bhilai",
+  "IIT Goa",
+  "IIT Jammu",
+  "IIT Dharwad",
+  "Other",
+] as const;
+
+export const ROLES = [
+  { value: "founder", label: "Founder", description: "Building a company" },
+  { value: "vc", label: "VC", description: "Investor / fund partner" },
+  { value: "alumni", label: "Alumni Pro", description: "Working professional" },
+  { value: "speaker", label: "Speaker", description: "On stage at the summit" },
+  { value: "government", label: "Government", description: "Policy / public sector" },
+  { value: "press", label: "Press", description: "Media / journalist" },
+] as const;
+
+export const INTERESTS = [
+  "AI & Machine Learning",
+  "Deep Tech",
+  "SaaS",
+  "Fintech",
+  "Climate / Energy",
+  "Healthcare",
+  "Robotics",
+  "Semiconductors",
+  "Defense Tech",
+  "Space",
+  "Web3",
+  "Cybersecurity",
+  "Consumer",
+  "Marketplaces",
+  "Dev Tools",
+  "Public Policy",
+  "Education",
+  "Manufacturing",
+  "Logistics",
+  "Agritech",
+  "Mobility",
+  "Hiring",
+  "Fundraising",
+  "Hardware",
+] as const;
+
+export const TRACK_LABELS: Record<string, string> = {
+  ai: "AI",
+  deeptech: "Deep Tech",
+  policy: "Policy",
+  investor: "Investor",
+  workshop: "Workshop",
+  founders: "Founders",
+  climate: "Climate",
+  fintech: "Fintech",
+  keynote: "Keynote",
+  general: "General",
+};
+
+export const TRACK_COLOR_BG: Record<string, string> = {
+  ai: "bg-track-ai",
+  deeptech: "bg-track-deeptech",
+  policy: "bg-track-policy",
+  investor: "bg-track-investor",
+  workshop: "bg-track-workshop",
+  founders: "bg-track-founders",
+  climate: "bg-track-climate",
+  fintech: "bg-track-fintech",
+  keynote: "bg-track-keynote",
+  general: "bg-track-general",
+};
+
+export const SUMMIT_TZ = "Asia/Kolkata";
+export const SUMMIT_DATE_ISO = "2026-05-16";
