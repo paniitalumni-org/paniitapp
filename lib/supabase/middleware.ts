@@ -1,6 +1,4 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "./types";
 
 const PUBLIC_PATHS = ["/", "/login", "/onboard"];
 
@@ -19,9 +17,7 @@ export async function updateSession(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // If env vars aren't configured yet, don't crash — just pass the request
-  // through. Public pages already render in fallback mode; authed routes will
-  // simply fail to read the session and redirect to /login.
+  // No Supabase configured yet → pass through silently.
   if (!supabaseUrl || !supabaseKey) {
     return NextResponse.next({ request });
   }
@@ -29,16 +25,21 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   try {
-    const supabase = createServerClient<Database>(supabaseUrl, supabaseKey, {
+    // Dynamic import so a module-load failure (e.g. on Edge cold-start)
+    // can't bring down the whole middleware bundle.
+    const { createServerClient } = await import("@supabase/ssr");
+
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options as CookieOptions)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            response.cookies.set(name, value, options as any)
           );
         },
       },
@@ -57,7 +58,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   } catch (err) {
-    console.warn("[middleware] supabase session refresh failed:", err);
+    console.warn("[updateSession] supabase failed:", err);
   }
 
   return response;

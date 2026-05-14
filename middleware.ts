@@ -1,18 +1,22 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  try {
+    const { updateSession } = await import("@/lib/supabase/middleware");
+    return await updateSession(request);
+  } catch (err) {
+    console.warn("[middleware] failed, passing request through:", err);
+    return NextResponse.next();
+  }
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
+     * Match all request paths except:
+     * - _next/static, _next/image
      * - favicon.ico, sitemap.xml, robots.txt
-     * - public files in public/
+     * - manifest.json, sw.js, icons/*
      */
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|icons|manifest.json|sw.js).*)",
   ],
