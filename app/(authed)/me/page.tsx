@@ -5,14 +5,16 @@ import {
   GraduationCap,
   Linkedin,
   LogOut,
-  Bell,
   QrCode,
   Award,
+  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { PushPrompt } from "@/components/features/push-prompt";
+import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +30,7 @@ export default async function MePage() {
     branch?: string | null;
     linkedin_url?: string | null;
     interests?: string[] | null;
+    office_hours_enabled?: boolean | null;
   } | null = null;
 
   try {
@@ -39,7 +42,7 @@ export default async function MePage() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "full_name, role, company, designation, iit_campus, graduation_year, branch, linkedin_url, interests"
+          "full_name, role, company, designation, iit_campus, graduation_year, branch, linkedin_url, interests, office_hours_enabled"
         )
         .eq("id", user.id)
         .maybeSingle();
@@ -113,11 +116,27 @@ export default async function MePage() {
           Quick actions
         </h2>
         <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100 bg-white">
-          <MeRow icon={QrCode} label="My QR badge" href="/me" disabled="Coming in Phase 3" />
+          <MeRow icon={QrCode} label="My QR badge" href="/me/qr" />
           <MeRow icon={Award} label="Sponsors & perks" href="/sponsors" />
-          <MeRow icon={Bell} label="Notification settings" href="/me" disabled="Coming in Phase 4" />
+          <MeRow icon={Sparkles} label="My summit recap" href="/recap" />
         </ul>
       </div>
+
+      <div className="mt-4 px-4">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
+          Notifications
+        </h2>
+        <PushPrompt vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
+      </div>
+
+      {profile?.role === "vc" || profile?.role === "alumni" ? (
+        <div className="mt-4 px-4">
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
+            Availability
+          </h2>
+          <OfficeHoursToggle initial={!!profile.office_hours_enabled} />
+        </div>
+      ) : null}
 
       <Separator className="my-6" />
 
