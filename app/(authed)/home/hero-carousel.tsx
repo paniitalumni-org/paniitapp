@@ -101,18 +101,18 @@ export function HeroCarousel() {
         {rendered.map((s, i) => (
           <article
             key={i}
-            className="relative snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-white"
+            className="relative snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-white lg:aspect-video"
           >
-            {/* Plain img keeps each image at its natural aspect ratio so the
-                frame matches the source instead of letter-boxing to a fixed
-                shape. Loading=eager only for the first slide. */}
+            {/* Mobile keeps the image at its natural aspect so framing matches
+                the source. Desktop forces 16:9 with object-cover so the
+                carousel doesn't stretch tall on wide viewports. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={s.src}
               alt={s.alt}
               loading={i === 0 ? "eager" : "lazy"}
               decoding="async"
-              className="block h-auto w-full"
+              className="block h-auto w-full lg:h-full lg:object-cover"
             />
           </article>
         ))}

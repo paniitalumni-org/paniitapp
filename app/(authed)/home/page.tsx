@@ -197,7 +197,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="-mx-4 space-y-5 pt-4 sm:-mx-6 lg:-mx-8 lg:pt-6">
+    <div className="-mx-4 space-y-5 pt-4 sm:-mx-6 lg:mx-auto lg:max-w-3xl lg:px-0 lg:pt-8">
       <div className="px-4 sm:px-6 lg:px-8">
         <HeroCarousel />
       </div>

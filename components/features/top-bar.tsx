@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -5,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { initials } from "@/lib/utils";
 import { NotificationsBell } from "./notifications-bell";
+import { DesktopNavTabs } from "./desktop-nav-tabs";
 
 const SUMMIT_WHATSAPP_URL = "https://wa.me/919999999999";
 
@@ -37,10 +39,27 @@ export async function TopBar() {
   return (
     <TooltipProvider delayDuration={300}>
       <header className="safe-top sticky top-0 z-40 border-b border-brand-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-        <div className="mx-auto flex h-14 w-full max-w-screen-2xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-14 w-full max-w-screen-2xl items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
+          {/* Mobile (< lg): avatar + greeting on the left, doubles as the
+              profile entry. Desktop: PAN IIT lockup is the brand mark. */}
+          <Link
+            href="/home"
+            aria-label="PAN IIT 2026 home"
+            className="hidden shrink-0 items-center lg:flex"
+          >
+            <Image
+              src="/logo/paniit.png"
+              alt="PAN IIT Alumni India"
+              width={512}
+              height={220}
+              priority
+              className="h-7 w-auto"
+            />
+          </Link>
+
           <Link
             href="/me"
-            className="group flex min-w-0 items-center gap-2.5 rounded-full pr-2 transition-colors hover:bg-brand-50/60"
+            className="group flex min-w-0 items-center gap-2.5 rounded-full pr-2 transition-colors hover:bg-brand-50/60 lg:hidden"
           >
             <Avatar className="size-9 shrink-0 ring-1 ring-brand-100">
               {photoUrl ? (
@@ -57,7 +76,17 @@ export async function TopBar() {
               </span>
             </p>
           </Link>
-          <div className="flex items-center gap-1">
+
+          {/* Desktop nav tabs centre */}
+          <div className="hidden flex-1 justify-center lg:flex">
+            <DesktopNavTabs />
+          </div>
+
+          {/* Mobile spacer */}
+          <div className="flex-1 lg:hidden" aria-hidden />
+
+          {/* Actions */}
+          <div className="flex shrink-0 items-center gap-1 lg:gap-2">
             <a
               href={SUMMIT_WHATSAPP_URL}
               target="_blank"
@@ -68,6 +97,20 @@ export async function TopBar() {
               <WhatsAppMark className="size-[26px]" />
             </a>
             <NotificationsBell />
+            <Link
+              href="/me"
+              aria-label="Profile"
+              className="hidden shrink-0 lg:inline-flex"
+            >
+              <Avatar className="size-9 ring-1 ring-brand-100 transition-shadow hover:ring-2 hover:ring-brand-200">
+                {photoUrl ? (
+                  <AvatarImage src={photoUrl} alt={name ?? "Profile"} />
+                ) : null}
+                <AvatarFallback className="bg-brand-50 text-[12px] font-semibold text-brand-800">
+                  {initials(name)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           </div>
         </div>
       </header>
@@ -76,7 +119,6 @@ export async function TopBar() {
 }
 
 function WhatsAppMark({ className }: { className?: string }) {
-  // Background-removed WhatsApp glyph in brand green.
   return (
     <svg
       viewBox="0 0 32 32"
