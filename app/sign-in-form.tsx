@@ -72,25 +72,25 @@ export function SignInForm() {
         type="button"
         onClick={handleGoogle}
         disabled={googlePending}
-        className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-60"
+        className="inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-md border border-brand-100 bg-white px-5 text-sm font-semibold text-brand-950 shadow-sm transition-colors hover:bg-brand-50 disabled:opacity-60"
       >
         {googlePending ? (
-          <Loader2 className="size-4 animate-spin text-slate-500" />
+          <Loader2 className="size-4 animate-spin text-brand-800" />
         ) : (
           <GoogleIcon />
         )}
         Continue with Google
       </button>
 
-      <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
-        <div className="h-px flex-1 bg-slate-200" />
+      <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.18em] text-brand-800">
+        <div className="h-px flex-1 bg-brand-100" />
         or sign in with email
-        <div className="h-px flex-1 bg-slate-200" />
+        <div className="h-px flex-1 bg-brand-100" />
       </div>
 
       <form action={action} className="flex flex-col gap-3">
         <div>
-          <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-slate-700">
+          <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-brand-900">
             Registered email
           </label>
           <input
@@ -101,7 +101,7 @@ export function SignInForm() {
             autoComplete="email"
             required
             placeholder="you@example.com"
-            className="h-12 w-full rounded-md border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+            className="h-12 w-full rounded-md border border-brand-100 bg-white px-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/50 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
           />
         </div>
         <SubmitButton />

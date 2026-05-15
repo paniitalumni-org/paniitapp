@@ -72,11 +72,11 @@ export default async function SignInPage() {
               priority
               className="mx-auto h-11 w-auto"
             />
-            <div className="mt-3 border-t border-slate-200 pt-2.5 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+            <div className="mt-3 border-t border-brand-100 pt-2.5 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800">
                 Bangalore Summit
               </p>
-              <p className="mt-0.5 text-[11px] font-medium text-slate-600">
+              <p className="mt-0.5 text-[11px] font-medium text-brand-900">
                 Sovereignty in Technology · May 16, 2026
               </p>
             </div>
@@ -112,7 +112,7 @@ export default async function SignInPage() {
                 {[...IITS, ...IITS].map((name, i) => (
                   <span
                     key={`${name}-${i}`}
-                    className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600"
+                    className="shrink-0 rounded-full border border-brand-100 bg-brand-50 px-2.5 py-1 text-[10px] font-medium text-brand-900"
                   >
                     {name}
                   </span>
@@ -124,7 +124,7 @@ export default async function SignInPage() {
               <h2 className="font-semibold tracking-tight text-brand-900 text-3xl sm:text-[34px]">
                 ನಮಸ್ಕಾರ
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-2 text-sm leading-6 text-brand-900">
                 Sign in with the email registered
               </p>
             </div>
@@ -133,7 +133,7 @@ export default async function SignInPage() {
               <SignInForm />
             </div>
 
-            <p className="mt-5 text-center text-xs leading-5 text-slate-500">
+            <p className="mt-5 text-center text-xs leading-5 text-brand-800">
               Trouble?{" "}
               <a
                 href="mailto:summit@paniit.org"
