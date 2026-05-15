@@ -114,7 +114,11 @@ export function MeetingsView({
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       setPendingId(null);
       if (!res.ok) {
-        if (data.error === "conflict") {
+        if (
+          data.error === "conflict" ||
+          data.error === "slot_occupied" ||
+          data.error === "slot_not_available"
+        ) {
           toast({
             title: "That slot is no longer free",
             description: "Try a different proposed slot.",
@@ -578,7 +582,7 @@ function AvailabilitySheet({
   const supabase = useMemo(() => createClient(), []);
   const grid = useMemo(() => buildAvailabilitySlots(), []);
   const [rows, setRows] = useState<AvailabilityRow[] | null>(null);
-  const [pending, setPending] = useState<string | null>(null);
+  const [pendingStarts, setPendingStarts] = useState<Set<string>>(new Set());
 
   // Status lookup: my-declared status overrides system "booked" inferred from
   // accepted meetings. Default = unset (treat as not available).
@@ -613,7 +617,23 @@ function AvailabilitySheet({
   }, [open, fetchAvail]);
 
   async function setStatus(slot: Slot, next: AvailStatus | null) {
-    setPending(slot.start);
+    setPendingStarts((cur) => new Set(cur).add(slot.start));
+    setRows((cur) => {
+      const rows = cur ?? [];
+      const withoutSlot = rows.filter(
+        (r) => new Date(r.slot_start).toISOString() !== slot.start
+      );
+      if (next === null) return withoutSlot;
+      return [
+        ...withoutSlot,
+        {
+          slot_start: slot.start,
+          slot_end: slot.end,
+          status: next,
+        },
+      ];
+    });
+
     try {
       if (next === null) {
         await supabase
@@ -632,9 +652,14 @@ function AvailabilitySheet({
           { onConflict: "user_id,slot_start" }
         );
       }
+    } catch {
       await fetchAvail();
     } finally {
-      setPending(null);
+      setPendingStarts((cur) => {
+        const nextPending = new Set(cur);
+        nextPending.delete(slot.start);
+        return nextPending;
+      });
     }
   }
 
@@ -663,7 +688,7 @@ function AvailabilitySheet({
     { label: "Evening", slots: grid.filter((s) => slotHourIST(s.start) >= 17) },
   ];
 
-  const availableCount = (rows ?? []).filter((r) => r.status === "available").length;
+  const availableCount = grid.filter((slot) => effectiveStatus(slot) === "available").length;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -671,7 +696,7 @@ function AvailabilitySheet({
         <SheetHeader>
           <SheetTitle>My availability · 16 May 2026</SheetTitle>
           <SheetDescription>
-            Tap any 15-minute slot to mark yourself available. Tap again to clear it.
+            Blue slots are available. Grey slots are not available. Occupied slots are already booked.
           </SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-6 pt-3">
@@ -698,7 +723,8 @@ function AvailabilitySheet({
                   <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
                     {sec.slots.map((s) => {
                       const st = effectiveStatus(s);
-                      const isPending = pending === s.start;
+                      const isPending = pendingStarts.has(s.start);
+                      const locked = !st || st === "blocked";
                       return (
                         <button
                           key={s.start}
@@ -710,19 +736,28 @@ function AvailabilitySheet({
                             new Date(s.start),
                             SUMMIT_TZ,
                             "h:mm a"
-                          )} ${st ?? "unset"}`}
+                          )} ${st ?? "not available"}`}
                           className={cn(
-                            "rounded-md border px-2 py-2 text-[12px] font-semibold tabular-nums transition-colors",
+                            "flex min-h-11 flex-col items-center justify-center rounded-md border px-2 py-2 text-[12px] font-semibold leading-tight tabular-nums transition-colors",
                             st === "available" &&
                               "border-brand-800 bg-brand-800 text-white shadow-sm",
                             st === "booked" &&
-                              "cursor-not-allowed border-emerald-500 bg-emerald-500 text-white",
-                            !st &&
-                              "border-brand-100 bg-white text-brand-900/75 hover:border-brand-300 hover:bg-brand-50/50",
+                              "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700",
+                            locked &&
+                              "border-slate-200 bg-slate-100 text-slate-500 hover:border-brand-300 hover:bg-brand-50/50",
                             isPending && "opacity-60"
                           )}
                         >
-                          {formatInTimeZone(new Date(s.start), SUMMIT_TZ, "h:mm a")}
+                          <span>{formatInTimeZone(new Date(s.start), SUMMIT_TZ, "h:mm a")}</span>
+                          {st === "booked" ? (
+                            <span className="text-[9px] font-semibold uppercase tracking-wide">
+                              Occupied
+                            </span>
+                          ) : locked ? (
+                            <span className="text-[9px] font-semibold uppercase tracking-wide">
+                              Locked
+                            </span>
+                          ) : null}
                         </button>
                       );
                     })}
@@ -741,8 +776,8 @@ function Legend() {
   return (
     <div className="mb-4 flex flex-wrap gap-3 text-[11px] font-medium text-brand-900/75">
       <Swatch className="bg-brand-800" label="Available" />
-      <Swatch className="bg-emerald-500" label="Booked" />
-      <Swatch className="border border-brand-100 bg-white" label="Tap to add" />
+      <Swatch className="border border-slate-200 bg-slate-100" label="Not available" />
+      <Swatch className="border border-emerald-300 bg-emerald-50" label="Occupied" />
     </div>
   );
 }

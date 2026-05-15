@@ -23,12 +23,15 @@ interface Props {
   max?: number;
 }
 
+type InviteeSlotStatus = "available" | "booked" | "blocked";
+
 export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const slots = useMemo(() => buildAvailabilitySlots(), []);
   const [bookmarked, setBookmarked] = useState<ConflictWindow[]>([]);
   const [accepted, setAccepted] = useState<ConflictWindow[]>([]);
-  const [availableStarts, setAvailableStarts] = useState<Set<string> | null>(null);
+  const [inviteeSlots, setInviteeSlots] = useState<Map<string, InviteeSlotStatus> | null>(null);
+  const [inviteeOccupiedStarts, setInviteeOccupiedStarts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -68,17 +71,29 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("availability_slots")
-        .select("slot_start")
-        .eq("user_id", inviteeId)
-        .eq("status", "available");
+      const [availability, meetings] = await Promise.all([
+        supabase
+          .from("availability_slots")
+          .select("slot_start, status")
+          .eq("user_id", inviteeId),
+        supabase
+          .from("meetings")
+          .select("accepted_slot")
+          .or(`requester_id.eq.${inviteeId},invitee_id.eq.${inviteeId}`)
+          .eq("status", "accepted"),
+      ]);
 
-      setAvailableStarts(
+      setInviteeSlots(
+        new Map(
+          ((availability.data as { slot_start: string; status: InviteeSlotStatus }[] | null) ?? [])
+            .map((r) => [new Date(r.slot_start).toISOString(), r.status])
+        )
+      );
+
+      setInviteeOccupiedStarts(
         new Set(
-          ((data as { slot_start: string }[] | null) ?? []).map((r) =>
-            new Date(r.slot_start).toISOString()
-          )
+          ((meetings.data as { accepted_slot: { start: string; end: string } | null }[] | null) ?? [])
+            .flatMap((m) => (m.accepted_slot ? [new Date(m.accepted_slot.start).toISOString()] : []))
         )
       );
     })();
@@ -89,11 +104,11 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
   }
 
   function toggle(s: Slot) {
-    if (!availableStarts?.has(s.start)) return;
     if (isPicked(s)) {
       onChange(selected.filter((p) => p.start !== s.start));
       return;
     }
+    if (inviteeSlots?.get(s.start) !== "available" || inviteeOccupiedStarts.has(s.start)) return;
     let next = [...selected, s];
     if (next.length > max) next = next.slice(next.length - max);
     onChange(next);
@@ -116,6 +131,7 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
         <LegendDot color="bg-white border border-slate-300" /> Available
         <LegendDot color="bg-slate-100 border border-slate-200" /> Not available
+        <LegendDot color="bg-emerald-100 border border-emerald-400" /> Occupied
         <LegendDot color="bg-amber-100 border border-amber-400" /> Conflicts with bookmark
         <LegendDot color="bg-iit-100 border border-iit-400" /> Conflicts with meeting
         <LegendDot color="bg-brand-800" /> Selected
@@ -130,9 +146,12 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
             <div className="grid grid-cols-4 gap-1.5">
               {items.map((s) => {
                 const c = classifySlot(s, bookmarked, accepted);
-                const inviteeAvailable = availableStarts?.has(s.start) ?? false;
+                const inviteeStatus = inviteeSlots?.get(s.start) ?? null;
+                const occupied = inviteeStatus === "booked" || inviteeOccupiedStarts.has(s.start);
+                const inviteeAvailable = inviteeStatus === "available" && !occupied;
                 const picked = isPicked(s);
                 const disabled = !inviteeAvailable || (c === "hard" && !picked);
+                const unavailableReason = occupied ? "Occupied" : "Locked";
                 return (
                   <button
                     key={s.start}
@@ -140,14 +159,28 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
                     onClick={() => toggle(s)}
                     disabled={disabled}
                     aria-pressed={picked}
+                    aria-label={`${slotLabel(s)} ${
+                      picked
+                        ? "selected"
+                        : inviteeAvailable
+                          ? "available"
+                          : unavailableReason.toLowerCase()
+                    }`}
                     className={cn(
-                      "h-9 rounded-md border text-[11px] font-medium tabular-nums transition-colors",
+                      "flex h-10 flex-col items-center justify-center rounded-md border text-[11px] font-medium leading-tight tabular-nums transition-colors",
                       inviteeAvailable
                         ? conflictStyles(c, picked)
-                        : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                        : occupied
+                          ? "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700"
+                          : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
                     )}
                   >
-                    {slotLabel(s)}
+                    <span>{slotLabel(s)}</span>
+                    {!inviteeAvailable ? (
+                      <span className="text-[9px] font-semibold uppercase tracking-wide">
+                        {unavailableReason}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}

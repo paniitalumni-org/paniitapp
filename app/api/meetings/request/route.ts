@@ -16,6 +16,10 @@ interface AvailabilityRow {
   status: "available" | "booked" | "blocked";
 }
 
+interface AcceptedRow {
+  accepted_slot: { start: string; end: string } | null;
+}
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -66,6 +70,27 @@ export async function POST(req: Request) {
   );
   if (!allSlotsAreAvailable) {
     return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
+  }
+
+  const { data: acceptedMeetings, error: acceptedErr } = await supabase
+    .from("meetings")
+    .select("accepted_slot")
+    .or(
+      `requester_id.eq.${user.id},invitee_id.eq.${user.id},requester_id.eq.${parsed.data.invitee_id},invitee_id.eq.${parsed.data.invitee_id}`
+    )
+    .eq("status", "accepted");
+  if (acceptedErr) return NextResponse.json({ error: acceptedErr.message }, { status: 500 });
+
+  const hasAcceptedConflict = proposed.some((slot) =>
+    ((acceptedMeetings as AcceptedRow[] | null) ?? []).some(
+      (m) =>
+        m.accepted_slot &&
+        new Date(slot.start) < new Date(m.accepted_slot.end) &&
+        new Date(m.accepted_slot.start) < new Date(slot.end)
+    )
+  );
+  if (hasAcceptedConflict) {
+    return NextResponse.json({ error: "slot_occupied" }, { status: 409 });
   }
 
   const { error } = await supabase.from("meetings").insert({

@@ -51,9 +51,13 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
+        const slotUnavailable =
+          data.error === "slot_not_available" || data.error === "slot_occupied";
         toast({
           title: "Could not send",
-          description: data.error ?? "Try again.",
+          description: slotUnavailable
+            ? "One of those slots is no longer available."
+            : data.error ?? "Try again.",
           variant: "destructive",
         });
         return;

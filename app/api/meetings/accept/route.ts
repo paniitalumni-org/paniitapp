@@ -8,6 +8,7 @@ const Body = z.object({
 });
 
 interface AcceptedRow {
+  id: string;
   accepted_slot: { start: string; end: string } | null;
 }
 
@@ -77,6 +78,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
   }
 
+  const { data: acceptedMeetings, error: acceptedErr } = await supabase
+    .from("meetings")
+    .select("id, accepted_slot")
+    .or(
+      `requester_id.eq.${meeting.requester_id},invitee_id.eq.${meeting.requester_id},requester_id.eq.${meeting.invitee_id},invitee_id.eq.${meeting.invitee_id}`
+    )
+    .eq("status", "accepted")
+    .neq("id", meeting_id);
+  if (acceptedErr) return NextResponse.json({ error: acceptedErr.message }, { status: 500 });
+
+  const conflict = ((acceptedMeetings as AcceptedRow[] | null) ?? []).some(
+    (m) =>
+      m.accepted_slot &&
+      new Date(slot.start) < new Date(m.accepted_slot.end) &&
+      new Date(m.accepted_slot.start) < new Date(slot.end)
+  );
+  if (conflict) return NextResponse.json({ error: "slot_occupied" }, { status: 409 });
+
   // Try the Postgres RPC first (race-condition safe). Fall back to in-app logic.
   const { data: rpcData, error: rpcErr } = await supabase.rpc("accept_meeting", {
     p_meeting_id: meeting_id,
@@ -88,20 +107,6 @@ export async function POST(req: Request) {
   }
 
   // Fallback path.
-  // Conflict scan: any other accepted meeting for either side that overlaps?
-  const { data: clashes } = await supabase
-    .from("meetings")
-    .select("accepted_slot")
-    .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
-    .eq("status", "accepted");
-  const conflict = ((clashes as AcceptedRow[] | null) ?? []).some(
-    (m) =>
-      m.accepted_slot &&
-      new Date(slot.start) < new Date(m.accepted_slot.end) &&
-      new Date(m.accepted_slot.start) < new Date(slot.end)
-  );
-  if (conflict) return NextResponse.json({ error: "conflict" }, { status: 409 });
-
   const { data: updated, error: updErr } = await supabase
     .from("meetings")
     .update({ status: "accepted", accepted_slot: slot })
