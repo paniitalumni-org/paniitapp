@@ -85,7 +85,7 @@ export function HeroCarousel() {
         {SLIDES.map((s, i) => (
           <article
             key={i}
-            className="relative aspect-[16/9] snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-brand-50"
+            className="relative aspect-[4/3] snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-brand-50"
           >
             <Image
               src={s.src}
@@ -93,7 +93,7 @@ export function HeroCarousel() {
               fill
               priority={i === 0}
               sizes="(max-width: 768px) 100vw, 768px"
-              className="object-cover"
+              className="object-contain"
             />
           </article>
         ))}
