@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { TopBar } from "@/components/features/top-bar";
-import { HomeAwareMain, HomeOnlyBottomNav } from "@/components/features/home-only-nav";
+import { BottomNav } from "@/components/features/bottom-nav";
+import { HomeOnlyTopBar } from "@/components/features/home-only-top-bar";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 
@@ -19,9 +20,13 @@ export default async function AuthedLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <TopBar />
-      <HomeAwareMain>{children}</HomeAwareMain>
-      <HomeOnlyBottomNav />
+      <HomeOnlyTopBar>
+        <TopBar />
+      </HomeOnlyTopBar>
+      <main className="mx-auto w-full max-w-screen-2xl px-4 pb-28 sm:px-6 lg:px-8 lg:pb-12">
+        {children}
+      </main>
+      <BottomNav />
     </div>
   );
 }
