@@ -131,16 +131,16 @@ export default async function AgendaPage({
           </div>
         </div>
       ) : matchCount > 0 ? (
-        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/40 p-3">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.7} />
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-emerald-600" strokeWidth={1.7} />
           <p className="text-[12px] leading-5 text-brand-900">
             <span className="font-semibold text-brand-950">{matchCount} session{matchCount === 1 ? "" : "s"}</span>{" "}
             line up with your interests. Look for the{" "}
-            <span className="inline-flex items-center gap-1 rounded-[3px] bg-brand-100 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
+            <span className="inline-flex items-center gap-1 rounded-[3px] border border-emerald-300 bg-white px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
               <Sparkles className="size-2.5" strokeWidth={2} />
-              Match
+              Recommended
             </span>{" "}
-            badge below.
+            tag below.
           </p>
         </div>
       ) : null}

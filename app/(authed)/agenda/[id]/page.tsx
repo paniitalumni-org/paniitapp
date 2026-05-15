@@ -173,14 +173,14 @@ export default async function SessionDetailPage({
             {TRACK_LABELS[session.track] ?? session.track}
           </span>
           {session.is_featured ? (
-            <span className="rounded-[4px] border border-iit-100 bg-iit-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-iit-600">
+            <span className="rounded-[4px] border border-iit-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-iit-600">
               Featured
             </span>
           ) : null}
           {matches.length > 0 ? (
-            <span className="inline-flex items-center gap-1 rounded-[4px] border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
+            <span className="inline-flex items-center gap-1 rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
               <Sparkles className="size-3" strokeWidth={1.8} />
-              Match for you
+              Recommended
             </span>
           ) : null}
         </div>

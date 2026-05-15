@@ -1,47 +1,10 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import { Loader2 } from "lucide-react";
-import { signIn, type SignInResult } from "./actions/sign-in";
 import { createClient } from "@/lib/supabase/client";
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="group relative inline-flex h-12 w-full items-center justify-center overflow-hidden rounded-md bg-brand-800 px-5 text-sm font-semibold tracking-wide text-white shadow-sm transition-all hover:bg-brand-900 disabled:opacity-60"
-    >
-      {pending ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <span>Continue</span>
-      )}
-    </button>
-  );
-}
-
-function errorMessage(state: SignInResult | null): string | null {
-  if (!state) return null;
-  switch (state.error) {
-    case "invalid_email":
-      return state.message;
-    case "not_registered":
-      return "This email isn't on the registered attendee list. Contact summit@paniit.org for help.";
-    case "session_failed":
-      return state.message || "Could not start your session. Please try again.";
-    case "config":
-      return "The app is misconfigured. Please contact the organizers.";
-    default:
-      return null;
-  }
-}
-
 export function SignInForm() {
-  const [state, action] = useActionState<SignInResult | null, FormData>(signIn, null);
   const [oauthError, setOauthError] = useState<string | null>(null);
   const [googlePending, startGoogle] = useTransition();
 
@@ -64,8 +27,6 @@ export function SignInForm() {
     });
   }
 
-  const message = errorMessage(state) || oauthError;
-
   return (
     <div className="flex flex-col gap-4">
       <button
@@ -82,37 +43,12 @@ export function SignInForm() {
         Continue with Google
       </button>
 
-      <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.18em] text-brand-800">
-        <div className="h-px flex-1 bg-brand-100" />
-        or sign in with email
-        <div className="h-px flex-1 bg-brand-100" />
-      </div>
-
-      <form action={action} className="flex flex-col gap-3">
-        <div>
-          <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-brand-900">
-            Registered email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            required
-            placeholder="you@example.com"
-            className="h-12 w-full rounded-md border border-brand-100 bg-white px-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/50 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
-          />
-        </div>
-        <SubmitButton />
-      </form>
-
-      {message ? (
+      {oauthError ? (
         <div
           role="alert"
           className="rounded-md border border-iit-200 bg-iit-50 px-3 py-2 text-sm leading-5 text-iit-700"
         >
-          {message}
+          {oauthError}
         </div>
       ) : null}
     </div>
@@ -121,7 +57,13 @@ export function SignInForm() {
 
 function GoogleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z" />
       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.85A11 11 0 0 0 12 23z" />
       <path fill="#FBBC05" d="M5.84 14.11A6.6 6.6 0 0 1 5.5 12c0-.73.12-1.44.34-2.11V7.04H2.18A11 11 0 0 0 1 12c0 1.78.43 3.47 1.18 4.96l3.66-2.85z" />

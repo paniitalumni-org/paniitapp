@@ -7,13 +7,37 @@ import { rethrowIfRedirect } from "@/lib/redirect";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthedLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) redirect("/");
+
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name, designation, iit_campus, branch, bio")
+      .eq("id", user.id)
+      .maybeSingle();
+    const p = (data as {
+      full_name: string | null;
+      designation: string | null;
+      iit_campus: string | null;
+      branch: string | null;
+      bio: string | null;
+    } | null) ?? null;
+    const complete =
+      !!p?.full_name?.trim() &&
+      !!p?.designation?.trim() &&
+      !!p?.iit_campus?.trim() &&
+      !!p?.branch?.trim() &&
+      !!p?.bio?.trim();
+    if (!complete) redirect("/onboarding");
   } catch (err) {
     rethrowIfRedirect(err);
   }
