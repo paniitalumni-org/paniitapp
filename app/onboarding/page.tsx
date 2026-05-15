@@ -68,22 +68,7 @@ export default async function OnboardingPage({
   }
 
   return (
-    <main className="relative isolate min-h-[100svh] overflow-hidden bg-brand-50/30 px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:p-12">
-      {/* Desktop: branded full-bleed backdrop behind the modal card */}
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_50%,#0d0930_100%)] lg:block"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 hidden opacity-[0.18] lg:block"
-        style={{
-          backgroundImage:
-            "radial-gradient(rgba(255,255,255,0.45) 1px, transparent 1px)",
-          backgroundSize: "20px 20px",
-        }}
-        aria-hidden
-      />
-
+    <main className="min-h-[100svh] bg-slate-50 px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:p-12">
       <div className="mx-auto w-full max-w-xl space-y-6 lg:w-[70vw] lg:max-w-3xl lg:space-y-0">
         {/* Mobile header — desktop tucks the lockup inside the modal card */}
         <header className="flex items-center gap-3 lg:hidden">
