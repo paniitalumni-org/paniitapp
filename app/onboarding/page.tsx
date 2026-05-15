@@ -68,9 +68,25 @@ export default async function OnboardingPage({
   }
 
   return (
-    <main className="min-h-[100svh] bg-brand-50/30 px-4 py-8 sm:px-6">
-      <div className="mx-auto w-full max-w-xl space-y-6">
-        <header className="flex items-center gap-3">
+    <main className="relative isolate min-h-[100svh] overflow-hidden bg-brand-50/30 px-4 py-8 sm:px-6 lg:flex lg:items-center lg:justify-center lg:p-12">
+      {/* Desktop: branded full-bleed backdrop behind the modal card */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_50%,#0d0930_100%)] lg:block"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 hidden opacity-[0.18] lg:block"
+        style={{
+          backgroundImage:
+            "radial-gradient(rgba(255,255,255,0.45) 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+        aria-hidden
+      />
+
+      <div className="mx-auto w-full max-w-xl space-y-6 lg:w-[70vw] lg:max-w-3xl lg:space-y-0">
+        {/* Mobile header — desktop tucks the lockup inside the modal card */}
+        <header className="flex items-center gap-3 lg:hidden">
           <Image
             src="/logo/paniit.png"
             alt="PAN IIT Alumni India"
@@ -85,8 +101,22 @@ export default async function OnboardingPage({
           </p>
         </header>
 
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h1 className="text-2xl font-semibold tracking-tight text-brand-950">
+        <section className="rounded-lg border border-brand-100 bg-white p-5 lg:rounded-2xl lg:p-10 lg:shadow-[0_30px_80px_-30px_rgba(13,9,48,0.55)] lg:ring-1 lg:ring-black/5">
+          <div className="hidden items-center gap-3 lg:flex">
+            <Image
+              src="/logo/paniit.png"
+              alt="PAN IIT Alumni India"
+              width={512}
+              height={220}
+              priority
+              className="h-9 w-auto"
+            />
+            <div className="h-6 w-px bg-brand-100" aria-hidden />
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+              Bangalore Summit · Setup
+            </p>
+          </div>
+          <h1 className="mt-0 text-2xl font-semibold tracking-tight text-brand-950 lg:mt-6 lg:text-[28px]">
             Tell us about you
           </h1>
           <p className="mt-1 text-sm leading-6 text-brand-900/75">
@@ -94,7 +124,7 @@ export default async function OnboardingPage({
             the Networking tab. All starred fields are required.
           </p>
 
-          <div className="mt-5">
+          <div className="mt-5 lg:mt-7">
             <OnboardingForm initial={initial} next={next} />
           </div>
         </section>
