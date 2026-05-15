@@ -30,11 +30,12 @@ function hourLabel(key: string): string {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ track?: string; mine?: string }>;
+  searchParams?: Promise<{ track?: string; mine?: string; recommended?: string }>;
 }) {
   const sp = (await searchParams) ?? {};
   const track = sp.track ?? "all";
   const mineOnly = sp.mine === "1";
+  const recommendedOnly = sp.recommended === "1";
 
   let sessions: SessionCardData[] = [];
   let bookmarkSet = new Set<string>();
@@ -78,17 +79,21 @@ export default async function AgendaPage({
     errored = true;
   }
 
+  const userInterestSet = new Set(userInterests);
+  const isRecommended = (s: SessionCardData): boolean => {
+    if (userInterestSet.size === 0) return false;
+    const mapped = TRACK_TO_INTERESTS[s.track] ?? [];
+    return mapped.some((i) => userInterestSet.has(i));
+  };
+
   const filtered = sessions.filter((s) => {
     if (track !== "all" && s.track !== track) return false;
     if (mineOnly && !bookmarkSet.has(s.id)) return false;
+    if (recommendedOnly && !isRecommended(s)) return false;
     return true;
   });
 
-  const userInterestSet = new Set(userInterests);
-  const matchCount = filtered.reduce((acc, s) => {
-    const mapped = TRACK_TO_INTERESTS[s.track] ?? [];
-    return mapped.some((i) => userInterestSet.has(i)) ? acc + 1 : acc;
-  }, 0);
+  const matchCount = filtered.reduce((acc, s) => (isRecommended(s) ? acc + 1 : acc), 0);
 
   const grouped = filtered.reduce<Map<string, SessionCardData[]>>((acc, s) => {
     const k = hourKey(s.start_at);
@@ -152,14 +157,18 @@ export default async function AgendaPage({
               <CalendarOff />
             </EmptyMedia>
             <EmptyTitle>
-              {mineOnly
+              {recommendedOnly
+                ? "Nothing recommended yet"
+                : mineOnly
                 ? "Nothing bookmarked yet"
                 : errored
                 ? "Can't load schedule"
                 : "No sessions"}
             </EmptyTitle>
             <EmptyDescription>
-              {mineOnly
+              {recommendedOnly
+                ? "Add more interests in your profile to surface matching sessions."
+                : mineOnly
                 ? "Bookmark sessions to build your personal agenda."
                 : errored
                 ? "We can't reach the schedule right now."

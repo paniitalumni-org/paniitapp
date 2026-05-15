@@ -1,17 +1,13 @@
 import Link from "next/link";
-import {
-  ChevronRight,
-  LogOut,
-  Pencil,
-  QrCode,
-  Shield,
-  UsersRound,
-  Camera,
-} from "lucide-react";
+import { ChevronRight, LogOut, Pencil, QrCode, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
+import {
+  ConnectionsGlyph,
+  ShieldChime,
+} from "@/components/features/nav-icons";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -165,7 +161,7 @@ export default async function MePage() {
 
       <Row
         href="/attendees?tab=connections"
-        icon={<UsersRound className="size-[18px]" strokeWidth={1.5} />}
+        icon={<ConnectionsGlyph className="size-[18px]" strokeWidth={1.5} />}
         label="My Connections"
         meta={connectionCount > 0 ? String(connectionCount) : undefined}
       />
@@ -176,7 +172,7 @@ export default async function MePage() {
       />
       <Row
         href="/me/edit#notifications"
-        icon={<Shield className="size-[18px]" strokeWidth={1.5} />}
+        icon={<ShieldChime className="size-[18px]" strokeWidth={1.5} />}
         label="Privacy & Notifications"
       />
 
@@ -194,10 +190,10 @@ export default async function MePage() {
       <form action="/api/auth/signout" method="post">
         <button
           type="submit"
-          className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-4 py-3.5 transition-colors hover:bg-iit-50/40"
+          className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-4 py-3.5 transition-colors hover:bg-brand-50/30"
         >
-          <span className="flex items-center gap-3 text-[13px] font-semibold text-iit-600">
-            <LogOut className="size-[18px]" strokeWidth={1.5} />
+          <span className="flex items-center gap-3 text-[13px] font-semibold text-brand-950">
+            <LogOut className="size-[18px] text-brand-800" strokeWidth={1.5} />
             Logout
           </span>
           <ChevronRight className="size-4 text-brand-800/65" />

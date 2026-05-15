@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TRACKS = [
@@ -22,8 +22,13 @@ export function AgendaFilters() {
   const sp = useSearchParams();
   const activeTrack = sp.get("track") ?? "all";
   const mineOnly = sp.get("mine") === "1";
+  const recommendedOnly = sp.get("recommended") === "1";
 
-  function buildHref(patch: { track?: string; mine?: string }): string {
+  function buildHref(patch: {
+    track?: string;
+    mine?: string;
+    recommended?: string;
+  }): string {
     const next = new URLSearchParams(sp.toString());
     if (patch.track !== undefined) {
       if (patch.track === "all") next.delete("track");
@@ -33,40 +38,50 @@ export function AgendaFilters() {
       if (patch.mine === "0") next.delete("mine");
       else next.set("mine", patch.mine);
     }
+    if (patch.recommended !== undefined) {
+      if (patch.recommended === "0") next.delete("recommended");
+      else next.set("recommended", patch.recommended);
+    }
     const qs = next.toString();
     return qs ? `${pathname}?${qs}` : pathname;
   }
 
   return (
     <div className="space-y-3">
-      <Link
-        href={buildHref({ mine: mineOnly ? "0" : "1" })}
-        scroll={false}
-        aria-pressed={mineOnly}
-        className={cn(
-          "flex items-center justify-between rounded-md border px-3.5 py-2.5 text-[13px] font-semibold transition-colors",
-          mineOnly
-            ? "border-brand-800 bg-brand-800 text-white"
-            : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
-        )}
-      >
-        <span className="inline-flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href={buildHref({ mine: mineOnly ? "0" : "1" })}
+          scroll={false}
+          aria-pressed={mineOnly}
+          className={cn(
+            "flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[13px] font-semibold transition-colors",
+            mineOnly
+              ? "border-brand-800 bg-brand-800 text-white"
+              : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
+          )}
+        >
           {mineOnly ? (
             <BookmarkCheck className="size-4" strokeWidth={1.7} />
           ) : (
             <Bookmark className="size-4" strokeWidth={1.7} />
           )}
           My Agenda
-        </span>
-        <span
+        </Link>
+        <Link
+          href={buildHref({ recommended: recommendedOnly ? "0" : "1" })}
+          scroll={false}
+          aria-pressed={recommendedOnly}
           className={cn(
-            "text-[10px] uppercase tracking-wider",
-            mineOnly ? "text-white/85" : "text-brand-800/65"
+            "flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[13px] font-semibold transition-colors",
+            recommendedOnly
+              ? "border-emerald-600 bg-emerald-600 text-white"
+              : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
           )}
         >
-          {mineOnly ? "On" : "Off"}
-        </span>
-      </Link>
+          <Sparkles className="size-4" strokeWidth={1.7} />
+          Recommended
+        </Link>
+      </div>
 
       <div>
         <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
