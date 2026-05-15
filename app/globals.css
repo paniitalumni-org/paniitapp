@@ -66,9 +66,17 @@
   }
 }
 
+@keyframes marquee-rtl {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
 @layer utilities {
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+  }
+  .animate-marquee-rtl {
+    animation: marquee-rtl 35s linear infinite;
   }
   .safe-top {
     padding-top: env(safe-area-inset-top);

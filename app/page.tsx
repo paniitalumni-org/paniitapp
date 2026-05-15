@@ -7,6 +7,32 @@ import { SignInForm } from "./sign-in-form";
 
 export const dynamic = "force-dynamic";
 
+const IITS = [
+  "IIT Bombay",
+  "IIT Delhi",
+  "IIT Madras",
+  "IIT Kanpur",
+  "IIT Kharagpur",
+  "IIT Roorkee",
+  "IIT Guwahati",
+  "IIT Hyderabad",
+  "IIT Indore",
+  "IIT Mandi",
+  "IIT BHU",
+  "IIT Bhubaneswar",
+  "IIT Gandhinagar",
+  "IIT Jodhpur",
+  "IIT Patna",
+  "IIT Ropar",
+  "IIT Tirupati",
+  "IIT Palakkad",
+  "IIT Dhanbad",
+  "IIT Bhilai",
+  "IIT Goa",
+  "IIT Jammu",
+  "IIT Dharwad",
+];
+
 export default async function SignInPage() {
   try {
     const supabase = await createClient();
@@ -19,10 +45,9 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="lg:grid lg:min-h-screen lg:grid-cols-2">
-      {/* HERO PANEL — visible top half on mobile, full-height left on desktop */}
-      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-44 pt-20 lg:flex lg:flex-col lg:justify-between lg:p-12 lg:pb-12 xl:p-16">
-        {/* Decorative dot grid */}
+    <main className="flex min-h-[100svh] flex-col lg:grid lg:min-h-screen lg:grid-cols-2">
+      {/* HERO PANEL */}
+      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-32 pt-10 lg:flex lg:flex-col lg:justify-between lg:p-12 lg:pb-12 xl:p-16">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -32,24 +57,22 @@ export default async function SignInPage() {
           }}
           aria-hidden
         />
-        {/* Soft glow behind the logo card */}
         <div
           className="pointer-events-none absolute left-1/2 top-1/3 -z-10 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl lg:left-[40%] lg:top-1/2"
           aria-hidden
         />
 
-        {/* Logo card */}
         <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col items-center px-6 lg:max-w-md lg:px-0">
-          <div className="w-full rounded-2xl border border-white/10 bg-white px-8 py-7 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
+          <div className="w-full rounded-2xl border border-white/10 bg-white px-7 py-5 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
             <Image
               src="/logo/paniit.png"
               alt="PAN IIT Alumni India"
               width={512}
               height={220}
               priority
-              className="mx-auto h-14 w-auto"
+              className="mx-auto h-11 w-auto"
             />
-            <div className="mt-4 border-t border-slate-200 pt-3 text-center">
+            <div className="mt-3 border-t border-slate-200 pt-2.5 text-center">
               <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
                 Bangalore Summit
               </p>
@@ -59,7 +82,6 @@ export default async function SignInPage() {
             </div>
           </div>
 
-          {/* Desktop-only tagline + metadata under the logo card */}
           <div className="hidden text-center lg:mt-12 lg:block">
             <h1 className="font-semibold leading-tight tracking-tight text-white text-3xl xl:text-4xl">
               India&apos;s deepest network of
@@ -76,46 +98,51 @@ export default async function SignInPage() {
             </dl>
           </div>
         </div>
-
-        {/* Desktop-only footer attribution */}
-        <p className="relative z-10 hidden text-center text-[11px] text-white/40 lg:block">
-          © 2026 PAN IIT Alumni India · paniit.org
-        </p>
       </section>
 
       {/* FORM PANEL */}
-      <section className="relative z-10 -mt-28 flex flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
-        <div className="mx-auto w-full max-w-md rounded-t-3xl bg-white px-6 pb-10 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
-          <div className="flex flex-col gap-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800">
-              Member sign in
-            </p>
-            <h2 className="text-2xl font-semibold tracking-tight text-brand-900 sm:text-[28px]">
-              Welcome back
-            </h2>
-            <p className="text-sm leading-6 text-slate-600">
-              Sign in with the email you registered with.
-            </p>
-          </div>
+      <section className="relative z-10 -mt-24 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
+        <div className="mx-auto w-full max-w-md rounded-t-3xl bg-white px-6 pb-6 pt-6 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
+            {/* IIT marquee */}
+            <div className="-mx-6 overflow-hidden sm:-mx-8 lg:-mx-10">
+              <div
+                className="flex w-max animate-marquee-rtl gap-2"
+                aria-hidden
+              >
+                {[...IITS, ...IITS].map((name, i) => (
+                  <span
+                    key={`${name}-${i}`}
+                    className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            </div>
 
-          <div className="mt-7">
-            <SignInForm />
-          </div>
+            <div className="mt-5 flex flex-col items-center text-center">
+              <h2 className="font-semibold tracking-tight text-brand-900 text-3xl sm:text-[34px]">
+                ನಮಸ್ಕಾರ
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Sign in with the email registered
+              </p>
+            </div>
 
-          <p className="mt-8 text-xs leading-5 text-slate-500">
-            By signing in you agree to the Summit Terms of Conduct. Trouble?{" "}
-            <a
-              href="mailto:summit@paniit.org"
-              className="font-medium text-brand-800 hover:text-brand-900"
-            >
-              summit@paniit.org
-            </a>
-          </p>
+            <div className="mt-5">
+              <SignInForm />
+            </div>
+
+            <p className="mt-5 text-center text-xs leading-5 text-slate-500">
+              Trouble?{" "}
+              <a
+                href="mailto:summit@paniit.org"
+                className="font-medium text-brand-800 hover:text-brand-900"
+              >
+                summit@paniit.org
+              </a>
+            </p>
         </div>
-
-        <footer className="border-t border-slate-200 px-6 py-4 text-center text-[11px] text-slate-400 lg:hidden">
-          © 2026 PAN IIT Alumni India · paniit.org
-        </footer>
       </section>
     </main>
   );
