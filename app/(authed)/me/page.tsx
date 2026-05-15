@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { ChevronRight, LogOut, Pencil, QrCode } from "lucide-react";
+import {
+  ChevronRight,
+  LogOut,
+  Pencil,
+  QrCode,
+  Shield,
+  UsersRound,
+  Camera,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
-import { PushPrompt } from "@/components/features/push-prompt";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +26,6 @@ interface ProfileRow {
   iit_campus: string | null;
   graduation_year: number | null;
   branch: string | null;
-  linkedin_url: string | null;
-  twitter_url: string | null;
   interests: string[] | null;
   asks: string[] | null;
   offers: string[] | null;
@@ -31,6 +35,16 @@ interface ProfileRow {
 function roleLabel(role: string | null | undefined): string | null {
   if (!role) return null;
   return role.charAt(0).toUpperCase() + role.slice(1).replace(/_/g, " ");
+}
+
+function maskEmail(email: string | null): string {
+  if (!email) return "—";
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  const [host, ...tld] = domain.split(".");
+  const m = (s: string, keep = 1) =>
+    s.length <= keep ? s : s.slice(0, keep) + "*".repeat(Math.max(3, s.length - keep));
+  return `${m(local, 1)}@${m(host, 1)}.${tld.join(".")}`;
 }
 
 export default async function MePage() {
@@ -49,7 +63,7 @@ export default async function MePage() {
         supabase
           .from("profiles")
           .select(
-            "full_name, photo_url, role, company, designation, bio, iit_campus, graduation_year, branch, linkedin_url, twitter_url, interests, asks, offers, office_hours_enabled"
+            "full_name, photo_url, role, company, designation, bio, iit_campus, graduation_year, branch, interests, asks, offers, office_hours_enabled"
           )
           .eq("id", user.id)
           .maybeSingle(),
@@ -65,199 +79,209 @@ export default async function MePage() {
     rethrowIfRedirect(err);
   }
 
-  const company = profile?.company ?? null;
-  const designation = profile?.designation ?? null;
-  const eduLine = [
-    profile?.iit_campus,
-    profile?.graduation_year,
-    profile?.branch,
-  ]
+  const eduLine = [profile?.iit_campus, profile?.graduation_year, profile?.branch]
     .filter(Boolean)
     .join(" · ");
+  const showOfficeHours =
+    profile?.role === "vc" || profile?.role === "alumni";
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4 pb-12 pt-5 lg:pt-8">
-      {/* Identity block */}
-      <section className="rounded-2xl border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
-        <Avatar className="mx-auto size-24 ring-4 ring-brand-50">
-          {profile?.photo_url ? (
-            <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
+    <div className="mx-auto w-full max-w-2xl space-y-3 pb-12 pt-5 lg:pt-8">
+      {/* Photo + name + card */}
+      <section className="rounded-3xl bg-white px-5 pb-6 pt-7 shadow-[0_1px_0_0_rgba(13,9,48,0.04)] ring-1 ring-brand-100">
+        <div className="flex flex-col items-center text-center">
+          <div className="relative">
+            <Avatar className="size-24 ring-4 ring-brand-50">
+              {profile?.photo_url ? (
+                <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
+              ) : null}
+              <AvatarFallback className="bg-brand-50 text-xl font-semibold text-brand-800">
+                {initials(profile?.full_name ?? "You")}
+              </AvatarFallback>
+            </Avatar>
+            <Link
+              href="/me/edit"
+              aria-label="Change profile photo"
+              className="absolute -bottom-1 -right-1 inline-grid size-8 place-items-center rounded-full bg-brand-800 text-white shadow-sm ring-4 ring-white transition-colors hover:bg-brand-900"
+            >
+              <Camera className="size-4" strokeWidth={1.8} />
+            </Link>
+          </div>
+          <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-brand-950">
+            {profile?.full_name ?? "Your profile"}
+          </h1>
+          {profile?.role ? (
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+              {roleLabel(profile.role)}
+            </p>
           ) : null}
-          <AvatarFallback className="bg-brand-50 text-xl font-semibold text-brand-800">
-            {initials(profile?.full_name ?? "You")}
-          </AvatarFallback>
-        </Avatar>
-        <h1 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">
-          {profile?.full_name ?? "Your profile"}
-        </h1>
-        {designation || company ? (
-          <p className="mt-1 text-sm font-medium text-brand-900/85">
-            {[designation, company].filter(Boolean).join(" · ")}
-          </p>
-        ) : null}
-        {profile?.role ? (
-          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
-            {roleLabel(profile.role)}
-          </p>
-        ) : null}
-        {userEmail ? (
-          <p className="mt-3 text-[12px] font-medium text-brand-900/70">
-            {userEmail}
-          </p>
-        ) : null}
+        </div>
+
+        {/* Label / value rows */}
+        <div className="mt-6 space-y-4">
+          <Field label="Designation" value={profile?.designation ?? "—"} />
+          <Field label="Organization" value={profile?.company ?? "—"} />
+          <Field label="Email Address" value={maskEmail(userEmail)} />
+          <Field
+            label="Bio"
+            value={profile?.bio ?? "—"}
+            valueClass="whitespace-pre-line leading-6"
+          />
+          {eduLine ? <Field label="Education" value={eduLine} /> : null}
+
+          {profile?.interests?.length ? (
+            <div>
+              <p className="text-[13px] font-medium text-brand-900/55">
+                Area of interest
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.interests.map((i) => (
+                  <span
+                    key={i}
+                    className="rounded-md bg-brand-50 px-2.5 py-1.5 text-[12px] font-medium text-brand-900"
+                  >
+                    {i}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {profile?.asks?.length ? (
+            <ChipBlock label="Looking for" items={profile.asks} />
+          ) : null}
+          {profile?.offers?.length ? (
+            <ChipBlock label="Can offer" items={profile.offers} />
+          ) : null}
+        </div>
+
+        {/* Edit Profile — full width inside card */}
+        <Link
+          href="/me/edit"
+          className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-800 text-sm font-semibold tracking-tight text-white transition-colors hover:bg-brand-900"
+        >
+          <Pencil className="size-4" strokeWidth={1.8} />
+          Edit Profile
+        </Link>
       </section>
 
-      {/* Bio */}
-      {profile?.bio ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            About
-          </h2>
-          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-brand-900">
-            {profile.bio}
-          </p>
-        </section>
-      ) : null}
+      {/* Secondary rows */}
+      <Row
+        href="/attendees?tab=connections"
+        icon={<UsersRound className="size-[18px]" strokeWidth={1.7} />}
+        label="My Connections"
+        meta={connectionCount > 0 ? String(connectionCount) : undefined}
+      />
+      <Row
+        href="/me/qr"
+        icon={<QrCode className="size-[18px]" strokeWidth={1.7} />}
+        label="My QR Badge"
+      />
+      <Row
+        href="/me/edit#notifications"
+        icon={<Shield className="size-[18px]" strokeWidth={1.7} />}
+        label="Privacy & Notifications"
+      />
 
-      {/* Areas of interest */}
-      {profile?.interests?.length ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            Areas of interest
+      {showOfficeHours ? (
+        <section className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
+          <h2 className="text-[13px] font-medium text-brand-900/55">
+            Availability
           </h2>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {profile.interests.map((i) => (
-              <span
-                key={i}
-                className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
-              >
-                {i}
-              </span>
-            ))}
+          <div className="mt-2">
+            <OfficeHoursToggle initial={!!profile?.office_hours_enabled} />
           </div>
         </section>
       ) : null}
 
-      {/* Asks / Offers */}
-      {(profile?.asks?.length ?? 0) + (profile?.offers?.length ?? 0) > 0 ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
-          {profile?.asks?.length ? (
-            <div>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-                Looking for
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {profile.asks.map((i) => (
-                  <span
-                    key={i}
-                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {profile?.offers?.length ? (
-            <div className={profile?.asks?.length ? "mt-4" : ""}>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-                Can offer
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {profile.offers.map((i) => (
-                  <span
-                    key={i}
-                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
-                  >
-                    {i}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {/* Education */}
-      {eduLine ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            Education
-          </h2>
-          <p className="mt-2 text-sm font-medium text-brand-900">{eduLine}</p>
-        </section>
-      ) : null}
-
-      {/* Edit Profile — full width primary */}
-      <Link href="/me/edit" className="block">
-        <Button className="h-12 w-full gap-1.5 rounded-xl text-sm font-semibold">
-          <Pencil className="h-4 w-4" />
-          Edit profile
-        </Button>
-      </Link>
-
-      {/* My Connections — outlined */}
-      <Link
-        href="/attendees?tab=connections"
-        className="flex items-center justify-between rounded-xl border border-brand-100 bg-white px-5 py-3.5 text-sm font-semibold text-brand-900 transition-colors hover:border-brand-200 hover:bg-brand-50/40"
-      >
-        <span>
-          My connections
-          {connectionCount > 0 ? (
-            <span className="ml-1.5 inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-800">
-              {connectionCount}
-            </span>
-          ) : null}
-        </span>
-        <ChevronRight className="size-4 text-brand-800/70" />
-      </Link>
-
-      {/* Secondary links */}
-      <section className="overflow-hidden rounded-2xl border border-brand-100 bg-white">
-        <ul className="divide-y divide-brand-100">
-          <li>
-            <Link
-              href="/me/qr"
-              className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-brand-50/40"
-            >
-              <span className="flex items-center gap-3 text-sm font-medium text-brand-900">
-                <QrCode className="h-4 w-4 text-brand-800" />
-                My QR badge
-              </span>
-              <ChevronRight className="size-4 text-brand-800/70" />
-            </Link>
-          </li>
-        </ul>
-      </section>
-
-      {/* Notifications */}
-      <section>
-        <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-          Notifications
-        </h2>
-        <PushPrompt vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
-      </section>
-
-      {/* Availability for office-hours roles */}
-      {profile?.role === "vc" || profile?.role === "alumni" ? (
-        <section>
-          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            Availability
-          </h2>
-          <OfficeHoursToggle initial={!!profile?.office_hours_enabled} />
-        </section>
-      ) : null}
-
-      <form action="/api/auth/signout" method="post" className="pt-2">
-        <Button
-          variant="outline"
+      {/* Logout */}
+      <form action="/api/auth/signout" method="post">
+        <button
           type="submit"
-          className="h-11 w-full rounded-xl border-iit-200 text-iit-500 hover:bg-iit-50"
+          className="flex w-full items-center justify-between rounded-2xl bg-white px-5 py-4 ring-1 ring-brand-100 transition-colors hover:bg-iit-50/40"
         >
-          <LogOut className="h-4 w-4" />
-          Sign out
-        </Button>
+          <span className="flex items-center gap-3 text-sm font-semibold text-brand-950">
+            <span className="inline-grid size-9 place-items-center rounded-full bg-iit-50 text-iit-500">
+              <LogOut className="size-[18px]" strokeWidth={1.7} />
+            </span>
+            Logout
+          </span>
+          <ChevronRight className="size-4 text-brand-800/70" />
+        </button>
       </form>
     </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
+  return (
+    <div>
+      <p className="text-[13px] font-medium text-brand-900/55">{label}</p>
+      <p
+        className={`mt-1 text-[14px] font-semibold text-brand-950 ${valueClass ?? ""}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ChipBlock({ label, items }: { label: string; items: string[] }) {
+  return (
+    <div>
+      <p className="text-[13px] font-medium text-brand-900/55">{label}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {items.map((i) => (
+          <span
+            key={i}
+            className="rounded-md bg-brand-50 px-2.5 py-1.5 text-[12px] font-medium text-brand-900"
+          >
+            {i}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Row({
+  href,
+  icon,
+  label,
+  meta,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  meta?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between rounded-2xl bg-white px-5 py-4 ring-1 ring-brand-100 transition-colors hover:bg-brand-50/30"
+    >
+      <span className="flex items-center gap-3 text-sm font-semibold text-brand-950">
+        <span className="inline-grid size-9 place-items-center rounded-full bg-brand-50 text-brand-800">
+          {icon}
+        </span>
+        {label}
+      </span>
+      <span className="flex items-center gap-2">
+        {meta ? (
+          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-800">
+            {meta}
+          </span>
+        ) : null}
+        <ChevronRight className="size-4 text-brand-800/70" />
+      </span>
+    </Link>
   );
 }

@@ -49,17 +49,12 @@ export async function TopBar() {
                 {initials(name)}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 leading-tight">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-800/70">
-                Hello
-              </p>
-              <p className="truncate text-sm font-semibold text-brand-900">
-                {firstName(name)}{" "}
-                <span className="inline-block align-[-1px]" aria-hidden>
-                  👋
-                </span>
-              </p>
-            </div>
+            <p className="min-w-0 truncate text-sm font-semibold text-brand-900">
+              Hello, {firstName(name)}{" "}
+              <span className="inline-block align-[-1px]" aria-hidden>
+                👋
+              </span>
+            </p>
           </Link>
           <div className="flex items-center gap-1">
             <QrConnect />

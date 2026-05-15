@@ -76,6 +76,15 @@
   to { transform: translateX(-50%); }
 }
 
+@keyframes participant-bounce {
+  0%   { transform: translateX(110%) translateY(0)   scale(0.92); opacity: 0; }
+  18%  { transform: translateX(0%)   translateY(-8px) scale(1.02); opacity: 1; }
+  30%  { transform: translateX(0%)   translateY(0)    scale(1);    opacity: 1; }
+  70%  { transform: translateX(0%)   translateY(0)    scale(1);    opacity: 1; }
+  85%  { transform: translateX(0%)   translateY(6px)  scale(0.98); opacity: 0.85; }
+  100% { transform: translateX(-110%) translateY(0)   scale(0.92); opacity: 0; }
+}
+
 @layer utilities {
   .tabular-nums {
     font-variant-numeric: tabular-nums;
