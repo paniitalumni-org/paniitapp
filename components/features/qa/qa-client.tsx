@@ -10,7 +10,6 @@ import {
   MoreHorizontal,
   Pin,
   Reply,
-  Sparkles,
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -220,7 +219,7 @@ export function QaClient({
 
       {filtered.length === 0 ? (
         <div className="mt-8 flex flex-col items-center px-4 text-center">
-          <Sparkles className="h-7 w-7 text-brand-800/50" strokeWidth={1.4} />
+          <Hand className="h-7 w-7 text-brand-800/55" strokeWidth={1.5} />
           <h3 className="mt-3 text-[15px] font-semibold text-brand-950">
             {sort === "mine"
               ? "You haven't asked yet"
@@ -654,9 +653,8 @@ function AskBar({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
+          className="flex h-12 w-full items-center justify-center rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
         >
-          <Hand className="h-[18px] w-[18px]" strokeWidth={1.6} />
           Ask a question
         </button>
       </div>
