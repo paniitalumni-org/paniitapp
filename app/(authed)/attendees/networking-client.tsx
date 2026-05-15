@@ -436,7 +436,7 @@ function AttendeeListItem({ p }: { p: AttendeeRow }) {
     <li>
       <Link
         href={`/attendees/${p.id}`}
-        className="group flex items-center gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
+        className="group flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
       >
         <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
           {p.photo_url ? (
@@ -447,12 +447,12 @@ function AttendeeListItem({ p }: { p: AttendeeRow }) {
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <div className="truncate text-[14px] font-semibold text-brand-950">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="text-[14px] font-semibold leading-tight text-brand-950">
               {p.full_name ?? "—"}
             </div>
             {p.role ? (
-              <span className="shrink-0 rounded-full bg-brand-50 px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wider text-brand-800">
+              <span className="shrink-0 rounded-[4px] border border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
                 {roleLabel(p.role)}
               </span>
             ) : null}
@@ -460,13 +460,15 @@ function AttendeeListItem({ p }: { p: AttendeeRow }) {
           <div className="mt-0.5 truncate text-[12px] text-brand-900/75">
             {[p.designation, p.company].filter(Boolean).join(" · ") || "—"}
           </div>
-          {campus ? (
-            <div className="mt-1 text-[11px] font-medium text-brand-800/70">
-              IIT {campus} {grad}
-            </div>
-          ) : null}
+          <div className="mt-1 flex items-center gap-3">
+            {campus ? (
+              <span className="text-[11px] font-medium text-brand-800/70">
+                IIT {campus} {grad}
+              </span>
+            ) : null}
+            <SocialIcons p={p} />
+          </div>
         </div>
-        <SocialIcons p={p} />
       </Link>
     </li>
   );
@@ -478,19 +480,19 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
     items.push({
       href: p.linkedin_url,
       label: "LinkedIn",
-      icon: <Linkedin className="size-[14px]" strokeWidth={1.8} />,
+      icon: <Linkedin className="size-[14px]" strokeWidth={1.5} />,
     });
   }
   if (p.twitter_url) {
     items.push({
       href: p.twitter_url,
       label: "Twitter / X",
-      icon: <XIcon className="size-[14px]" />,
+      icon: <XIcon className="size-[12px]" />,
     });
   }
   if (items.length === 0) return null;
   return (
-    <div className="ml-1 flex shrink-0 items-center gap-1">
+    <div className="flex items-center gap-2.5">
       {items.map((it) => (
         <a
           key={it.label}
@@ -499,7 +501,7 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
           rel="noopener noreferrer"
           aria-label={it.label}
           onClick={(e) => e.stopPropagation()}
-          className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+          className="text-brand-950 transition-opacity hover:opacity-65"
         >
           {it.icon}
         </a>

@@ -11,6 +11,7 @@ import { rangeIST } from "@/lib/date";
 import { initials } from "@/lib/utils";
 import { trackColor } from "@/components/features/session-card";
 
+type VenueShape = { name: string | null; floor: number | null };
 interface SessionRow {
   id: string;
   title: string;
@@ -21,8 +22,14 @@ interface SessionRow {
   is_featured: boolean | null;
   capacity: number | null;
   current_checkins: number | null;
-  venues: { name: string | null; floor: number | null } | null;
+  venues: VenueShape | VenueShape[] | null;
   interests: string[] | null;
+}
+
+function venueOf(v: VenueShape | VenueShape[] | null): VenueShape | null {
+  if (!v) return null;
+  if (Array.isArray(v)) return v[0] ?? null;
+  return v;
 }
 
 interface SpeakerProfile {
@@ -38,7 +45,15 @@ interface SpeakerProfile {
 
 interface SpeakerRow {
   speaker_id: string;
-  profiles: SpeakerProfile | null;
+  // Supabase joins can come back as either object or array depending on the
+  // relation kind it infers. Accept both so render-time code never crashes.
+  profiles: SpeakerProfile | SpeakerProfile[] | null;
+}
+
+function speakerOf(row: SpeakerRow): SpeakerProfile | null {
+  if (!row.profiles) return null;
+  if (Array.isArray(row.profiles)) return row.profiles[0] ?? null;
+  return row.profiles;
 }
 
 export const dynamic = "force-dynamic";
@@ -189,17 +204,21 @@ export default async function SessionDetailPage({
               {rangeIST(session.start_at, session.end_at)}
             </span>
           </span>
-          {session.venues?.name ? (
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5 text-brand-800/65" strokeWidth={1.7} />
-              {session.venues.name}
-              {session.venues.floor != null ? (
-                <span className="text-[11px] text-brand-800/55">
-                  · Floor {session.venues.floor}
-                </span>
-              ) : null}
-            </span>
-          ) : null}
+          {(() => {
+            const v = venueOf(session.venues);
+            if (!v?.name) return null;
+            return (
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-brand-800/65" strokeWidth={1.7} />
+                {v.name}
+                {v.floor != null ? (
+                  <span className="text-[11px] text-brand-800/55">
+                    · Floor {v.floor}
+                  </span>
+                ) : null}
+              </span>
+            );
+          })()}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -251,9 +270,10 @@ export default async function SessionDetailPage({
           </h2>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {speakers
-              .filter((s) => s.profiles)
+              .map((s) => ({ id: s.speaker_id, p: speakerOf(s) }))
+              .filter((s): s is { id: string; p: SpeakerProfile } => !!s.p)
               .map((s) => (
-                <SpeakerCard key={s.speaker_id} p={s.profiles!} />
+                <SpeakerCard key={s.id} p={s.p} />
               ))}
           </ul>
         </section>
