@@ -16,19 +16,6 @@ export type SignInResult =
   | { error: "session_failed"; message: string }
   | { error: "config" };
 
-// Treat these Supabase-side error signals as "this email is not on the list."
-// generateLink({ type: "magiclink", email }) errors when no auth.users row matches.
-function isUserNotFound(message: string): boolean {
-  const m = message.toLowerCase();
-  return (
-    m.includes("user not found") ||
-    m.includes("no user found") ||
-    m.includes("unable to find user") ||
-    m.includes("user does not exist") ||
-    m.includes("signups not allowed") // belt+braces in case generateLink type changes
-  );
-}
-
 export async function signIn(_prev: unknown, formData: FormData): Promise<SignInResult> {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -47,35 +34,65 @@ export async function signIn(_prev: unknown, formData: FormData): Promise<SignIn
 
   const admin = createServiceRoleClient();
 
-  // The registered-attendee check happens via Supabase auth.users — the seed
-  // for 0001_init.sql is expected to have created an auth.users row per attendee
-  // with their registered email. generateLink({type:'magiclink'}) errors for
-  // emails not in auth.users, which is exactly the "not on the list" signal.
+  // Allow-list check — same source of truth as the OAuth callback.
+  const { data: allowed } = await admin
+    .from("attendee_allowlist")
+    .select("email")
+    .ilike("email", email)
+    .maybeSingle();
+  if (!allowed) return { error: "not_registered" };
+
+  // Generate OTP without sending an email; verify it server-side to set cookies.
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email,
   });
-
-  if (linkErr) {
-    if (isUserNotFound(linkErr.message)) return { error: "not_registered" };
-    return { error: "session_failed", message: linkErr.message };
-  }
-
-  const otp = link?.properties?.email_otp;
-  if (!otp) {
-    return { error: "session_failed", message: "Could not start session." };
+  if (linkErr || !link?.properties?.email_otp) {
+    return { error: "session_failed", message: linkErr?.message ?? "Could not start session." };
   }
 
   const ssr = await createClient();
   const { data: verified, error: verifyErr } = await ssr.auth.verifyOtp({
     email,
-    token: otp,
+    token: link.properties.email_otp,
     type: "email",
   });
-
-  if (verifyErr || !verified.session) {
+  if (verifyErr || !verified.session || !verified.user) {
     return { error: "session_failed", message: verifyErr?.message ?? "Could not start session." };
   }
+
+  // Upsert profile so signed-in user has a row before they land on /agenda.
+  // Mirror the OAuth callback merge semantics.
+  const { data: allowRow } = await admin
+    .from("attendee_allowlist")
+    .select(
+      "email, full_name, role, iit_campus, graduation_year, branch, company, designation, interests"
+    )
+    .ilike("email", email)
+    .maybeSingle();
+  const { data: existing } = await admin
+    .from("profiles")
+    .select(
+      "id, email, full_name, role, iit_campus, graduation_year, branch, company, designation, interests"
+    )
+    .eq("id", verified.user.id)
+    .maybeSingle();
+
+  await admin.from("profiles").upsert(
+    {
+      id: verified.user.id,
+      email,
+      full_name: existing?.full_name ?? allowRow?.full_name ?? null,
+      role: existing?.role ?? allowRow?.role ?? null,
+      iit_campus: existing?.iit_campus ?? allowRow?.iit_campus ?? null,
+      graduation_year: existing?.graduation_year ?? allowRow?.graduation_year ?? null,
+      branch: existing?.branch ?? allowRow?.branch ?? null,
+      company: existing?.company ?? allowRow?.company ?? null,
+      designation: existing?.designation ?? allowRow?.designation ?? null,
+      interests: existing?.interests ?? allowRow?.interests ?? null,
+    },
+    { onConflict: "id" }
+  );
 
   redirect("/agenda");
 }
