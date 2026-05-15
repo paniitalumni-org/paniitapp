@@ -15,6 +15,10 @@ export interface SessionCardData {
   capacity: number | null;
   current_checkins: number | null;
   venues: { name: string | null } | null;
+  // Optional per-session topic tags (column added in migration 0007).
+  // When present they drive the Recommended match directly; otherwise we
+  // fall back to TRACK_TO_INTERESTS so the older sessions still light up.
+  interests?: string[] | null;
 }
 
 const TRACK_COLORS: Record<string, string> = {
@@ -41,15 +45,22 @@ function capacityState(used: number, total: number) {
   return { fill: "bg-emerald-500", label: "Seats available" };
 }
 
+export function sessionInterestPool(
+  session: Pick<SessionCardData, "track" | "interests">
+): string[] {
+  if (session.interests && session.interests.length > 0) return session.interests;
+  return [...(TRACK_TO_INTERESTS[session.track] ?? [])];
+}
+
 export function matchedInterestsForSession(
-  track: string,
+  session: Pick<SessionCardData, "track" | "interests">,
   userInterests: string[] | null | undefined
 ): string[] {
   if (!userInterests || userInterests.length === 0) return [];
-  const mapped = TRACK_TO_INTERESTS[track] ?? [];
-  if (mapped.length === 0) return [];
+  const pool = sessionInterestPool(session);
+  if (pool.length === 0) return [];
   const userSet = new Set(userInterests);
-  return mapped.filter((i) => userSet.has(i));
+  return pool.filter((i) => userSet.has(i));
 }
 
 export function SessionCard({
@@ -66,7 +77,7 @@ export function SessionCard({
   const showCapacity = capacity > 0;
   const cap = showCapacity ? capacityState(used, capacity) : null;
   const pct = showCapacity ? Math.min(100, Math.round((used / capacity) * 100)) : 0;
-  const matches = matchedInterestsForSession(session.track, userInterests);
+  const matches = matchedInterestsForSession(session, userInterests);
 
   return (
     <Link

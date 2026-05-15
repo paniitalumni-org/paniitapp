@@ -2,14 +2,18 @@ import { CalendarOff } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import { createClient } from "@/lib/supabase/server";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
-import { SessionCard, type SessionCardData } from "@/components/features/session-card";
+import {
+  SessionCard,
+  sessionInterestPool,
+  type SessionCardData,
+} from "@/components/features/session-card";
 import {
   PageWithFilters,
   FiltersCard,
 } from "@/components/features/page-with-filters";
 import { AgendaFilters } from "./agenda-filters";
 import { AgendaRealtime } from "@/components/features/agenda-realtime";
-import { SUMMIT_TZ, TRACK_TO_INTERESTS } from "@/lib/constants";
+import { SUMMIT_TZ } from "@/lib/constants";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -47,14 +51,25 @@ export default async function AgendaPage({
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase
+    const withInterests = await supabase
       .from("sessions")
       .select(
-        "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name)"
+        "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name), interests"
       )
       .order("start_at", { ascending: true });
-    if (error) errored = true;
-    sessions = (data as unknown as SessionCardData[] | null) ?? [];
+    if (withInterests.error) {
+      // sessions.interests may not exist if migration 0007 hasn't run yet.
+      const fallback = await supabase
+        .from("sessions")
+        .select(
+          "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name)"
+        )
+        .order("start_at", { ascending: true });
+      if (fallback.error) errored = true;
+      sessions = (fallback.data as unknown as SessionCardData[] | null) ?? [];
+    } else {
+      sessions = (withInterests.data as unknown as SessionCardData[] | null) ?? [];
+    }
 
     if (user) {
       const [bmRes, profRes] = await Promise.all([
@@ -81,8 +96,8 @@ export default async function AgendaPage({
   const userInterestSet = new Set(userInterests);
   const isRecommended = (s: SessionCardData): boolean => {
     if (userInterestSet.size === 0) return false;
-    const mapped = TRACK_TO_INTERESTS[s.track] ?? [];
-    return mapped.some((i) => userInterestSet.has(i));
+    const pool = sessionInterestPool(s);
+    return pool.some((i) => userInterestSet.has(i));
   };
 
   const filtered = sessions.filter((s) => {
