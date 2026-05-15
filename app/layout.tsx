@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Noto_Sans_Kannada } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -8,6 +8,14 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   axes: ["opsz"],
+  preload: true,
+});
+
+const notoKannada = Noto_Sans_Kannada({
+  subsets: ["kannada"],
+  variable: "--font-kannada",
+  display: "swap",
+  weight: ["500", "600", "700"],
   preload: true,
 });
 
@@ -40,7 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${notoKannada.variable}`}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         {children}
         <Toaster />

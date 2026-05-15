@@ -103,6 +103,12 @@ const config: Config = {
   				'var(--font-inter)',
   				'system-ui',
   				'sans-serif'
+  			],
+  			kannada: [
+  				'var(--font-kannada)',
+  				'var(--font-inter)',
+  				'system-ui',
+  				'sans-serif'
   			]
   		},
   		borderRadius: {
