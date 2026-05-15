@@ -15,7 +15,10 @@ const TABS = [
 export function DesktopNavTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Primary" className="hidden lg:flex lg:items-center lg:gap-1">
+    <nav
+      aria-label="Primary"
+      className="hidden lg:flex lg:items-center lg:gap-6"
+    >
       {TABS.map(({ href, label }) => {
         const active =
           pathname === href ||
@@ -26,13 +29,19 @@ export function DesktopNavTabs() {
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-md px-3 py-1.5 text-[13px] font-semibold transition-colors",
+              "relative px-1 py-3 text-[13px] font-semibold tracking-tight transition-colors",
               active
-                ? "bg-brand-50 text-brand-900"
-                : "text-brand-800/70 hover:bg-brand-50/60 hover:text-brand-900"
+                ? "text-white"
+                : "text-white/70 hover:text-white"
             )}
           >
             {label}
+            {active ? (
+              <span
+                className="absolute inset-x-0 -bottom-[1px] h-[2px] bg-white"
+                aria-hidden
+              />
+            ) : null}
           </Link>
         );
       })}
