@@ -1,2 +1,0 @@
-[    2163ms] [ERROR] Access to XMLHttpRequest at 'https://d2ju86ym5zat6.cloudfront.net/templates/pages/main_site/portfolio_templates/portfolio_elements//_logos.html?v=1778745294204' from origin 'https://www.paniit.org' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://www.paniit.org/:0
-[    2165ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://d2ju86ym5zat6.cloudfront.net/templates/pages/main_site/portfolio_templates/portfolio_elements//_logos.html?v=1778745294204:0
