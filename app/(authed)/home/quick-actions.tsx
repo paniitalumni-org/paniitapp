@@ -10,11 +10,11 @@ export function QuickActions() {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
         <button
           type="button"
           onClick={() => setQrOpen(true)}
-          className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 text-left transition-colors hover:bg-brand-50/30"
+          className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 lg:px-4 lg:py-4 text-left transition-colors hover:bg-brand-50/30"
         >
           <QrCode className="size-[18px] text-brand-800" strokeWidth={1.5} />
           <span className="text-[13px] font-semibold leading-tight text-brand-950">
@@ -54,7 +54,7 @@ function ActionLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 transition-colors hover:bg-brand-50/30"
+      className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 lg:px-4 lg:py-4 transition-colors hover:bg-brand-50/30"
     >
       <span className="text-brand-800">{icon}</span>
       <span className="text-[13px] font-semibold leading-tight text-brand-950">
