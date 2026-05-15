@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { updateProfile, type UpdateProfileResult } from "@/app/actions/update-profile";
+import { ChipMultiSelect } from "@/components/features/chip-multiselect";
+import { ASKS, INTERESTS, OFFERS } from "@/lib/constants";
 
 interface InitialProfile {
   full_name?: string | null;
@@ -47,10 +49,6 @@ function errorMessage(state: UpdateProfileResult | null): string | null {
   }
 }
 
-function arrToText(arr: string[] | null | undefined): string {
-  return (arr ?? []).join(", ");
-}
-
 export function EditProfileForm({ initial }: { initial: InitialProfile }) {
   const [state, action] = useActionState<UpdateProfileResult | null, FormData>(
     updateProfile,
@@ -62,19 +60,11 @@ export function EditProfileForm({ initial }: { initial: InitialProfile }) {
     <form action={action} className="space-y-5">
       <Field label="Full name" name="full_name" defaultValue={initial.full_name ?? ""} required />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Field
-          label="Designation"
-          name="designation"
-          defaultValue={initial.designation ?? ""}
-        />
+        <Field label="Designation" name="designation" defaultValue={initial.designation ?? ""} />
         <Field label="Company" name="company" defaultValue={initial.company ?? ""} />
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Field
-          label="IIT campus"
-          name="iit_campus"
-          defaultValue={initial.iit_campus ?? ""}
-        />
+        <Field label="IIT campus" name="iit_campus" defaultValue={initial.iit_campus ?? ""} />
         <Field
           label="Graduation year"
           name="graduation_year"
@@ -100,26 +90,27 @@ export function EditProfileForm({ initial }: { initial: InitialProfile }) {
           placeholder="https://x.com/..."
         />
       </div>
-      <TextField
-        label="Interests"
+
+      <ChipMultiSelect
         name="interests"
-        rows={2}
-        defaultValue={arrToText(initial.interests)}
-        helper="Comma-separated tags — e.g. AI, Semiconductors, Climate."
+        label="Areas of interest"
+        helper="Tap any that apply. Used to highlight matching agenda sessions and connections."
+        options={INTERESTS}
+        initial={initial.interests ?? []}
       />
-      <TextField
-        label="Looking for"
+      <ChipMultiSelect
         name="asks"
-        rows={2}
-        defaultValue={arrToText(initial.asks)}
-        helper="Comma-separated. What you're hoping to find at the summit."
+        label="Looking for"
+        helper="What you hope to find at the summit."
+        options={ASKS}
+        initial={initial.asks ?? []}
       />
-      <TextField
-        label="Can offer"
+      <ChipMultiSelect
         name="offers"
-        rows={2}
-        defaultValue={arrToText(initial.offers)}
-        helper="Comma-separated. What you can help other attendees with."
+        label="Can offer"
+        helper="What you can help other attendees with."
+        options={OFFERS}
+        initial={initial.offers ?? []}
       />
 
       {message ? (
@@ -129,10 +120,7 @@ export function EditProfileForm({ initial }: { initial: InitialProfile }) {
       ) : null}
 
       <div className="flex items-center justify-end gap-3 pt-2">
-        <Link
-          href="/me"
-          className="text-sm font-medium text-slate-600 hover:text-slate-900"
-        >
+        <Link href="/me" className="text-sm font-medium text-brand-800 hover:text-brand-900">
           Cancel
         </Link>
         <SubmitButton />
@@ -160,7 +148,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-slate-700">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-brand-900">{label}</span>
       <input
         name={name}
         type={type}
@@ -168,7 +156,7 @@ function Field({
         defaultValue={defaultValue}
         required={required}
         placeholder={placeholder}
-        className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+        className="h-10 w-full rounded-md border border-brand-100 bg-white px-3 text-sm text-brand-950 outline-none placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
       />
     </label>
   );
@@ -189,14 +177,14 @@ function TextField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-slate-700">{label}</span>
+      <span className="mb-1.5 block text-xs font-medium text-brand-900">{label}</span>
       <textarea
         name={name}
         defaultValue={defaultValue}
         rows={rows}
-        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+        className="w-full rounded-md border border-brand-100 bg-white px-3 py-2 text-sm leading-6 text-brand-950 outline-none placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
       />
-      {helper ? <span className="mt-1 block text-xs text-slate-500">{helper}</span> : null}
+      {helper ? <span className="mt-1 block text-[11px] text-brand-800/70">{helper}</span> : null}
     </label>
   );
 }

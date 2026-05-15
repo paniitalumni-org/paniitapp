@@ -9,7 +9,9 @@ import {
 } from "@/components/features/page-with-filters";
 import { AgendaFilters } from "./agenda-filters";
 import { AgendaRealtime } from "@/components/features/agenda-realtime";
-import { SUMMIT_TZ } from "@/lib/constants";
+import { SUMMIT_TZ, TRACK_TO_INTERESTS } from "@/lib/constants";
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +38,7 @@ export default async function AgendaPage({
 
   let sessions: SessionCardData[] = [];
   let bookmarkSet = new Set<string>();
+  let userInterests: string[] = [];
   let errored = false;
 
   try {
@@ -54,11 +57,22 @@ export default async function AgendaPage({
     sessions = (data as unknown as SessionCardData[] | null) ?? [];
 
     if (user) {
-      const { data: bms } = await supabase
-        .from("session_bookmarks")
-        .select("session_id")
-        .eq("user_id", user.id);
-      bookmarkSet = new Set((bms as { session_id: string }[] | null)?.map((b) => b.session_id) ?? []);
+      const [bmRes, profRes] = await Promise.all([
+        supabase
+          .from("session_bookmarks")
+          .select("session_id")
+          .eq("user_id", user.id),
+        supabase
+          .from("profiles")
+          .select("interests")
+          .eq("id", user.id)
+          .maybeSingle(),
+      ]);
+      bookmarkSet = new Set(
+        (bmRes.data as { session_id: string }[] | null)?.map((b) => b.session_id) ?? []
+      );
+      userInterests =
+        ((profRes.data as { interests: string[] | null } | null)?.interests) ?? [];
     }
   } catch {
     errored = true;
@@ -69,6 +83,12 @@ export default async function AgendaPage({
     if (mineOnly && !bookmarkSet.has(s.id)) return false;
     return true;
   });
+
+  const userInterestSet = new Set(userInterests);
+  const matchCount = filtered.reduce((acc, s) => {
+    const mapped = TRACK_TO_INTERESTS[s.track] ?? [];
+    return mapped.some((i) => userInterestSet.has(i)) ? acc + 1 : acc;
+  }, 0);
 
   const grouped = filtered.reduce<Map<string, SessionCardData[]>>((acc, s) => {
     const k = hourKey(s.start_at);
@@ -96,6 +116,35 @@ export default async function AgendaPage({
         </FiltersCard>
       }
     >
+      {userInterests.length === 0 ? (
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/40 p-3">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.7} />
+          <div className="text-[12px] leading-5 text-brand-900">
+            Pick your areas of interest in{" "}
+            <Link
+              href="/me/edit"
+              className="font-semibold text-brand-800 underline-offset-2 hover:underline"
+            >
+              your profile
+            </Link>{" "}
+            to highlight matching sessions and people across the summit.
+          </div>
+        </div>
+      ) : matchCount > 0 ? (
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/40 p-3">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.7} />
+          <p className="text-[12px] leading-5 text-brand-900">
+            <span className="font-semibold text-brand-950">{matchCount} session{matchCount === 1 ? "" : "s"}</span>{" "}
+            line up with your interests. Look for the{" "}
+            <span className="inline-flex items-center gap-1 rounded-[3px] bg-brand-100 px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
+              <Sparkles className="size-2.5" strokeWidth={2} />
+              Match
+            </span>{" "}
+            badge below.
+          </p>
+        </div>
+      ) : null}
+
       {hourKeys.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -128,7 +177,11 @@ export default async function AgendaPage({
               <ul className="flex flex-col gap-3">
                 {grouped.get(k)!.map((s) => (
                   <li key={s.id}>
-                    <SessionCard session={s} bookmarked={bookmarkSet.has(s.id)} />
+                    <SessionCard
+                      session={s}
+                      bookmarked={bookmarkSet.has(s.id)}
+                      userInterests={userInterests}
+                    />
                   </li>
                 ))}
               </ul>

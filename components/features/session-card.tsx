@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { MapPin, Sparkles } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
-import { TRACK_LABELS } from "@/lib/constants";
+import { TRACK_LABELS, TRACK_TO_INTERESTS } from "@/lib/constants";
 import { rangeIST } from "@/lib/date";
 
 export interface SessionCardData {
@@ -41,28 +41,42 @@ function capacityState(used: number, total: number) {
   return { fill: "bg-emerald-500", label: "Seats available" };
 }
 
+export function matchedInterestsForSession(
+  track: string,
+  userInterests: string[] | null | undefined
+): string[] {
+  if (!userInterests || userInterests.length === 0) return [];
+  const mapped = TRACK_TO_INTERESTS[track] ?? [];
+  if (mapped.length === 0) return [];
+  const userSet = new Set(userInterests);
+  return mapped.filter((i) => userSet.has(i));
+}
+
 export function SessionCard({
   session,
   bookmarked,
+  userInterests,
 }: {
   session: SessionCardData;
   bookmarked: boolean;
+  userInterests?: string[] | null;
 }) {
   const capacity = session.capacity ?? 0;
   const used = session.current_checkins ?? 0;
   const showCapacity = capacity > 0;
   const cap = showCapacity ? capacityState(used, capacity) : null;
   const pct = showCapacity ? Math.min(100, Math.round((used / capacity) * 100)) : 0;
+  const matches = matchedInterestsForSession(session.track, userInterests);
 
   return (
     <Link
       href={`/agenda/${session.id}`}
-      className="relative block overflow-hidden rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300"
+      className="relative block overflow-hidden rounded-lg border border-brand-100 bg-white p-4 transition-colors hover:bg-brand-50/30"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium tabular-nums text-slate-900">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium tabular-nums text-brand-950">
               {rangeIST(session.start_at, session.end_at)}
             </span>
             {session.is_featured ? (
@@ -70,12 +84,18 @@ export function SessionCard({
                 Featured
               </span>
             ) : null}
+            {matches.length > 0 ? (
+              <span className="inline-flex items-center gap-1 rounded-[4px] border border-brand-200 bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
+                <Sparkles className="size-3" strokeWidth={1.8} />
+                Match for you
+              </span>
+            ) : null}
           </div>
-          <h3 className="mt-1 text-base font-semibold leading-snug text-brand-900">
+          <h3 className="mt-1 text-base font-semibold leading-snug text-brand-950">
             {session.title}
           </h3>
           {session.description ? (
-            <p className="mt-1 text-xs leading-5 text-slate-500 line-clamp-2">
+            <p className="mt-1 text-xs leading-5 text-brand-900/65 line-clamp-2">
               {session.description}
             </p>
           ) : null}
@@ -83,27 +103,39 @@ export function SessionCard({
         <BookmarkButton sessionId={session.id} initial={bookmarked} />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-900/75">
         {session.venues?.name ? (
           <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3 w-3 text-slate-400" />
+            <MapPin className="h-3 w-3 text-brand-800/65" />
             {session.venues.name}
           </span>
         ) : null}
-        <span className="rounded-[4px] border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+        <span className="rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-800">
           {TRACK_LABELS[session.track] ?? session.track}
         </span>
+        {matches.length > 0 ? (
+          <span className="flex flex-wrap gap-1">
+            {matches.slice(0, 3).map((m) => (
+              <span
+                key={m}
+                className="rounded-[4px] bg-brand-800/10 px-1.5 py-0.5 text-[10px] font-medium text-brand-800"
+              >
+                {m}
+              </span>
+            ))}
+          </span>
+        ) : null}
       </div>
 
       {showCapacity && cap ? (
         <div className="mt-3">
-          <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-1 overflow-hidden rounded-full bg-brand-100">
             <div
               className={`h-full ${cap.fill} transition-all`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <div className="mt-1 flex items-center justify-between text-[10px] tabular-nums text-slate-500">
+          <div className="mt-1 flex items-center justify-between text-[10px] tabular-nums text-brand-800/70">
             <span>{cap.label}</span>
             <span>
               {used.toLocaleString()} / {capacity.toLocaleString()}

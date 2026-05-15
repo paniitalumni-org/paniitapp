@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { ASKS, INTERESTS, OFFERS } from "@/lib/constants";
 
 const UrlOrEmpty = z
   .string()
@@ -43,6 +44,15 @@ function splitToArray(input: string): string[] | null {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
   return items.length ? Array.from(new Set(items)) : null;
+}
+
+// Constrain to the preset whitelist so people can only save values from the
+// chip picker. Anything else (legacy free-text) gets dropped silently.
+function whitelist(raw: string[] | null, allowed: readonly string[]): string[] | null {
+  if (!raw) return null;
+  const allowSet = new Set(allowed);
+  const kept = raw.filter((v) => allowSet.has(v));
+  return kept.length ? kept : null;
 }
 
 export async function updateProfile(
@@ -87,9 +97,9 @@ export async function updateProfile(
     bio: parsed.data.bio || null,
     linkedin_url: parsed.data.linkedin_url || null,
     twitter_url: parsed.data.twitter_url || null,
-    asks: splitToArray(parsed.data.asks),
-    offers: splitToArray(parsed.data.offers),
-    interests: splitToArray(parsed.data.interests),
+    asks: whitelist(splitToArray(parsed.data.asks), ASKS),
+    offers: whitelist(splitToArray(parsed.data.offers), OFFERS),
+    interests: whitelist(splitToArray(parsed.data.interests), INTERESTS),
   };
 
   const { error } = await supabase.from("profiles").update(update).eq("id", user.id);

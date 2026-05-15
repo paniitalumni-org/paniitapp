@@ -56,10 +56,61 @@ export const INTERESTS = [
   "Logistics",
   "Agritech",
   "Mobility",
-  "Hiring",
-  "Fundraising",
   "Hardware",
 ] as const;
+
+// What an attendee is "looking for" at the summit — preset list.
+export const ASKS = [
+  "Hiring",
+  "Co-founders",
+  "Fundraising",
+  "Mentorship",
+  "Strategic partnerships",
+  "Distribution channels",
+  "Customer intros",
+  "Investor intros",
+  "Engineering talent",
+  "Pilot customers",
+  "Advisory roles",
+  "Industry experts",
+  "Policy guidance",
+  "Government access",
+  "Product feedback",
+] as const;
+
+// What an attendee "can offer" — preset list.
+export const OFFERS = [
+  "Hiring (recruiting)",
+  "Investing",
+  "Mentorship",
+  "Engineering expertise",
+  "Product expertise",
+  "Sales & GTM",
+  "Customer intros",
+  "Investor intros",
+  "Policy network",
+  "Operating experience",
+  "Hardware know-how",
+  "Open to advisory",
+  "Open to angel investments",
+  "Media / press",
+  "Academia partnerships",
+] as const;
+
+// Map of session.track → user-facing INTERESTS that overlap with that track.
+// Used for the agenda "Match" badge so attendees can spot relevant sessions.
+export const TRACK_TO_INTERESTS: Record<string, readonly string[]> = {
+  ai: ["AI & Machine Learning", "Dev Tools"],
+  deeptech: ["Deep Tech", "Robotics", "Semiconductors", "Hardware", "Space"],
+  policy: ["Public Policy"],
+  investor: ["Fundraising"],
+  workshop: ["Dev Tools"],
+  founders: ["Fundraising"],
+  climate: ["Climate / Energy"],
+  fintech: ["Fintech"],
+  keynote: [],
+  general: [],
+};
 
 export const TRACK_LABELS: Record<string, string> = {
   ai: "AI",
