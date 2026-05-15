@@ -108,17 +108,17 @@ export default async function SignInPage() {
             <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800/70">
               Built by
             </span>
-            <Image
-              src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
-              alt="Neural AI"
-              width={120}
-              height={32}
-              className="h-7 w-auto object-contain"
-            />
-            <span
-              className="font-sans text-[15px] font-semibold tracking-[0.04em] text-brand-900"
-            >
-              Neural AI
+            <span className="inline-flex items-center justify-center gap-2">
+              <Image
+                src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
+                alt="Neural AI"
+                width={120}
+                height={32}
+                className="h-7 w-auto object-contain"
+              />
+              <span className="font-sans text-[15px] font-semibold tracking-[0.04em] text-brand-900">
+                Neural AI
+              </span>
             </span>
           </a>
         </div>
