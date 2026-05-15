@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { Building2, GraduationCap, Linkedin, LogOut, Pencil } from "lucide-react";
+import { Building2, GraduationCap, Linkedin, LogOut, Pencil, QrCode, Award } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
+import { PushPrompt } from "@/components/features/push-prompt";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 interface ProfileRow {
   full_name: string | null;
-  email: string | null;
   role: string | null;
   company: string | null;
   designation: string | null;
@@ -21,10 +22,12 @@ interface ProfileRow {
   interests: string[] | null;
   asks: string | null;
   offers: string | null;
+  office_hours_enabled: boolean | null;
 }
 
 export default async function MePage() {
   let profile: ProfileRow | null = null;
+  let userEmail: string | null = null;
 
   try {
     const supabase = await createClient();
@@ -32,10 +35,11 @@ export default async function MePage() {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
+      userEmail = user.email ?? null;
       const { data } = await supabase
         .from("profiles")
         .select(
-          "full_name, email, role, company, designation, bio, iit_campus, graduation_year, branch, linkedin_url, interests, asks, offers"
+          "full_name, role, company, designation, bio, iit_campus, graduation_year, branch, linkedin_url, interests, asks, offers, office_hours_enabled"
         )
         .eq("id", user.id)
         .maybeSingle();
@@ -78,8 +82,8 @@ export default async function MePage() {
               {profile.role}
             </span>
           ) : null}
-          {profile?.email ? (
-            <div className="truncate text-xs text-slate-500">{profile.email}</div>
+          {userEmail ? (
+            <div className="truncate text-xs text-slate-500">{userEmail}</div>
           ) : null}
         </div>
       </div>
@@ -122,6 +126,51 @@ export default async function MePage() {
           <Linkedin className="h-4 w-4" />
           LinkedIn
         </a>
+      ) : null}
+
+      <section className="rounded-lg border border-slate-200 bg-white">
+        <ul className="divide-y divide-slate-200">
+          <li>
+            <Link
+              href="/me/qr"
+              className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-slate-50"
+            >
+              <span className="flex items-center gap-3 text-sm text-brand-900">
+                <QrCode className="h-4 w-4 text-slate-500" />
+                My QR badge
+              </span>
+              <span className="text-xs text-slate-400">Open</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/sponsors"
+              className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-slate-50"
+            >
+              <span className="flex items-center gap-3 text-sm text-brand-900">
+                <Award className="h-4 w-4 text-slate-500" />
+                Sponsors &amp; perks
+              </span>
+              <span className="text-xs text-slate-400">Open</span>
+            </Link>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+          Notifications
+        </h2>
+        <PushPrompt vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
+      </section>
+
+      {profile?.role === "vc" || profile?.role === "alumni" ? (
+        <section>
+          <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+            Availability
+          </h2>
+          <OfficeHoursToggle initial={!!profile?.office_hours_enabled} />
+        </section>
       ) : null}
 
       <div className="pt-2">

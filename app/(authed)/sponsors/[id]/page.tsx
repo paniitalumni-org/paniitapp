@@ -1,0 +1,117 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { CopyOfferCode } from "./copy-code";
+
+interface SponsorRow {
+  id: string;
+  name: string;
+  tier: "title" | "platinum" | "gold" | "silver" | "partner";
+  description: string | null;
+  offer: string | null;
+  offer_code: string | null;
+  booth_number: string | null;
+  website_url: string | null;
+}
+
+const tierLabel: Record<SponsorRow["tier"], string> = {
+  title: "Title sponsor",
+  platinum: "Platinum sponsor",
+  gold: "Gold sponsor",
+  silver: "Silver sponsor",
+  partner: "Partner",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function SponsorDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  let sponsor: SponsorRow | null = null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("sponsors")
+      .select("id, name, tier, description, offer, offer_code, booth_number, website_url")
+      .eq("id", id)
+      .maybeSingle();
+    sponsor = (data as SponsorRow | null) ?? null;
+  } catch {
+    notFound();
+  }
+  if (!sponsor) notFound();
+
+  return (
+    <div className="px-4 pb-10 pt-6 space-y-6">
+      <div>
+        <Link
+          href="/sponsors"
+          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Sponsors
+        </Link>
+      </div>
+
+      <header className="space-y-1">
+        <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          {tierLabel[sponsor.tier]}
+        </div>
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
+          {sponsor.name}
+        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          {sponsor.booth_number ? (
+            <span className="inline-flex items-center gap-1 rounded-md bg-brand-800 px-2 py-0.5 text-[11px] font-semibold text-white">
+              <MapPin className="h-3 w-3" />
+              Booth {sponsor.booth_number}
+            </span>
+          ) : null}
+          {sponsor.website_url ? (
+            <a
+              href={sponsor.website_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-brand-800 hover:text-brand-900"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Website
+            </a>
+          ) : null}
+        </div>
+      </header>
+
+      {sponsor.description ? (
+        <p className="text-sm leading-7 text-slate-700 whitespace-pre-line">
+          {sponsor.description}
+        </p>
+      ) : null}
+
+      {sponsor.offer ? (
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            Offer for summit attendees
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-800 whitespace-pre-line">
+            {sponsor.offer}
+          </p>
+          {sponsor.offer_code ? <CopyOfferCode code={sponsor.offer_code} /> : null}
+        </section>
+      ) : null}
+
+      {sponsor.booth_number ? (
+        <Link
+          href="/map"
+          className="inline-flex h-10 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        >
+          <MapPin className="h-4 w-4" />
+          Find on map
+        </Link>
+      ) : null}
+    </div>
+  );
+}

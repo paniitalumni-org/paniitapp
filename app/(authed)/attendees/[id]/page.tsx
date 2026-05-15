@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarClock, Linkedin, MessageCircle, Twitter } from "lucide-react";
+import { ArrowLeft, Linkedin, MessageCircle, Twitter } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { SessionCard, type SessionCardData } from "@/components/features/session-card";
+import { ScheduleMeetingButton } from "@/components/features/schedule-meeting-button";
 import { initials } from "@/lib/utils";
 
 interface ProfileRow {
@@ -130,11 +131,8 @@ export default async function AttendeeProfilePage({
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2 px-4">
-        <Button className="gap-1.5">
-          <CalendarClock className="h-4 w-4" />
-          Schedule meeting
-        </Button>
-        <Button variant="outline" className="gap-1.5">
+        <ScheduleMeetingButton inviteeId={profile.id} />
+        <Button variant="outline" className="gap-1.5" disabled>
           <MessageCircle className="h-4 w-4" />
           Message
         </Button>

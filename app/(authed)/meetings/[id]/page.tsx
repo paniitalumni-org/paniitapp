@@ -1,0 +1,110 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { ChatWindow } from "./chat-window";
+
+interface MeetingRow {
+  id: string;
+  requester_id: string;
+  invitee_id: string;
+  scheduled_start: string | null;
+  scheduled_end: string | null;
+  location: string | null;
+  status: string;
+  requester: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    designation: string | null;
+    company: string | null;
+  } | null;
+  invitee: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    designation: string | null;
+    company: string | null;
+  } | null;
+}
+
+export const dynamic = "force-dynamic";
+
+export default async function MeetingChatPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) notFound();
+
+  const { data } = await supabase
+    .from("meetings")
+    .select(
+      "id, requester_id, invitee_id, scheduled_start, scheduled_end, location, status, requester:requester_id(id, full_name, avatar_url, designation, company), invitee:invitee_id(id, full_name, avatar_url, designation, company)"
+    )
+    .eq("id", id)
+    .maybeSingle();
+  const meeting = (data as unknown as MeetingRow | null) ?? null;
+  if (!meeting) notFound();
+  if (meeting.requester_id !== user.id && meeting.invitee_id !== user.id) notFound();
+
+  // Find or create conversation for this meeting.
+  let conversationId: string | null = null;
+  const { data: existing } = await supabase
+    .from("conversations")
+    .select("id")
+    .eq("meeting_id", meeting.id)
+    .maybeSingle();
+  if (existing?.id) {
+    conversationId = existing.id;
+  } else if (meeting.status === "accepted") {
+    const { data: created } = await supabase
+      .from("conversations")
+      .insert({
+        meeting_id: meeting.id,
+        user_a: meeting.requester_id < meeting.invitee_id ? meeting.requester_id : meeting.invitee_id,
+        user_b: meeting.requester_id < meeting.invitee_id ? meeting.invitee_id : meeting.requester_id,
+      })
+      .select("id")
+      .maybeSingle();
+    conversationId = created?.id ?? null;
+  }
+
+  const other = meeting.requester_id === user.id ? meeting.invitee : meeting.requester;
+
+  return (
+    <div className="flex h-[calc(100vh-8.5rem)] flex-col">
+      <header className="border-b border-slate-200 bg-white px-4 py-3">
+        <Link
+          href="/meetings"
+          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Meetings
+        </Link>
+        <div className="mt-1">
+          <h1 className="text-base font-semibold tracking-tight text-brand-900">
+            {other?.full_name ?? "Conversation"}
+          </h1>
+          <p className="text-xs text-slate-500">
+            {[other?.designation, other?.company].filter(Boolean).join(" · ") || " "}
+          </p>
+        </div>
+      </header>
+
+      {conversationId ? (
+        <ChatWindow conversationId={conversationId} userId={user.id} />
+      ) : (
+        <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-slate-500">
+          Chat opens once the meeting is accepted.
+        </div>
+      )}
+    </div>
+  );
+}

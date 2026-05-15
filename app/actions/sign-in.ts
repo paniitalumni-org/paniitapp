@@ -16,6 +16,19 @@ export type SignInResult =
   | { error: "session_failed"; message: string }
   | { error: "config" };
 
+// Treat these Supabase-side error signals as "this email is not on the list."
+// generateLink({ type: "magiclink", email }) errors when no auth.users row matches.
+function isUserNotFound(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("user not found") ||
+    m.includes("no user found") ||
+    m.includes("unable to find user") ||
+    m.includes("user does not exist") ||
+    m.includes("signups not allowed") // belt+braces in case generateLink type changes
+  );
+}
+
 export async function signIn(_prev: unknown, formData: FormData): Promise<SignInResult> {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -34,34 +47,29 @@ export async function signIn(_prev: unknown, formData: FormData): Promise<SignIn
 
   const admin = createServiceRoleClient();
 
-  const { data: profile, error: lookupErr } = await admin
-    .from("profiles")
-    .select("id")
-    .ilike("email", email)
-    .maybeSingle();
-
-  if (lookupErr) {
-    return { error: "session_failed", message: lookupErr.message };
-  }
-  if (!profile) {
-    return { error: "not_registered" };
-  }
-
-  // generateLink does NOT send the email; it returns the OTP we can verify server-side
-  // so the user never receives a magic link.
+  // The registered-attendee check happens via Supabase auth.users — the seed
+  // for 0001_init.sql is expected to have created an auth.users row per attendee
+  // with their registered email. generateLink({type:'magiclink'}) errors for
+  // emails not in auth.users, which is exactly the "not on the list" signal.
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
     type: "magiclink",
     email,
   });
 
-  if (linkErr || !link?.properties?.email_otp) {
-    return { error: "session_failed", message: linkErr?.message ?? "Could not generate session." };
+  if (linkErr) {
+    if (isUserNotFound(linkErr.message)) return { error: "not_registered" };
+    return { error: "session_failed", message: linkErr.message };
+  }
+
+  const otp = link?.properties?.email_otp;
+  if (!otp) {
+    return { error: "session_failed", message: "Could not start session." };
   }
 
   const ssr = await createClient();
   const { data: verified, error: verifyErr } = await ssr.auth.verifyOtp({
     email,
-    token: link.properties.email_otp,
+    token: otp,
     type: "email",
   });
 

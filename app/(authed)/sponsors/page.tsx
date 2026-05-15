@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Building } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/features/empty-state";
@@ -82,23 +83,28 @@ export default async function SponsorsPage() {
               </div>
               <ul className="space-y-2">
                 {items.map((s) => (
-                  <li key={s.id} className={`rounded-lg p-4 ${tierCard[tier]}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-base font-semibold text-brand-900">{s.name}</div>
-                        {s.description ? (
-                          <p className="mt-1 text-xs leading-5 text-slate-600">{s.description}</p>
-                        ) : null}
-                        {s.offer ? (
-                          <p className="mt-2 text-xs font-medium text-slate-700">{s.offer}</p>
+                  <li key={s.id}>
+                    <Link
+                      href={`/sponsors/${s.id}`}
+                      className={`block rounded-lg p-4 transition-colors hover:border-slate-300 ${tierCard[tier]}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-base font-semibold text-brand-900">{s.name}</div>
+                          {s.description ? (
+                            <p className="mt-1 text-xs leading-5 text-slate-600">{s.description}</p>
+                          ) : null}
+                          {s.offer ? (
+                            <p className="mt-2 text-xs font-medium text-slate-700">{s.offer}</p>
+                          ) : null}
+                        </div>
+                        {s.booth_number ? (
+                          <span className="inline-flex shrink-0 items-center rounded-md bg-brand-800 px-2 py-0.5 text-[10px] font-semibold text-white">
+                            Booth {s.booth_number}
+                          </span>
                         ) : null}
                       </div>
-                      {s.booth_number ? (
-                        <span className="inline-flex shrink-0 items-center rounded-md bg-brand-800 px-2 py-0.5 text-[10px] font-semibold text-white">
-                          Booth {s.booth_number}
-                        </span>
-                      ) : null}
-                    </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

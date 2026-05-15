@@ -66,3 +66,72 @@ Normalized 0–100. If any venue lacks coords we fall back to a 2-column grid fo
 
 ### Floor count is data-driven
 Two floors are mentioned in the spec, but the toggle just lists every distinct `floor` value present in the venues table. Adding a third floor later requires no UI change.
+
+## 2026-05-17 · Phase 3
+
+### Sign-in no longer queries profiles.email
+You told me `profiles.email` does not exist. The "registered attendee" check
+now relies on `auth.admin.generateLink({type:'magiclink', email})` — Supabase
+errors with "user not found" if the email isn't in `auth.users`. We translate
+that to `not_registered` for the UI. As long as the seeded attendee list is
+mirrored into `auth.users` (same UUID as `profiles.id`), sign-in works.
+
+### Q&A schema is its own migration: 0003_qa_replies.sql
+Idempotent: `create table if not exists`, `drop policy if exists` before
+`create policy`, and a `do $$ … $$` guard around the `alter publication`.
+Safe to re-run.
+
+### Anonymous-question pseudonym
+Deterministic hash of `user_id` → `Attendee #NNNN`. Same poster shows the same
+label across the session. Moderators still see the real `user_id` server-side.
+
+### Meeting accept: RPC first, in-app fallback
+`/api/meetings/accept` tries `supabase.rpc('accept_meeting', …)` for race-safe
+transactional accept. If the RPC is missing or errors, it falls back to:
+load → ownership check → conflict scan → UPDATE guarded by status='pending'.
+The fallback is best-effort against races; the RPC is preferred.
+
+### `available_for_meetings` OR `office_hours_enabled`
+The attendee filter accepts either column being true. Pick one and drop the
+other in the cleanup migration if you want a single source of truth.
+
+### QR token prefix `paniit2026:`
+The scanner accepts either the prefixed form or the raw token (back-compat).
+Prefix prevents accidental scans of unrelated QR codes from creating
+connections.
+
+## 2026-05-17 · Phase 4
+
+### Push subscription stored on profiles.push_subscription as JSON
+`/api/push/subscribe` writes the whole `PushSubscription` JSON. Sending uses
+the standard `web-push` library from a server route or the Deno Edge Function
+(`supabase/functions/send-push`). 410-Gone responses null-out the dead
+subscription automatically.
+
+### Announcements: realtime sheet + urgent banner
+`NotificationsBell` subscribes to the `announcements` table and shows an
+in-bell red dot. Urgent-priority announcements also render a top-of-screen
+red banner via the TopBar.
+
+## 2026-05-17 · Phase 5
+
+### Admin role-gated at page level
+`/admin` reads `profiles.role` and renders the dashboard only for `organizer`
+or `admin`. The `/api/push/send` route does the same check server-side to
+prevent direct API abuse.
+
+### Recap counts use Postgres count(*) head requests
+Cheap and consistent. The People-You-Met list comes from `connections` rows
+that include the current user.
+
+## 2026-05-17 · Phase 6
+
+### `supabase/migrations-candidate-0004_cleanup.sql`
+Lives **outside** the `migrations/` directory so it won't be auto-applied by
+`supabase db push`. It's a review document — you should comment out anything
+you still need before pasting into the SQL editor.
+
+### TypeScript `Database = any` still
+We left `lib/supabase/types.ts` as a placeholder. After the cleanup migration,
+run `supabase gen types typescript --project-id <id> --schema public > lib/supabase/types.ts`
+to replace it with the real generated types.

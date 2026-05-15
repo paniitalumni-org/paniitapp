@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell } from "lucide-react";
+import { NotificationsBell } from "./notifications-bell";
 
 export function TopBar({ title }: { title?: string }) {
   return (
@@ -21,13 +21,7 @@ export function TopBar({ title }: { title?: string }) {
             </div>
           )}
         </Link>
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="inline-grid h-9 w-9 place-items-center rounded-md text-slate-600 transition-colors hover:bg-slate-100"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-        </button>
+        <NotificationsBell />
       </div>
     </header>
   );

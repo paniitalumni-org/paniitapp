@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookmarkButton } from "@/components/features/bookmark-button";
+import { QaSection } from "@/components/features/qa/qa-section";
 import { CheckInButton } from "./check-in-button";
 import { TRACK_LABELS } from "@/lib/constants";
 import { rangeIST } from "@/lib/date";
@@ -204,13 +205,13 @@ export default async function SessionDetailPage({
         </section>
       ) : null}
 
-      <section className="mt-8 px-4">
-        <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
-          Q&amp;A discussion
-        </h2>
-        <div className="mt-2 rounded-lg border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-500">
-          Live discussion opens in the next phase.
+      <section className="mt-8">
+        <div className="px-4">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            Q&amp;A discussion
+          </h2>
         </div>
+        <QaSection sessionId={session.id} />
       </section>
     </div>
   );
