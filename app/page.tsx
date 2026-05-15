@@ -21,7 +21,7 @@ export default async function SignInPage() {
   return (
     <main className="flex min-h-[100svh] flex-col lg:grid lg:min-h-screen lg:grid-cols-2">
       {/* HERO PANEL */}
-      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-32 pt-10 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12 lg:pb-12 xl:p-16">
+      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-24 pt-8 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12 lg:pb-12 xl:p-16">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -76,8 +76,8 @@ export default async function SignInPage() {
       </section>
 
       {/* FORM PANEL */}
-      <section className="relative z-10 -mt-24 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
-        <div className="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-6 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:min-h-[34rem] lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
+      <section className="relative z-10 -mt-20 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
+        <div className="mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-4 pt-6 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
           <div>
             <div className="flex flex-col items-center text-center">
               <GreetingRotator />
@@ -90,7 +90,7 @@ export default async function SignInPage() {
               <SignInForm />
             </div>
 
-            <p className="mt-5 text-center text-xs leading-5 text-brand-800">
+            <p className="mt-4 text-center text-xs leading-5 text-brand-800">
               Trouble?{" "}
               <a
                 href="mailto:summit@paniit.org"
@@ -105,7 +105,7 @@ export default async function SignInPage() {
             href="https://neuralai.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex items-center justify-center gap-2.5 pt-8 text-center transition-opacity hover:opacity-80"
+            className="mt-auto flex items-center justify-center gap-2.5 pt-5 text-center transition-opacity hover:opacity-80"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800/70">
               Built by

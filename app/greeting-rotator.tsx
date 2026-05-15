@@ -31,12 +31,12 @@ export function GreetingRotator() {
   const greeting = GREETINGS[index];
 
   return (
-    <div className="min-h-[52px] text-center" aria-live="polite">
+    <div className="min-h-[48px] text-center" aria-live="polite">
       <div
         key={greeting}
         className="animate-login-greeting"
       >
-        <h2 className="text-[38px] font-semibold leading-none tracking-tight text-brand-900 sm:text-[44px]">
+        <h2 className="text-[34px] font-semibold leading-none tracking-tight text-brand-900 sm:text-[42px]">
           {greeting}
         </h2>
       </div>
