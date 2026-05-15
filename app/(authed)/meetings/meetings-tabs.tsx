@@ -168,7 +168,7 @@ export function MeetingsView({
               My availability
             </span>
             <span className="text-[11px] text-brand-900/65">
-              Pick 30-min blocks on 16 May 2026
+              Pick 15-min blocks on 16 May 2026
             </span>
           </span>
         </span>
@@ -674,7 +674,7 @@ function AvailabilitySheet({
         <SheetHeader>
           <SheetTitle>My availability · 16 May 2026</SheetTitle>
           <SheetDescription>
-            Pick the mode below, then tap any 30-minute slot. Tap again to clear it.
+            Pick the mode below, then tap any 15-minute slot. Tap again to clear it.
           </SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-6 pt-3">

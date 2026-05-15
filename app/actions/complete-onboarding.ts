@@ -17,21 +17,22 @@ const UrlOrEmpty = z
 const Schema = z.object({
   full_name: z.string().trim().min(2, "Full name is required").max(120),
   designation: z.string().trim().min(2, "Designation is required").max(120),
-  company: z.string().trim().max(120),
+  company: z.string().trim().min(2, "Organisation is required").max(120),
   iit_campus: z
     .string()
     .trim()
-    .refine((v) => (IIT_CAMPUSES as readonly string[]).includes(v), {
-      message: "Select your IIT campus from the list",
-    }),
+    .refine(
+      (v) => v === "" || (IIT_CAMPUSES as readonly string[]).includes(v),
+      { message: "Select your IIT campus from the list" }
+    ),
   graduation_year: z
     .string()
     .trim()
     .refine((v) => v === "" || /^\d{4}$/.test(v), {
       message: "Year must be 4 digits",
     }),
-  branch: z.string().trim().min(2, "Branch is required").max(120),
-  bio: z.string().trim().min(1, "Bio is required"),
+  branch: z.string().trim().max(120),
+  bio: z.string().trim().max(2000),
   linkedin_url: UrlOrEmpty,
   twitter_url: UrlOrEmpty,
   next: z.string().trim(),
@@ -76,13 +77,13 @@ export async function completeOnboarding(
   const update = {
     full_name: parsed.data.full_name,
     designation: parsed.data.designation,
-    company: parsed.data.company || null,
-    iit_campus: parsed.data.iit_campus,
+    company: parsed.data.company,
+    iit_campus: parsed.data.iit_campus || null,
     graduation_year: parsed.data.graduation_year
       ? Number(parsed.data.graduation_year)
       : null,
-    branch: parsed.data.branch,
-    bio: parsed.data.bio,
+    branch: parsed.data.branch || null,
+    bio: parsed.data.bio || null,
     linkedin_url: parsed.data.linkedin_url || null,
     twitter_url: parsed.data.twitter_url || null,
   };

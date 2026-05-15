@@ -11,12 +11,12 @@ const DAY_END_H = 21;
 const STEP_MIN = 15;
 const SLOT_MIN = 15;
 
-// Half-hour grid for the My Availability flow on /meetings.
-// 08:00 IST → 22:00 IST, 30-minute blocks (28 slots total).
+// 15-minute grid for the My Availability flow on /meetings.
+// 08:00 IST → 22:00 IST in 15-minute blocks (56 slots total).
 const AVAIL_START_H = 8;
 const AVAIL_END_H = 22;
-const AVAIL_STEP_MIN = 30;
-const AVAIL_SLOT_MIN = 30;
+const AVAIL_STEP_MIN = 15;
+const AVAIL_SLOT_MIN = 15;
 
 export function buildAvailabilitySlots(): Slot[] {
   const slots: Slot[] = [];

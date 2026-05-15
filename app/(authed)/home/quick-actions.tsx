@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Mail, QrCode, ScanLine, BookOpen } from "lucide-react";
+import { Mail, QrCode, ScanLine, CalendarDays } from "lucide-react";
 import { MyQrDialog } from "@/components/features/my-qr-dialog";
 
 export function QuickActions() {
@@ -32,9 +32,9 @@ export function QuickActions() {
           label="Contact us"
         />
         <ActionLink
-          href="/sponsors"
-          icon={<BookOpen className="size-[18px]" strokeWidth={1.5} />}
-          label="Resources"
+          href="/agenda"
+          icon={<CalendarDays className="size-[18px]" strokeWidth={1.5} />}
+          label="Agenda"
         />
       </div>
       <MyQrDialog open={qrOpen} onOpenChange={setQrOpen} />

@@ -110,15 +110,14 @@ export async function GET(req: Request) {
 
     await admin.from("profiles").upsert(merged, { onConflict: "id" });
 
-    // Re-read to compute completeness with whatever existed before + the
-    // merge above (bio is the only required field we never seed).
+    // Completeness now only gates on the three mandatory onboarding fields:
+    // full name, designation, and organisation (company). Everything else
+    // is optional and can be filled in later via /me/edit.
     const fullName = merged.full_name?.trim();
     const designation = (existing?.designation ?? merged.designation)?.trim();
-    const iitCampus = (existing?.iit_campus ?? merged.iit_campus)?.trim();
-    const branch = (existing?.branch ?? merged.branch)?.trim();
-    const bio = existing?.bio?.trim();
+    const company = (existing?.company ?? merged.company)?.trim();
 
-    profileIncomplete = !fullName || !designation || !iitCampus || !branch || !bio;
+    profileIncomplete = !fullName || !designation || !company;
   } catch {
     console.warn("[auth/callback] profile upsert failed for", email);
   }

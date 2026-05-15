@@ -78,23 +78,21 @@ export function OnboardingForm({
         placeholder="e.g. Founder, Partner, Research Scientist"
       />
       <Field
-        label="Company / Organisation"
+        label="Organisation"
         name="company"
         defaultValue={initial.company}
-        placeholder="Optional"
+        required
+        placeholder="Company / institute / fund"
       />
 
       <div>
-        <Label required>IIT campus</Label>
+        <Label>IIT campus</Label>
         <select
           name="iit_campus"
-          required
           defaultValue={initial.iit_campus}
           className="h-11 w-full rounded-md border border-brand-100 bg-white px-3 text-sm text-brand-950 outline-none focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
         >
-          <option value="" disabled>
-            Select your campus
-          </option>
+          <option value="">Skip for now</option>
           {IIT_CAMPUSES.map((c) => (
             <option key={c} value={c}>
               {c}
@@ -108,7 +106,6 @@ export function OnboardingForm({
           label="Branch"
           name="branch"
           defaultValue={initial.branch}
-          required
           placeholder="e.g. Computer Science"
         />
         <Field
@@ -123,10 +120,9 @@ export function OnboardingForm({
       </div>
 
       <div>
-        <Label required>Bio</Label>
+        <Label>Bio</Label>
         <textarea
           name="bio"
-          required
           rows={4}
           defaultValue={initial.bio}
           placeholder="A couple of sentences on what you're building or working on."

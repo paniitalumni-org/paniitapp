@@ -54,13 +54,12 @@ export default async function OnboardingPage({
         twitter_url: d.twitter_url ?? "",
       });
 
-      // Already onboarded — bounce them onward.
+      // Already onboarded — bounce them onward. Gate only on the three
+      // mandatory fields the user must fill in to enter the app.
       const complete =
         !!d.full_name?.trim() &&
         !!d.designation?.trim() &&
-        !!d.iit_campus?.trim() &&
-        !!d.branch?.trim() &&
-        !!d.bio?.trim();
+        !!d.company?.trim();
       if (complete) redirect(next);
     }
   } catch (err) {
