@@ -8,7 +8,7 @@ import {
   Compass,
   QrCode,
   ScanLine,
-  BookOpenText,
+  BookOpen,
   Linkedin,
   Instagram,
   Youtube,
@@ -53,11 +53,11 @@ const SUMMIT_MAPS_URL =
   "https://www.google.com/maps/dir/?api=1&destination=Taj+Yeshwantpur+Bengaluru";
 
 const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
-  { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <Linkedin className="size-4" strokeWidth={1.8} /> },
-  { href: "https://www.instagram.com/paniit_alumni_india/", label: "Instagram", icon: <Instagram className="size-4" strokeWidth={1.8} /> },
-  { href: "https://x.com/paniit_india", label: "X (Twitter)", icon: <XGlyph className="size-[14px]" /> },
-  { href: "https://www.youtube.com/@paniitalumniindia", label: "YouTube", icon: <Youtube className="size-4" strokeWidth={1.8} /> },
-  { href: "https://www.facebook.com/paniitalumni/", label: "Facebook", icon: <Facebook className="size-4" strokeWidth={1.8} /> },
+  { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <Linkedin className="size-[18px]" strokeWidth={1.6} /> },
+  { href: "https://www.instagram.com/paniit_alumni_india/", label: "Instagram", icon: <Instagram className="size-[18px]" strokeWidth={1.6} /> },
+  { href: "https://x.com/paniit_india", label: "X (Twitter)", icon: <XGlyph className="size-[15px]" /> },
+  { href: "https://www.youtube.com/@paniitalumniindia", label: "YouTube", icon: <Youtube className="size-[18px]" strokeWidth={1.6} /> },
+  { href: "https://www.facebook.com/paniitalumni/", label: "Facebook", icon: <Facebook className="size-[18px]" strokeWidth={1.6} /> },
 ];
 
 export default async function HomePage() {
@@ -71,7 +71,6 @@ export default async function HomePage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // calendar: accepted meetings + bookmarked sessions
     const [meetingsRes, bookmarkRes, kpRes, ptRes] = await Promise.all([
       user
         ? supabase
@@ -123,8 +122,7 @@ export default async function HomePage() {
     calendar = [
       ...acceptedMeetings.flatMap((m) => {
         if (!m.accepted_slot || !user) return [];
-        const other =
-          m.requester_id === user.id ? m.invitee : m.requester;
+        const other = m.requester_id === user.id ? m.invitee : m.requester;
         return [
           {
             kind: "meeting" as const,
@@ -173,12 +171,7 @@ export default async function HomePage() {
               (a.display_order ?? 0) - (b.display_order ?? 0) ||
               a.name.localeCompare(b.name)
           )
-          .map(({ id, name, logo_url, website }) => ({
-            id,
-            name,
-            logo_url,
-            website,
-          })),
+          .map(({ id, name, logo_url, website }) => ({ id, name, logo_url, website })),
       }))
       .filter((g) => g.partners.length > 0);
   } catch (err) {
@@ -186,27 +179,27 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="-mx-4 space-y-6 pt-4 sm:-mx-6 lg:-mx-8 lg:pt-6">
+    <div className="-mx-4 space-y-5 pt-4 sm:-mx-6 lg:-mx-8 lg:pt-6">
       <div className="px-4 sm:px-6 lg:px-8">
         <HeroCarousel />
       </div>
 
       {/* Event card */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <div className="rounded-2xl bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_55%,#0d0930_100%)] p-5 text-white ring-1 ring-brand-900/40">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65">
+        <div className="rounded-lg border border-brand-900/30 bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_55%,#0d0930_100%)] p-5 text-white">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/65">
             PAN IIT 2026 · Bangalore Summit
           </p>
-          <h2 className="mt-1 text-[20px] font-semibold leading-tight tracking-tight">
+          <h2 className="mt-1 text-[19px] font-semibold leading-tight tracking-tight">
             Sovereignty in Technology
           </h2>
-          <div className="mt-4 space-y-2 text-[13px] font-medium text-white/85">
+          <div className="mt-3 space-y-1.5 text-[13px] font-medium text-white/85">
             <div className="flex items-center gap-2">
-              <CalendarDays className="size-4 text-white/70" strokeWidth={1.7} />
+              <CalendarDays className="size-4 text-white/70" strokeWidth={1.6} />
               {SUMMIT_DATE_LABEL}
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="size-4 text-white/70" strokeWidth={1.7} />
+              <MapPin className="size-4 text-white/70" strokeWidth={1.6} />
               {SUMMIT_VENUE}
             </div>
           </div>
@@ -214,54 +207,54 @@ export default async function HomePage() {
             href={SUMMIT_MAPS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-[13px] font-semibold text-brand-900 transition-colors hover:bg-brand-50"
+            className="mt-4 inline-flex h-9 items-center gap-2 rounded-md bg-white px-3.5 text-[13px] font-semibold text-brand-900 transition-colors hover:bg-brand-50"
           >
-            <Compass className="size-4" strokeWidth={1.8} />
+            <Compass className="size-4" strokeWidth={1.6} />
             View directions
           </a>
         </div>
       </section>
 
-      {/* Quick actions */}
+      {/* Quick actions — 2 per row, icon + label horizontal, no icon backdrop */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-          <QuickAction href="/me/qr" icon={<QrCode className="size-5" strokeWidth={1.7} />} label="My QR" />
-          <QuickAction href="/scan" icon={<ScanLine className="size-5" strokeWidth={1.7} />} label="Scan QR" />
-          <QuickAction href="mailto:summit@paniit.org" icon={<Mail className="size-5" strokeWidth={1.7} />} label="Contact us" />
-          <QuickAction href="/sponsors" icon={<BookOpenText className="size-5" strokeWidth={1.7} />} label="Resources" />
+        <div className="grid grid-cols-2 gap-2">
+          <QuickAction href="/me/qr" icon={<QrCode className="size-[18px]" strokeWidth={1.5} />} label="My QR" />
+          <QuickAction href="/scan" icon={<ScanLine className="size-[18px]" strokeWidth={1.5} />} label="Scan QR" />
+          <QuickAction href="mailto:summit@paniit.org" icon={<Mail className="size-[18px]" strokeWidth={1.5} />} label="Contact us" />
+          <QuickAction href="/sponsors" icon={<BookOpen className="size-[18px]" strokeWidth={1.5} />} label="Resources" />
         </div>
       </section>
 
-      {/* Calendar */}
+      {/* Today's calendar */}
       <section className="px-4 sm:px-6 lg:px-8">
         <SectionHeader title="Today's calendar" />
         {calendar.length === 0 ? (
-          <div className="rounded-2xl bg-white p-5 text-center ring-1 ring-brand-100">
-            <p className="text-sm text-brand-900/75">
+          <div className="rounded-lg border border-brand-100 bg-white p-4 text-center">
+            <p className="text-[13px] text-brand-900/75">
               Your day is open. Bookmark sessions in Agenda and accept meeting
               requests to fill this in.
             </p>
           </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="flex flex-col gap-1.5">
             {calendar.map((e, i) => (
               <li key={`${i}-${e.start}`}>
                 <Link
                   href={e.href}
-                  className="flex items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-brand-100 transition-colors hover:bg-brand-50/30"
+                  className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
                 >
-                  <div className="w-16 shrink-0 text-[12px] font-semibold tabular-nums text-brand-800/80">
+                  <div className="w-14 shrink-0 text-[12px] font-semibold tabular-nums text-brand-800/85">
                     {formatInTimeZone(new Date(e.start), SUMMIT_TZ, "h:mm a")}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold text-brand-950">
                       {e.title}
                     </div>
-                    <div className="mt-0.5 text-[11px] font-semibold uppercase tracking-wider text-brand-800/70">
+                    <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
                       {e.kind}
                     </div>
                   </div>
-                  <ChevronRight className="size-4 text-brand-800/70" />
+                  <ChevronRight className="size-4 text-brand-800/65" />
                 </Link>
               </li>
             ))}
@@ -269,11 +262,11 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* About the summit */}
+      {/* About */}
       <section className="px-4 sm:px-6 lg:px-8">
         <SectionHeader title="About the summit" />
-        <div className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
-          <p className="text-sm leading-6 text-brand-900">
+        <div className="rounded-lg border border-brand-100 bg-white p-4">
+          <p className="text-[13px] leading-6 text-brand-900">
             The PAN IIT Bangalore Summit 2026 brings together 2,000+ alumni,
             founders, investors, and policy makers across 23 IIT campuses for
             one day on building the technology backbone of a self-reliant
@@ -281,10 +274,10 @@ export default async function HomePage() {
           </p>
           <Link
             href="/home/about"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-800 hover:text-brand-900"
+            className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-800 hover:text-brand-900"
           >
             Know more
-            <ArrowUpRight className="size-4" strokeWidth={1.8} />
+            <ArrowUpRight className="size-4" strokeWidth={1.6} />
           </Link>
         </div>
       </section>
@@ -308,8 +301,8 @@ export default async function HomePage() {
       {/* Connect with us */}
       <section className="px-4 sm:px-6 lg:px-8">
         <SectionHeader title="Connect with us" />
-        <div className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
-          <div className="flex flex-wrap justify-center gap-2.5">
+        <div className="rounded-lg border border-brand-100 bg-white p-4">
+          <div className="flex flex-wrap justify-center gap-1.5">
             {SOCIALS.map((s) => (
               <a
                 key={s.label}
@@ -317,13 +310,13 @@ export default async function HomePage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="inline-grid size-11 place-items-center rounded-full bg-brand-50 text-brand-800 transition-colors hover:bg-brand-100"
+                className="inline-grid size-10 place-items-center rounded-md text-brand-800 transition-colors hover:bg-brand-50"
               >
                 {s.icon}
               </a>
             ))}
           </div>
-          <p className="mt-3 text-center text-[12px] font-medium text-brand-900/70">
+          <p className="mt-2 text-center text-[11px] font-medium text-brand-900/65">
             paniit.org · summit@paniit.org
           </p>
         </div>
@@ -352,11 +345,9 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="flex flex-col items-start gap-3 rounded-2xl bg-white p-3.5 ring-1 ring-brand-100 transition-colors hover:bg-brand-50/30"
+      className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 transition-colors hover:bg-brand-50/30"
     >
-      <span className="inline-grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-800">
-        {icon}
-      </span>
+      <span className="text-brand-800">{icon}</span>
       <span className="text-[13px] font-semibold leading-tight text-brand-950">
         {label}
       </span>
@@ -377,4 +368,3 @@ function XGlyph({ className }: { className?: string }) {
     </svg>
   );
 }
-

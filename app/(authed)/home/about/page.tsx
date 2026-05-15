@@ -44,7 +44,7 @@ export default function AboutSummitPage() {
       </div>
 
       {/* Instagram embed */}
-      <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-brand-100">
+      <section className="overflow-hidden rounded-lg border border-brand-100 bg-white">
         <div className="relative aspect-[9/16] w-full bg-brand-50 sm:aspect-[3/4]">
           <iframe
             src="https://www.instagram.com/reel/DXwH6qYPEjp/embed"
@@ -58,7 +58,7 @@ export default function AboutSummitPage() {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
+      <section className="rounded-lg border border-brand-100 bg-white p-5">
         <h1 className="text-2xl font-semibold tracking-tight text-brand-950">
           About the summit
         </h1>
@@ -80,7 +80,7 @@ export default function AboutSummitPage() {
         </a>
       </section>
 
-      <section className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
+      <section className="rounded-lg border border-brand-100 bg-white p-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
           Who&apos;s participating
         </h2>
@@ -88,7 +88,7 @@ export default function AboutSummitPage() {
           {STAKEHOLDERS.map((s) => (
             <li
               key={s.name}
-              className="rounded-xl bg-brand-50/60 p-4 ring-1 ring-brand-100"
+              className="rounded-md border border-brand-100 bg-brand-50/60 p-4"
             >
               <p className="text-[13px] font-semibold text-brand-950">{s.name}</p>
               <p className="mt-1 text-[12px] leading-5 text-brand-900/80">

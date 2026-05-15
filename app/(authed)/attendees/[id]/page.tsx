@@ -126,7 +126,7 @@ export default async function AttendeeProfilePage({
       </div>
 
       {/* Identity block */}
-      <section className="rounded-2xl border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
+      <section className="rounded-lg border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
         <Avatar className="mx-auto size-24 ring-4 ring-brand-50">
           {profile.photo_url ? (
             <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
@@ -187,13 +187,13 @@ export default async function AttendeeProfilePage({
       </section>
 
       {/* Schedule meeting */}
-      <div className="rounded-2xl border border-brand-100 bg-white p-4">
+      <div className="rounded-lg border border-brand-100 bg-white p-4">
         <ScheduleMeetingButton inviteeId={profile.id} />
       </div>
 
       {/* About */}
       {profile.bio ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             About
           </h2>
@@ -205,7 +205,7 @@ export default async function AttendeeProfilePage({
 
       {/* Areas of interest */}
       {profile.interests?.length ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             Areas of interest
           </h2>
@@ -224,7 +224,7 @@ export default async function AttendeeProfilePage({
 
       {/* Asks / Offers */}
       {(profile.asks?.length ?? 0) + (profile.offers?.length ?? 0) > 0 ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           {profile.asks?.length ? (
             <div>
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
@@ -264,7 +264,7 @@ export default async function AttendeeProfilePage({
 
       {/* Education */}
       {eduLine ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             Education
           </h2>
@@ -274,7 +274,7 @@ export default async function AttendeeProfilePage({
 
       {/* Speaking at */}
       {speakingAt.length > 0 ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             Speaking at
           </h2>

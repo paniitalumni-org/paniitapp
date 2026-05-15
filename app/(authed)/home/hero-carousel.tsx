@@ -90,7 +90,7 @@ export function HeroCarousel() {
         {SLIDES.map((s, i) => (
           <article
             key={i}
-            className={`snap-center shrink-0 basis-full rounded-2xl p-5 text-white shadow-[0_10px_40px_-15px_rgba(13,9,48,0.5)] ${s.gradient}`}
+            className={`snap-center shrink-0 basis-full rounded-lg p-5 text-white shadow-[0_10px_40px_-15px_rgba(13,9,48,0.5)] ${s.gradient}`}
           >
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/70">
               {s.eyebrow}

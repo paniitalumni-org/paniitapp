@@ -16,7 +16,7 @@ export default function ScanPage() {
           Home
         </Link>
       </div>
-      <section className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
+      <section className="rounded-lg border border-brand-100 bg-white p-5">
         <h1 className="text-2xl font-semibold tracking-tight text-brand-950">
           Scan QR
         </h1>

@@ -38,7 +38,7 @@ export function KeyParticipantsStrip({ people }: { people: Person[] }) {
 
   if (list.length === 0) {
     return (
-      <div className="mx-4 rounded-2xl bg-white p-5 text-center text-sm text-brand-900/75 ring-1 ring-brand-100 sm:mx-6 lg:mx-8">
+      <div className="mx-4 rounded-lg bg-white p-5 text-center text-sm text-brand-900/75 ring-1 ring-brand-100 sm:mx-6 lg:mx-8">
         Featured participants will appear here closer to the event.
       </div>
     );
@@ -110,7 +110,7 @@ export function KeyParticipantsStrip({ people }: { people: Person[] }) {
 function ParticipantCard({ person }: { person: Person }) {
   return (
     <article
-      className="relative isolate aspect-[3/4] w-full overflow-hidden rounded-2xl bg-white ring-1 ring-brand-100 will-change-transform"
+      className="relative isolate aspect-[3/4] w-full overflow-hidden rounded-lg bg-white ring-1 ring-brand-100 will-change-transform"
       style={{
         animation: `participant-bounce ${ROTATE_MS}ms cubic-bezier(0.45, 0.05, 0.2, 1.05) forwards`,
       }}

@@ -159,7 +159,7 @@ export function MeetingsView({
       <button
         type="button"
         onClick={() => setAvailOpen(true)}
-        className="flex w-full items-center justify-between rounded-2xl border border-brand-100 bg-white px-5 py-4 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/40"
+        className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-5 py-4 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/40"
       >
         <div className="flex items-center gap-3">
           <span className="inline-grid size-10 place-items-center rounded-full bg-brand-50 text-brand-800">
@@ -289,7 +289,7 @@ function MeetingsGraph({ meetings }: { meetings: MeetingRow[] }) {
   const total = counts.reduce((a, b) => a + b, 0);
 
   return (
-    <div className="rounded-2xl border border-brand-100 bg-white p-5">
+    <div className="rounded-lg border border-brand-100 bg-white p-5">
       <div className="flex items-baseline justify-between">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
           Day at a glance
@@ -337,7 +337,7 @@ function InboxRow({
   onDecline: (id: string) => void;
 }) {
   return (
-    <li className="rounded-2xl border border-brand-100 bg-white p-4">
+    <li className="rounded-lg border border-brand-100 bg-white p-4">
       <div className="flex items-start gap-3">
         <Avatar className="size-10 shrink-0 ring-1 ring-brand-100">
           {m.requester?.photo_url ? (
@@ -435,7 +435,7 @@ function InboxRow({
 function SentRow({ m }: { m: MeetingRow }) {
   const s = asSlot(m.accepted_slot);
   return (
-    <li className="rounded-2xl border border-brand-100 bg-white p-4">
+    <li className="rounded-lg border border-brand-100 bg-white p-4">
       <div className="flex items-start gap-3">
         <Avatar className="size-10 shrink-0 ring-1 ring-brand-100">
           {m.invitee?.photo_url ? (
@@ -480,7 +480,7 @@ function SentRow({ m }: { m: MeetingRow }) {
 
 function EmptyMsg({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-brand-100 bg-white p-8 text-center">
+    <div className="rounded-lg border border-dashed border-brand-100 bg-white p-8 text-center">
       <h3 className="text-sm font-semibold text-brand-900">{title}</h3>
       <p className="mt-1 text-xs text-brand-900/70">{body}</p>
     </div>
@@ -566,6 +566,8 @@ function AvailabilitySheet({
     void fetchAvail();
   }, [open, fetchAvail]);
 
+  const [mode, setMode] = useState<"available" | "blocked">("available");
+
   async function setStatus(slot: Slot, next: AvailStatus | null) {
     setPending(slot.start);
     try {
@@ -597,14 +599,16 @@ function AvailabilitySheet({
     return lookup.get(slot.start) ?? null;
   }
 
-  function cycle(slot: Slot) {
+  // Tap = apply current mode to the slot. Tapping a slot already in that
+  // mode clears it. Booked slots (from accepted meetings) are immutable.
+  function toggle(slot: Slot) {
     const cur = effectiveStatus(slot);
-    // booked is system-derived; user cannot override
     if (cur === "booked") return;
-    const order: (AvailStatus | null)[] = [null, "available", "blocked"];
-    const idx = order.indexOf(cur);
-    const next = order[(idx + 1) % order.length];
-    void setStatus(slot, next);
+    if (cur === mode) {
+      void setStatus(slot, null);
+    } else {
+      void setStatus(slot, mode);
+    }
   }
 
   // Group slots into morning (8-12), afternoon (12-17), evening (17-22)
@@ -619,17 +623,38 @@ function AvailabilitySheet({
     { label: "Evening", slots: grid.filter((s) => slotHourIST(s.start) >= 17) },
   ];
 
+  const availableCount = (rows ?? []).filter((r) => r.status === "available").length;
+  const blockedCount = (rows ?? []).filter((r) => r.status === "blocked").length;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>My availability</SheetTitle>
+          <SheetTitle>My availability · 16 May 2026</SheetTitle>
           <SheetDescription>
-            Tap a slot to cycle: unset → available → blocked. Confirmed meetings are auto-booked.
+            Pick the mode below, then tap any 30-minute slot. Tap again to clear it.
           </SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-6 pt-3">
+          {/* Mode switch */}
+          <div className="mb-3 grid grid-cols-2 gap-1.5 rounded-lg border border-brand-100 bg-white p-1">
+            <ModeButton
+              active={mode === "available"}
+              onClick={() => setMode("available")}
+              swatch="bg-brand-800"
+              label="Mark available"
+              count={availableCount}
+            />
+            <ModeButton
+              active={mode === "blocked"}
+              onClick={() => setMode("blocked")}
+              swatch="bg-iit-500"
+              label="Mark blocked"
+              count={blockedCount}
+            />
+          </div>
           <Legend />
+
           {rows === null ? (
             <div className="flex justify-center py-10">
               <Loader2 className="size-5 animate-spin text-brand-800/60" />
@@ -645,19 +670,22 @@ function AvailabilitySheet({
                     {sec.slots.map((s) => {
                       const st = effectiveStatus(s);
                       const isPending = pending === s.start;
+                      const ariaPressed =
+                        st === "available" || st === "blocked";
                       return (
                         <button
                           key={s.start}
                           type="button"
-                          onClick={() => cycle(s)}
+                          onClick={() => toggle(s)}
                           disabled={st === "booked" || isPending}
+                          aria-pressed={ariaPressed}
                           aria-label={`${formatInTimeZone(
                             new Date(s.start),
                             SUMMIT_TZ,
                             "h:mm a"
                           )} ${st ?? "unset"}`}
                           className={cn(
-                            "relative rounded-lg border px-2 py-2 text-[12px] font-semibold tabular-nums transition-all",
+                            "rounded-md border px-2 py-2 text-[12px] font-semibold tabular-nums transition-colors",
                             st === "available" &&
                               "border-brand-800 bg-brand-800 text-white",
                             st === "booked" &&
@@ -665,7 +693,7 @@ function AvailabilitySheet({
                             st === "blocked" &&
                               "border-iit-500 bg-iit-500 text-white",
                             !st &&
-                              "border-brand-100 bg-white text-brand-900/65 hover:border-brand-200 hover:bg-brand-50/50",
+                              "border-brand-100 bg-white text-brand-900/75 hover:border-brand-300 hover:bg-brand-50/50",
                             isPending && "opacity-60"
                           )}
                         >
@@ -684,11 +712,43 @@ function AvailabilitySheet({
   );
 }
 
+function ModeButton({
+  active,
+  onClick,
+  swatch,
+  label,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  swatch: string;
+  label: string;
+  count: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold transition-colors",
+        active
+          ? "bg-brand-50 text-brand-950 ring-1 ring-brand-200"
+          : "text-brand-900/65 hover:bg-brand-50/40"
+      )}
+    >
+      <span className={cn("size-2 rounded-full", swatch)} aria-hidden />
+      {label}
+      <span className="text-[11px] font-medium text-brand-800/75">{count}</span>
+    </button>
+  );
+}
+
 function Legend() {
   return (
     <div className="mb-4 flex flex-wrap gap-3 text-[11px] font-medium text-brand-900/75">
       <Swatch className="bg-brand-800" label="Available" />
-      <Swatch className="bg-emerald-500" label="Booked" />
+      <Swatch className="bg-emerald-500" label="Booked (auto)" />
       <Swatch className="bg-iit-500" label="Blocked" />
       <Swatch className="border border-brand-100 bg-white" label="Unset" />
     </div>

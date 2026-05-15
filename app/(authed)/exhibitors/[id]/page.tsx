@@ -86,7 +86,7 @@ export default async function ExhibitorDetailPage({
       </div>
 
       {/* Cover + logo */}
-      <section className="overflow-hidden rounded-2xl border border-brand-100 bg-white">
+      <section className="overflow-hidden rounded-lg border border-brand-100 bg-white">
         {exhibitor.cover_url ? (
           <div className="relative h-32 w-full bg-brand-50">
             <Image
@@ -100,7 +100,7 @@ export default async function ExhibitorDetailPage({
           <div className="h-20 w-full bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_100%)]" />
         )}
         <div className="-mt-10 px-5 pb-5">
-          <div className="inline-grid size-20 place-items-center overflow-hidden rounded-2xl bg-white ring-1 ring-brand-100 shadow-sm">
+          <div className="inline-grid size-20 place-items-center overflow-hidden rounded-lg bg-white ring-1 ring-brand-100 shadow-sm">
             {exhibitor.logo_url ? (
               <Image
                 src={exhibitor.logo_url}
@@ -152,7 +152,7 @@ export default async function ExhibitorDetailPage({
 
       {/* About */}
       {exhibitor.about ? (
-        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+        <section className="rounded-lg border border-brand-100 bg-white p-5">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             About
           </h2>
@@ -163,7 +163,7 @@ export default async function ExhibitorDetailPage({
       ) : null}
 
       {/* Team */}
-      <section className="rounded-2xl border border-brand-100 bg-white p-5">
+      <section className="rounded-lg border border-brand-100 bg-white p-5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
           Team on ground
         </h2>

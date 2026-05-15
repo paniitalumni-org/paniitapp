@@ -86,9 +86,9 @@ export default async function MePage() {
     profile?.role === "vc" || profile?.role === "alumni";
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-3 pb-12 pt-5 lg:pt-8">
+    <div className="mx-auto w-full max-w-2xl space-y-2.5 pb-12 pt-5 lg:pt-8">
       {/* Photo + name + card */}
-      <section className="rounded-3xl bg-white px-5 pb-6 pt-7 shadow-[0_1px_0_0_rgba(13,9,48,0.04)] ring-1 ring-brand-100">
+      <section className="rounded-lg border border-brand-100 bg-white px-5 pb-5 pt-6">
         <div className="flex flex-col items-center text-center">
           <div className="relative">
             <Avatar className="size-24 ring-4 ring-brand-50">
@@ -102,23 +102,22 @@ export default async function MePage() {
             <Link
               href="/me/edit"
               aria-label="Change profile photo"
-              className="absolute -bottom-1 -right-1 inline-grid size-8 place-items-center rounded-full bg-brand-800 text-white shadow-sm ring-4 ring-white transition-colors hover:bg-brand-900"
+              className="absolute -bottom-1 -right-1 inline-grid size-7 place-items-center rounded-full bg-brand-800 text-white ring-4 ring-white transition-colors hover:bg-brand-900"
             >
-              <Camera className="size-4" strokeWidth={1.8} />
+              <Camera className="size-3.5" strokeWidth={1.6} />
             </Link>
           </div>
-          <h1 className="mt-3 text-[22px] font-semibold tracking-tight text-brand-950">
+          <h1 className="mt-3 text-[20px] font-semibold tracking-tight text-brand-950">
             {profile?.full_name ?? "Your profile"}
           </h1>
           {profile?.role ? (
-            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
               {roleLabel(profile.role)}
             </p>
           ) : null}
         </div>
 
-        {/* Label / value rows */}
-        <div className="mt-6 space-y-4">
+        <div className="mt-5 space-y-3.5">
           <Field label="Designation" value={profile?.designation ?? "—"} />
           <Field label="Organization" value={profile?.company ?? "—"} />
           <Field label="Email Address" value={maskEmail(userEmail)} />
@@ -131,14 +130,14 @@ export default async function MePage() {
 
           {profile?.interests?.length ? (
             <div>
-              <p className="text-[13px] font-medium text-brand-900/55">
+              <p className="text-[12px] font-medium text-brand-900/55">
                 Area of interest
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.interests.map((i) => (
                   <span
                     key={i}
-                    className="rounded-md bg-brand-50 px-2.5 py-1.5 text-[12px] font-medium text-brand-900"
+                    className="rounded-md bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-900"
                   >
                     {i}
                   </span>
@@ -155,37 +154,35 @@ export default async function MePage() {
           ) : null}
         </div>
 
-        {/* Edit Profile — full width inside card */}
         <Link
           href="/me/edit"
-          className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-800 text-sm font-semibold tracking-tight text-white transition-colors hover:bg-brand-900"
+          className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white transition-colors hover:bg-brand-900"
         >
-          <Pencil className="size-4" strokeWidth={1.8} />
+          <Pencil className="size-4" strokeWidth={1.6} />
           Edit Profile
         </Link>
       </section>
 
-      {/* Secondary rows */}
       <Row
         href="/attendees?tab=connections"
-        icon={<UsersRound className="size-[18px]" strokeWidth={1.7} />}
+        icon={<UsersRound className="size-[18px]" strokeWidth={1.5} />}
         label="My Connections"
         meta={connectionCount > 0 ? String(connectionCount) : undefined}
       />
       <Row
         href="/me/qr"
-        icon={<QrCode className="size-[18px]" strokeWidth={1.7} />}
+        icon={<QrCode className="size-[18px]" strokeWidth={1.5} />}
         label="My QR Badge"
       />
       <Row
         href="/me/edit#notifications"
-        icon={<Shield className="size-[18px]" strokeWidth={1.7} />}
+        icon={<Shield className="size-[18px]" strokeWidth={1.5} />}
         label="Privacy & Notifications"
       />
 
       {showOfficeHours ? (
-        <section className="rounded-2xl bg-white p-5 ring-1 ring-brand-100">
-          <h2 className="text-[13px] font-medium text-brand-900/55">
+        <section className="rounded-lg border border-brand-100 bg-white p-4">
+          <h2 className="text-[12px] font-medium text-brand-900/55">
             Availability
           </h2>
           <div className="mt-2">
@@ -194,19 +191,16 @@ export default async function MePage() {
         </section>
       ) : null}
 
-      {/* Logout */}
       <form action="/api/auth/signout" method="post">
         <button
           type="submit"
-          className="flex w-full items-center justify-between rounded-2xl bg-white px-5 py-4 ring-1 ring-brand-100 transition-colors hover:bg-iit-50/40"
+          className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-4 py-3.5 transition-colors hover:bg-iit-50/40"
         >
-          <span className="flex items-center gap-3 text-sm font-semibold text-brand-950">
-            <span className="inline-grid size-9 place-items-center rounded-full bg-iit-50 text-iit-500">
-              <LogOut className="size-[18px]" strokeWidth={1.7} />
-            </span>
+          <span className="flex items-center gap-3 text-[13px] font-semibold text-iit-600">
+            <LogOut className="size-[18px]" strokeWidth={1.5} />
             Logout
           </span>
-          <ChevronRight className="size-4 text-brand-800/70" />
+          <ChevronRight className="size-4 text-brand-800/65" />
         </button>
       </form>
     </div>
@@ -224,9 +218,9 @@ function Field({
 }) {
   return (
     <div>
-      <p className="text-[13px] font-medium text-brand-900/55">{label}</p>
+      <p className="text-[12px] font-medium text-brand-900/55">{label}</p>
       <p
-        className={`mt-1 text-[14px] font-semibold text-brand-950 ${valueClass ?? ""}`}
+        className={`mt-0.5 text-[14px] font-semibold text-brand-950 ${valueClass ?? ""}`}
       >
         {value}
       </p>
@@ -237,12 +231,12 @@ function Field({
 function ChipBlock({ label, items }: { label: string; items: string[] }) {
   return (
     <div>
-      <p className="text-[13px] font-medium text-brand-900/55">{label}</p>
+      <p className="text-[12px] font-medium text-brand-900/55">{label}</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {items.map((i) => (
           <span
             key={i}
-            className="rounded-md bg-brand-50 px-2.5 py-1.5 text-[12px] font-medium text-brand-900"
+            className="rounded-md bg-brand-50 px-2.5 py-1 text-[12px] font-medium text-brand-900"
           >
             {i}
           </span>
@@ -266,12 +260,10 @@ function Row({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-2xl bg-white px-5 py-4 ring-1 ring-brand-100 transition-colors hover:bg-brand-50/30"
+      className="flex items-center justify-between rounded-lg border border-brand-100 bg-white px-4 py-3.5 transition-colors hover:bg-brand-50/30"
     >
-      <span className="flex items-center gap-3 text-sm font-semibold text-brand-950">
-        <span className="inline-grid size-9 place-items-center rounded-full bg-brand-50 text-brand-800">
-          {icon}
-        </span>
+      <span className="flex items-center gap-3 text-[13px] font-semibold text-brand-950">
+        <span className="text-brand-800">{icon}</span>
         {label}
       </span>
       <span className="flex items-center gap-2">
@@ -280,7 +272,7 @@ function Row({
             {meta}
           </span>
         ) : null}
-        <ChevronRight className="size-4 text-brand-800/70" />
+        <ChevronRight className="size-4 text-brand-800/65" />
       </span>
     </Link>
   );
