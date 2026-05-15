@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { Check, Clock4, Loader2, MessageCircle, X } from "lucide-react";
+import { Check, Clock4, Loader2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -701,34 +701,33 @@ function MeetingActions({
 }) {
   const pending = pendingId === m.id;
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
+    <div className="mt-3 flex flex-col gap-2">
       <Link
         href={`/meetings/${m.id}`}
-        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-800 hover:bg-brand-50 hover:text-brand-900"
+        className="inline-flex h-9 w-full items-center justify-center rounded-md bg-brand-800 px-3 text-xs font-semibold text-white transition-colors hover:bg-brand-900"
       >
-        <MessageCircle className="h-3.5 w-3.5" />
         Open chat
       </Link>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onReschedule(m)}
-        disabled={pending}
-        className="h-8 rounded-full px-3"
-      >
-        <Clock4 className="h-3.5 w-3.5" />
-        Reschedule
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onCancel(m.id)}
-        disabled={pending}
-        className="h-8 rounded-full px-3"
-      >
-        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
-        Cancel
-      </Button>
+      <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onReschedule(m)}
+          disabled={pending}
+          className="h-9 rounded-md px-3"
+        >
+          {pending ? "Working..." : "Reschedule"}
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onCancel(m.id)}
+          disabled={pending}
+          className="h-9 rounded-md px-3"
+        >
+          {pending ? "Working..." : "Cancel"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -825,14 +824,13 @@ function AvailabilitySheet({
     void fetchAvail();
   }, [open, fetchAvail]);
 
-  async function setStatus(slot: Slot, next: AvailStatus | null) {
+  async function setStatus(slot: Slot, next: AvailStatus) {
     setPendingStarts((cur) => new Set(cur).add(slot.start));
     setRows((cur) => {
       const rows = cur ?? [];
       const withoutSlot = rows.filter(
         (r) => new Date(r.slot_start).toISOString() !== slot.start
       );
-      if (next === null) return withoutSlot;
       return [
         ...withoutSlot,
         {
@@ -844,23 +842,15 @@ function AvailabilitySheet({
     });
 
     try {
-      if (next === null) {
-        await supabase
-          .from("availability_slots")
-          .delete()
-          .eq("user_id", userId)
-          .eq("slot_start", slot.start);
-      } else {
-        await supabase.from("availability_slots").upsert(
-          {
-            user_id: userId,
-            slot_start: slot.start,
-            slot_end: slot.end,
-            status: next,
-          },
-          { onConflict: "user_id,slot_start" }
-        );
-      }
+      await supabase.from("availability_slots").upsert(
+        {
+          user_id: userId,
+          slot_start: slot.start,
+          slot_end: slot.end,
+          status: next,
+        },
+        { onConflict: "user_id,slot_start" }
+      );
     } catch {
       await fetchAvail();
     } finally {
@@ -877,12 +867,12 @@ function AvailabilitySheet({
     return lookup.get(slot.start) ?? null;
   }
 
-  // Tap an unset slot to mark it available; tap again to clear it. Booked
-  // slots (from accepted meetings) are immutable.
+  // Every tap is saved immediately: selected = available, unselected = blocked.
+  // Booked slots from accepted meetings are immutable.
   function toggle(slot: Slot) {
     const cur = effectiveStatus(slot);
     if (cur === "booked") return;
-    void setStatus(slot, cur === "available" ? null : "available");
+    void setStatus(slot, cur === "available" ? "blocked" : "available");
   }
 
   // Group slots into morning (8-12), afternoon (12-17), evening (17-22)
@@ -905,7 +895,7 @@ function AvailabilitySheet({
         <SheetHeader>
           <SheetTitle>My availability · 16 May 2026</SheetTitle>
           <SheetDescription>
-            Blue slots are available. Grey slots are not available. Occupied slots are already booked.
+            Tap to save a slot as available. Tap again to save it as not available.
           </SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-6 pt-3">
