@@ -31,7 +31,7 @@ const Schema = z.object({
       message: "Year must be 4 digits",
     }),
   branch: z.string().trim().min(2, "Branch is required").max(120),
-  bio: z.string().trim().min(20, "Bio should be at least 20 characters").max(2000),
+  bio: z.string().trim().min(20, "Bio should be at least 20 characters"),
   linkedin_url: UrlOrEmpty,
   twitter_url: UrlOrEmpty,
   next: z.string().trim(),

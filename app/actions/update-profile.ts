@@ -24,7 +24,7 @@ const ProfileSchema = z.object({
     .trim()
     .refine((v) => v === "" || /^\d{4}$/.test(v), { message: "Year must be 4 digits" }),
   branch: z.string().trim().max(120),
-  bio: z.string().trim().max(2000),
+  bio: z.string().trim(),
   linkedin_url: UrlOrEmpty,
   twitter_url: UrlOrEmpty,
   asks: z.string().trim().max(2000),
