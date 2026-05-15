@@ -25,6 +25,7 @@ import {
 } from "@/lib/slots";
 import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
+import { SlotPicker } from "@/components/features/slot-picker";
 
 interface MiniProfile {
   id: string;
@@ -71,6 +72,8 @@ export function MeetingsView({
   const router = useRouter();
   const { toast } = useToast();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [rescheduling, setRescheduling] = useState<MeetingRow | null>(null);
+  const [rescheduleSlots, setRescheduleSlots] = useState<Slot[]>([]);
   const [, startTransition] = useTransition();
 
   const byMe = useMemo(
@@ -155,6 +158,84 @@ export function MeetingsView({
     });
   }
 
+  async function cancelMeeting(meetingId: string) {
+    if (!window.confirm("Cancel this meeting?")) return;
+    setPendingId(meetingId);
+    startTransition(async () => {
+      const res = await fetch("/api/meetings/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meeting_id: meetingId }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      setPendingId(null);
+      if (!res.ok) {
+        toast({
+          title: "Could not cancel",
+          description: data.error ?? "Try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({ title: "Meeting cancelled" });
+      router.refresh();
+    });
+  }
+
+  function openReschedule(m: MeetingRow) {
+    setRescheduling(m);
+    setRescheduleSlots([]);
+  }
+
+  async function submitReschedule() {
+    if (!rescheduling) return;
+    if (rescheduleSlots.length === 0) {
+      toast({ title: "Pick at least one slot", variant: "destructive" });
+      return;
+    }
+
+    setPendingId(rescheduling.id);
+    startTransition(async () => {
+      const res = await fetch("/api/meetings/reschedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          meeting_id: rescheduling.id,
+          proposed_slots: rescheduleSlots,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      setPendingId(null);
+      if (!res.ok) {
+        const slotUnavailable =
+          data.error === "slot_not_available" || data.error === "slot_occupied";
+        toast({
+          title: "Could not reschedule",
+          description: slotUnavailable
+            ? "One of those slots is no longer available."
+            : data.error ?? "Try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      toast({ title: "Reschedule request sent" });
+      setRescheduling(null);
+      setRescheduleSlots([]);
+      router.refresh();
+    });
+  }
+
+  const rescheduleInviteeId = rescheduling
+    ? rescheduling.requester_id === userId
+      ? rescheduling.invitee_id
+      : rescheduling.requester_id
+    : null;
+  const rescheduleOther = rescheduling
+    ? rescheduling.requester_id === userId
+      ? rescheduling.invitee
+      : rescheduling.requester
+    : null;
+
   return (
     <>
       <MeetingsGraph meetings={accepted} />
@@ -207,7 +288,13 @@ export function MeetingsView({
         ) : (
           <ul className="space-y-3">
             {byMe.map((m) => (
-              <SentRow key={m.id} m={m} />
+              <SentRow
+                key={m.id}
+                m={m}
+                pendingId={pendingId}
+                onCancel={cancelMeeting}
+                onReschedule={openReschedule}
+              />
             ))}
           </ul>
         )
@@ -230,6 +317,8 @@ export function MeetingsView({
                 myAcceptedWindows={myAcceptedWindows}
                 onAccept={accept}
                 onDecline={decline}
+                onCancel={cancelMeeting}
+                onReschedule={openReschedule}
               />
             ))}
           </ul>
@@ -244,6 +333,58 @@ export function MeetingsView({
           acceptedWindows={myAcceptedWindows}
         />
       ) : null}
+
+      <Sheet
+        open={!!rescheduling}
+        onOpenChange={(v) => {
+          if (!v) {
+            setRescheduling(null);
+            setRescheduleSlots([]);
+          }
+        }}
+      >
+        <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Reschedule meeting</SheetTitle>
+            <SheetDescription>
+              Pick new available times for {rescheduleOther?.full_name ?? "the other person"}.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="px-6 pb-6 pt-3">
+            {rescheduleInviteeId ? (
+              <SlotPicker
+                inviteeId={rescheduleInviteeId}
+                selected={rescheduleSlots}
+                onChange={setRescheduleSlots}
+                max={3}
+              />
+            ) : null}
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setRescheduling(null);
+                  setRescheduleSlots([]);
+                }}
+                className="rounded-md"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitReschedule}
+                disabled={!rescheduling || pendingId === rescheduling.id}
+                className="rounded-md"
+              >
+                {rescheduling && pendingId === rescheduling.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Send request"
+                )}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
@@ -374,6 +515,8 @@ function InboxRow({
   myAcceptedWindows,
   onAccept,
   onDecline,
+  onCancel,
+  onReschedule,
 }: {
   m: MeetingRow;
   pendingId: string | null;
@@ -381,6 +524,8 @@ function InboxRow({
   myAcceptedWindows: Slot[];
   onAccept: (id: string, slot: Slot) => void;
   onDecline: (id: string) => void;
+  onCancel: (id: string) => void;
+  onReschedule: (m: MeetingRow) => void;
 }) {
   return (
     <li className="rounded-lg border border-brand-100 bg-white p-4">
@@ -467,18 +612,40 @@ function InboxRow({
       ) : (
         (() => {
           const s = asSlot(m.accepted_slot);
-          return s ? (
-            <p className="mt-3 text-sm font-medium tabular-nums text-brand-900">
-              {rangeIST(s.start, s.end)}
-            </p>
-          ) : null;
+          return (
+            <>
+              {s ? (
+                <p className="mt-3 text-sm font-medium tabular-nums text-brand-900">
+                  {rangeIST(s.start, s.end)}
+                </p>
+              ) : null}
+              {m.status === "accepted" ? (
+                <MeetingActions
+                  m={m}
+                  pendingId={pendingId}
+                  onCancel={onCancel}
+                  onReschedule={onReschedule}
+                />
+              ) : null}
+            </>
+          );
         })()
       )}
     </li>
   );
 }
 
-function SentRow({ m }: { m: MeetingRow }) {
+function SentRow({
+  m,
+  pendingId,
+  onCancel,
+  onReschedule,
+}: {
+  m: MeetingRow;
+  pendingId: string | null;
+  onCancel: (id: string) => void;
+  onReschedule: (m: MeetingRow) => void;
+}) {
   const s = asSlot(m.accepted_slot);
   return (
     <li className="rounded-lg border border-brand-100 bg-white p-4">
@@ -510,17 +677,59 @@ function SentRow({ m }: { m: MeetingRow }) {
         </p>
       ) : null}
       {m.status === "accepted" ? (
-        <div className="mt-3">
-          <Link
-            href={`/meetings/${m.id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-800 hover:text-brand-900"
-          >
-            <MessageCircle className="h-3.5 w-3.5" />
-            Open chat
-          </Link>
-        </div>
+        <MeetingActions
+          m={m}
+          pendingId={pendingId}
+          onCancel={onCancel}
+          onReschedule={onReschedule}
+        />
       ) : null}
     </li>
+  );
+}
+
+function MeetingActions({
+  m,
+  pendingId,
+  onCancel,
+  onReschedule,
+}: {
+  m: MeetingRow;
+  pendingId: string | null;
+  onCancel: (id: string) => void;
+  onReschedule: (m: MeetingRow) => void;
+}) {
+  const pending = pendingId === m.id;
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <Link
+        href={`/meetings/${m.id}`}
+        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-brand-800 hover:bg-brand-50 hover:text-brand-900"
+      >
+        <MessageCircle className="h-3.5 w-3.5" />
+        Open chat
+      </Link>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onReschedule(m)}
+        disabled={pending}
+        className="h-8 rounded-full px-3"
+      >
+        <Clock4 className="h-3.5 w-3.5" />
+        Reschedule
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onCancel(m.id)}
+        disabled={pending}
+        className="h-8 rounded-full px-3"
+      >
+        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <X className="h-3.5 w-3.5" />}
+        Cancel
+      </Button>
+    </div>
   );
 }
 
@@ -724,7 +933,7 @@ function AvailabilitySheet({
                     {sec.slots.map((s) => {
                       const st = effectiveStatus(s);
                       const isPending = pendingStarts.has(s.start);
-                      const locked = !st || st === "blocked";
+                      const notAvailable = !st || st === "blocked";
                       return (
                         <button
                           key={s.start}
@@ -743,7 +952,7 @@ function AvailabilitySheet({
                               "border-brand-800 bg-brand-800 text-white shadow-sm",
                             st === "booked" &&
                               "cursor-not-allowed border-emerald-300 bg-emerald-50 text-emerald-700",
-                            locked &&
+                            notAvailable &&
                               "border-slate-200 bg-slate-100 text-slate-500 hover:border-brand-300 hover:bg-brand-50/50",
                             isPending && "opacity-60"
                           )}
@@ -752,10 +961,6 @@ function AvailabilitySheet({
                           {st === "booked" ? (
                             <span className="text-[9px] font-semibold uppercase tracking-wide">
                               Occupied
-                            </span>
-                          ) : locked ? (
-                            <span className="text-[9px] font-semibold uppercase tracking-wide">
-                              Locked
                             </span>
                           ) : null}
                         </button>

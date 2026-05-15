@@ -151,7 +151,6 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
                 const inviteeAvailable = inviteeStatus === "available" && !occupied;
                 const picked = isPicked(s);
                 const disabled = !inviteeAvailable || (c === "hard" && !picked);
-                const unavailableReason = occupied ? "Occupied" : "Locked";
                 return (
                   <button
                     key={s.start}
@@ -164,7 +163,9 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
                         ? "selected"
                         : inviteeAvailable
                           ? "available"
-                          : unavailableReason.toLowerCase()
+                          : occupied
+                            ? "occupied"
+                            : "not available"
                     }`}
                     className={cn(
                       "flex h-10 flex-col items-center justify-center rounded-md border text-[11px] font-medium leading-tight tabular-nums transition-colors",
@@ -176,9 +177,9 @@ export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
                     )}
                   >
                     <span>{slotLabel(s)}</span>
-                    {!inviteeAvailable ? (
+                    {occupied ? (
                       <span className="text-[9px] font-semibold uppercase tracking-wide">
-                        {unavailableReason}
+                        Occupied
                       </span>
                     ) : null}
                   </button>
