@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ExternalLink, MapPin, Search, Store } from "lucide-react";
@@ -78,9 +79,22 @@ export function ExhibitorsClient({
             <li key={e.id}>
               <Link
                 href={`/exhibitors/${e.id}`}
-                className="group block rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
+                className="group flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
               >
-                <div className="min-w-0">
+                <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-white ring-1 ring-brand-100">
+                  {e.logo_url ? (
+                    <Image
+                      src={e.logo_url}
+                      alt={e.name}
+                      width={56}
+                      height={56}
+                      className="size-full object-contain p-1"
+                    />
+                  ) : (
+                    <Store className="size-5 text-brand-800/65" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="truncate text-[14px] font-semibold text-brand-950">
                     {e.name}
                   </div>
