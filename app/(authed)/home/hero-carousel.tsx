@@ -27,18 +27,27 @@ const SLIDES: Slide[] = [
   },
 ];
 
+const N = SLIDES.length;
+const INTERVAL_MS = 4500;
+const SCROLL_MS = 600;
+
 export function HeroCarousel() {
+  // Indexes 0..N-1 = real slides; N = phantom clone of slide 0 used to make
+  // the wrap-around appear as continuous forward motion. After we animate to
+  // the phantom, the layout effect silently resets scroll to real slide 0.
   const [active, setActive] = useState(0);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const lockRef = useRef(false);
 
+  // Auto-advance forward forever.
   useEffect(() => {
     const id = window.setInterval(() => {
-      setActive((cur) => (cur + 1) % SLIDES.length);
-    }, 4500);
+      setActive((cur) => (cur + 1) % (N + 1));
+    }, INTERVAL_MS);
     return () => window.clearInterval(id);
   }, []);
 
+  // Smooth-scroll to the active slide, then snap from phantom → real 0.
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -47,8 +56,16 @@ export function HeroCarousel() {
     lockRef.current = true;
     el.scrollTo({ left: child.offsetLeft, behavior: "smooth" });
     const t = window.setTimeout(() => {
+      if (active === N) {
+        const realFirst = el.children[0] as HTMLElement | undefined;
+        if (realFirst) {
+          el.scrollTo({ left: realFirst.offsetLeft, behavior: "auto" });
+        }
+        // Reset state to 0 without re-triggering the smooth-scroll branch.
+        setActive(0);
+      }
       lockRef.current = false;
-    }, 400);
+    }, SCROLL_MS);
     return () => window.clearTimeout(t);
   }, [active]);
 
@@ -71,6 +88,10 @@ export function HeroCarousel() {
     setActive(bestIdx);
   }
 
+  // Render N + 1 slides — last one is a visual clone of slide 0.
+  const rendered: Slide[] = [...SLIDES, SLIDES[0]];
+  const dotActive = active >= N ? 0 : active;
+
   return (
     <div>
       <div
@@ -78,7 +99,7 @@ export function HeroCarousel() {
         onScroll={onScroll}
         className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth"
       >
-        {SLIDES.map((s, i) => (
+        {rendered.map((s, i) => (
           <article
             key={i}
             className="relative aspect-[4/3] snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-brand-50"
@@ -102,7 +123,7 @@ export function HeroCarousel() {
             aria-label={`Slide ${i + 1}`}
             onClick={() => setActive(i)}
             className={`h-1.5 rounded-full transition-all ${
-              i === active ? "w-6 bg-brand-800" : "w-1.5 bg-brand-200"
+              i === dotActive ? "w-6 bg-brand-800" : "w-1.5 bg-brand-200"
             }`}
           />
         ))}
