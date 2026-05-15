@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ChatWindow } from "./chat-window";
 
@@ -83,14 +81,7 @@ export default async function MeetingChatPage({
   return (
     <div className="flex h-[calc(100vh-8.5rem)] flex-col">
       <header className="border-b border-slate-200 bg-white px-4 py-3">
-        <Link
-          href="/meetings"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Meetings
-        </Link>
-        <div className="mt-1">
+        <div>
           <h1 className="text-base font-semibold tracking-tight text-brand-900">
             {other?.full_name ?? "Conversation"}
           </h1>

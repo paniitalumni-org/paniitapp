@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/features/empty-state";
@@ -35,14 +35,7 @@ export default async function OfficeHoursPage() {
   return (
     <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
       <div>
-        <Link
-          href="/attendees"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Network
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-brand-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
           Office Hours
         </h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">

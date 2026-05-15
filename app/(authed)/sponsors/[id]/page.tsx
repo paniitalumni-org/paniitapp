@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CopyOfferCode } from "./copy-code";
 
@@ -51,16 +51,6 @@ export default async function SponsorDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
-      <div>
-        <Link
-          href="/sponsors"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Sponsors
-        </Link>
-      </div>
-
       <header className="space-y-1">
         <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
           {tierLabel[sponsor.tier] ?? sponsor.tier}

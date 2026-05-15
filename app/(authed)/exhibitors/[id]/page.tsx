@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   Building2,
   ExternalLink,
   Linkedin,
@@ -75,16 +74,6 @@ export default async function ExhibitorDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 pb-12">
-      <div className="pt-4">
-        <Link
-          href="/exhibitors"
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Exhibitors
-        </Link>
-      </div>
-
       {/* Cover + logo */}
       <section className="overflow-hidden rounded-lg border border-brand-100 bg-white">
         {exhibitor.cover_url ? (

@@ -72,7 +72,14 @@ export function QrScanner() {
         scannerRef.current = scanner;
         await scanner.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: 240 },
+          {
+            fps: 10,
+            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+              const size = Math.floor(Math.min(Math.max(minEdge * 0.72, 220), 280));
+              return { width: size, height: size };
+            },
+          },
           (decoded) => {
             void handleDecoded(decoded);
           },
@@ -176,10 +183,20 @@ export function QrScanner() {
 
   return (
     <div className="space-y-2">
-      <div
-        id={elId}
-        className="aspect-square overflow-hidden rounded-lg border border-brand-100 bg-black"
-      />
+      <div className="relative aspect-square overflow-hidden rounded-lg border border-brand-100 bg-black shadow-sm">
+        <div
+          id={elId}
+          className="absolute inset-0 [&_img]:hidden [&_video]:!h-full [&_video]:!w-full [&_video]:!object-cover"
+        />
+        <div className="pointer-events-none absolute inset-0 grid place-items-center">
+          <div className="relative size-[72%] max-h-[280px] max-w-[280px] rounded-lg">
+            <span className="absolute left-0 top-0 size-10 rounded-tl-lg border-l-4 border-t-4 border-white" />
+            <span className="absolute right-0 top-0 size-10 rounded-tr-lg border-r-4 border-t-4 border-white" />
+            <span className="absolute bottom-0 left-0 size-10 rounded-bl-lg border-b-4 border-l-4 border-white" />
+            <span className="absolute bottom-0 right-0 size-10 rounded-br-lg border-b-4 border-r-4 border-white" />
+          </div>
+        </div>
+      </div>
       {status === "starting" ? (
         <div className="flex items-center justify-center gap-2 text-sm text-brand-800/75">
           <Loader2 className="h-4 w-4 animate-spin" />

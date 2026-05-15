@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { MyQr } from "@/components/features/my-qr";
 import { QrScanner } from "@/components/features/qr-scanner";
@@ -30,14 +28,7 @@ export default async function QrPage() {
   return (
     <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:pt-8 space-y-8">
       <div>
-        <Link
-          href="/me"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Me
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-brand-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
           My QR badge
         </h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">

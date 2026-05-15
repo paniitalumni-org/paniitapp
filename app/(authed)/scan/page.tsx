@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { QrScanner } from "@/components/features/qr-scanner";
 
 export const dynamic = "force-dynamic";
@@ -7,15 +5,6 @@ export const dynamic = "force-dynamic";
 export default function ScanPage() {
   return (
     <div className="mx-auto w-full max-w-md space-y-5 pb-12 pt-4">
-      <div>
-        <Link
-          href="/home"
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Home
-        </Link>
-      </div>
       <section className="rounded-lg border border-brand-100 bg-white p-5">
         <h1 className="text-2xl font-semibold tracking-tight text-brand-950">
           Scan QR

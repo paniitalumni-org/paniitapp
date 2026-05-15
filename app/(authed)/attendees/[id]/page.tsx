@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Linkedin, Mail } from "lucide-react";
+import { Linkedin, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -115,16 +114,6 @@ export default async function AttendeeProfilePage({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 pb-12">
-      <div className="pt-4">
-        <Link
-          href="/attendees"
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Networking
-        </Link>
-      </div>
-
       {/* Identity block */}
       <section className="rounded-lg border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
         <Avatar className="mx-auto size-24 ring-4 ring-brand-50">

@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -36,16 +35,6 @@ const STAKEHOLDERS = [
 export default function AboutSummitPage() {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-5 pb-12 pt-4">
-      <div>
-        <Link
-          href="/home"
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Home
-        </Link>
-      </div>
-
       <section className="overflow-hidden rounded-lg border border-brand-100 bg-white">
         <div className="relative aspect-video w-full bg-brand-950">
           <video

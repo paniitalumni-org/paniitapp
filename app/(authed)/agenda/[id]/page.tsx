@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, Linkedin, Mail, MapPin, Sparkles } from "lucide-react";
+import { Clock, Linkedin, Mail, MapPin, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookmarkButton } from "@/components/features/bookmark-button";
@@ -162,16 +162,6 @@ export default async function SessionDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-4 pb-10 lg:max-w-4xl">
-      <div className="pt-4">
-        <Link
-          href="/agenda"
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Agenda
-        </Link>
-      </div>
-
       <header className="rounded-lg border border-brand-100 bg-white p-5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">

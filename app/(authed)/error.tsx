@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 
 export default function AuthedError({
@@ -26,7 +25,7 @@ export default function AuthedError({
         {error.digest ? (
           <p className="mt-1 text-[10px] text-slate-400">digest: {error.digest}</p>
         ) : null}
-        <div className="mt-4 flex items-center justify-center gap-2">
+        <div className="mt-4 flex items-center justify-center">
           <button
             type="button"
             onClick={reset}
@@ -34,12 +33,6 @@ export default function AuthedError({
           >
             Try again
           </button>
-          <Link
-            href="/agenda"
-            className="inline-flex h-9 items-center rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Back to Agenda
-          </Link>
         </div>
       </div>
     </div>
