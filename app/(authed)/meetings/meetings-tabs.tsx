@@ -76,11 +76,14 @@ export function MeetingsTabs({
     [meetings]
   );
 
-  const myAcceptedWindows = accepted
-    .filter((m) => m.accepted_slot)
-    .map((m) => m.accepted_slot!) as Slot[];
+  const myAcceptedWindows: Slot[] = accepted.flatMap((m) => {
+    const s = asSlot(m.accepted_slot);
+    return s ? [s] : [];
+  });
 
-  const myBookmarkWindows = bookmarks.map((b) => ({ start: b.start_at, end: b.end_at }));
+  const myBookmarkWindows = bookmarks
+    .filter((b) => typeof b.start_at === "string" && typeof b.end_at === "string")
+    .map((b) => ({ start: b.start_at, end: b.end_at }));
 
   async function accept(meetingId: string, slot: Slot) {
     setPendingId(meetingId);
@@ -188,7 +191,7 @@ export function MeetingsTabs({
                 ) : null}
 
                 <div className="mt-3 space-y-1.5">
-                  {(m.proposed_slots ?? []).map((s) => {
+                  {asSlotArray(m.proposed_slots).map((s) => {
                     const c = classifySlot(s, myBookmarkWindows, myAcceptedWindows);
                     return (
                       <div key={s.start} className="flex items-center justify-between gap-2">
@@ -264,11 +267,14 @@ export function MeetingsTabs({
                   </div>
                   <StatusPill status={m.status} />
                 </div>
-                {m.accepted_slot ? (
-                  <div className="mt-3 text-sm tabular-nums text-slate-700">
-                    {rangeIST(m.accepted_slot.start, m.accepted_slot.end)}
-                  </div>
-                ) : null}
+                {(() => {
+                  const s = asSlot(m.accepted_slot);
+                  return s ? (
+                    <div className="mt-3 text-sm tabular-nums text-slate-700">
+                      {rangeIST(s.start, s.end)}
+                    </div>
+                  ) : null;
+                })()}
                 {m.status === "accepted" ? (
                   <div className="mt-3">
                     <Link
@@ -339,15 +345,20 @@ function CalendarView({
   userId: string | null;
 }) {
   const events: { kind: "meeting" | "session"; start: string; end: string; title: string }[] = [
-    ...accepted
-      .filter((m) => m.accepted_slot)
-      .map((m) => ({
-        kind: "meeting" as const,
-        start: m.accepted_slot!.start,
-        end: m.accepted_slot!.end,
-        title:
-          (m.requester_id === userId ? m.invitee?.full_name : m.requester?.full_name) ?? "Meeting",
-      })),
+    ...accepted.flatMap((m) => {
+      const s = asSlot(m.accepted_slot);
+      if (!s) return [];
+      return [
+        {
+          kind: "meeting" as const,
+          start: s.start,
+          end: s.end,
+          title:
+            (m.requester_id === userId ? m.invitee?.full_name : m.requester?.full_name) ??
+            "Meeting",
+        },
+      ];
+    }),
     ...bookmarks.map((b) => ({
       kind: "session" as const,
       start: b.start_at,
@@ -381,4 +392,28 @@ function CalendarView({
       ))}
     </ul>
   );
+}
+
+// jsonb columns come back as `unknown`-shaped objects. These guards keep us
+// from crashing the page if a stored slot ever drifts from {start, end}.
+function asSlot(v: unknown): Slot | null {
+  if (
+    v &&
+    typeof v === "object" &&
+    "start" in v &&
+    "end" in v &&
+    typeof (v as { start: unknown }).start === "string" &&
+    typeof (v as { end: unknown }).end === "string"
+  ) {
+    return { start: (v as Slot).start, end: (v as Slot).end };
+  }
+  return null;
+}
+
+function asSlotArray(v: unknown): Slot[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((s) => {
+    const out = asSlot(s);
+    return out ? [out] : [];
+  });
 }
