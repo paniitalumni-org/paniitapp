@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = new Set(["/"]);
-const PUBLIC_PREFIXES = ["/api/", "/_next", "/icons/"];
+const PUBLIC_PREFIXES = ["/api/", "/_next", "/icons/", "/auth/"];
 const PUBLIC_FILES = new Set(["/manifest.json", "/sw.js", "/favicon.ico"]);
 
 function isPublicPath(pathname: string) {
