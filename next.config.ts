@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "fncnndrexzmqqengbkvi.supabase.co" },
       { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com" },
     ],
   },
   async headers() {

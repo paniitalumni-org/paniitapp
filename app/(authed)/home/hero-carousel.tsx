@@ -1,35 +1,33 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 interface Slide {
-  eyebrow: string;
-  title: string;
-  body: string;
-  gradient: string;
+  src: string;
+  alt: string;
 }
 
 const SLIDES: Slide[] = [
   {
-    eyebrow: "16 May 2026 · Bengaluru",
-    title: "Sovereignty in Technology",
-    body: "One day. 2,000+ alumni, founders, investors, and policy minds across 23 IITs.",
-    gradient:
-      "bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_55%,#0d0930_100%)]",
+    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_359/pan_image_1_1_50.png",
+    alt: "PAN IIT 2026 — promotional banner 1",
   },
   {
-    eyebrow: "Networking",
-    title: "Find the next conversation",
-    body: "Search by IIT, role, or focus area. Schedule a 30-minute one-on-one.",
-    gradient:
-      "bg-[radial-gradient(circle_at_top_right,#4338ca_0%,#1B1464_55%,#0d0930_100%)]",
+    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_0/pan_image_5.png",
+    alt: "PAN IIT 2026 — promotional banner 2",
   },
   {
-    eyebrow: "Agenda",
-    title: "Eight tracks · one stage",
-    body: "AI, Deep tech, Climate, Policy, Founders, Investors, Fintech, Workshops.",
-    gradient:
-      "bg-[radial-gradient(circle_at_bottom_left,#2563eb_0%,#1B1464_60%,#0d0930_100%)]",
+    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_359/pan_image_2_50.png",
+    alt: "PAN IIT 2026 — promotional banner 3",
+  },
+  {
+    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_2567/PANIITGuestpanel1.png",
+    alt: "PAN IIT 2026 — guest panel 1",
+  },
+  {
+    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_2567/PANIITpanel2.png",
+    alt: "PAN IIT 2026 — guest panel 2",
   },
 ];
 
@@ -38,7 +36,6 @@ export function HeroCarousel() {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const lockRef = useRef(false);
 
-  // Auto-advance every 4.5s
   useEffect(() => {
     const id = window.setInterval(() => {
       setActive((cur) => (cur + 1) % SLIDES.length);
@@ -46,7 +43,6 @@ export function HeroCarousel() {
     return () => window.clearInterval(id);
   }, []);
 
-  // Scroll to active slide whenever it changes
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -60,7 +56,6 @@ export function HeroCarousel() {
     return () => window.clearTimeout(t);
   }, [active]);
 
-  // Pick up manual scroll → update active
   function onScroll() {
     if (lockRef.current) return;
     const el = scrollerRef.current;
@@ -90,19 +85,19 @@ export function HeroCarousel() {
         {SLIDES.map((s, i) => (
           <article
             key={i}
-            className={`snap-center shrink-0 basis-full rounded-lg p-5 text-white shadow-[0_10px_40px_-15px_rgba(13,9,48,0.5)] ${s.gradient}`}
+            className="relative aspect-[16/9] snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-brand-50"
           >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-white/70">
-              {s.eyebrow}
-            </p>
-            <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight">
-              {s.title}
-            </h2>
-            <p className="mt-2 text-[13px] leading-6 text-white/85">{s.body}</p>
+            <Image
+              src={s.src}
+              alt={s.alt}
+              fill
+              priority={i === 0}
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
           </article>
         ))}
       </div>
-      {/* Dots */}
       <div className="mt-3 flex items-center justify-center gap-1.5">
         {SLIDES.map((_, i) => (
           <button
