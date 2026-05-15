@@ -3,6 +3,9 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
+const SUMMIT_VIDEO_URL =
+  "https://fncnndrexzmqqengbkvi.supabase.co/storage/v1/object/sign/Video%20Files/pan%20iit%20bangalore.mp4?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9mMjdkNTg1Yy0yZTIxLTQ1ZWUtOTYxNy1hMjIyYjIyZWZiZTEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJWaWRlbyBGaWxlcy9wYW4gaWl0IGJhbmdhbG9yZS5tcDQiLCJpYXQiOjE3Nzg4NjQxMzQsImV4cCI6NDkzMjQ2NDEzNH0.P3WIJiEyZOBiqf0hYJCiyit7i_S_lAT8ZHbl9NuEYVM";
+
 const STAKEHOLDERS = [
   {
     name: "Alumni network",
@@ -43,17 +46,15 @@ export default function AboutSummitPage() {
         </Link>
       </div>
 
-      {/* Instagram embed */}
       <section className="overflow-hidden rounded-lg border border-brand-100 bg-white">
-        <div className="relative aspect-[9/16] w-full bg-brand-50 sm:aspect-[3/4]">
-          <iframe
-            src="https://www.instagram.com/reel/DXwH6qYPEjp/embed"
-            className="absolute inset-0 size-full"
-            scrolling="no"
-            allowTransparency
-            allow="encrypted-media; clipboard-write"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="PAN IIT 2026 reel"
+        <div className="relative aspect-video w-full bg-brand-950">
+          <video
+            src={SUMMIT_VIDEO_URL}
+            className="absolute inset-0 size-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+            title="PAN IIT Bangalore Summit video"
           />
         </div>
       </section>
