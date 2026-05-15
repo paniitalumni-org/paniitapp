@@ -79,23 +79,25 @@ export default async function SignInPage() {
       {/* FORM PANEL — overlaps the hero by ~10svh from below */}
       <section className="relative z-10 -mt-[10svh] flex min-h-0 flex-1 flex-col lg:mt-0 lg:min-h-screen lg:bg-white">
         <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-3 pt-6 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:h-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
-          {/* Top flex spacer */}
-          <div className="flex-1" aria-hidden />
+          {/* Top spacer — smaller so the greeting sits a touch above
+              vertical centre and the sign-in stack reads as a single
+              grouped block (greeting → button → trouble link). */}
+          <div className="basis-[12%] shrink-0" aria-hidden />
 
-          {/* Centered form content */}
+          {/* Form group (greeting + button + trouble) */}
           <div className="flex-shrink-0">
             <div className="flex flex-col items-center text-center">
               <GreetingRotator />
-              <p className="mt-2 text-sm leading-6 text-brand-900">
+              <p className="mt-3 text-sm leading-6 text-brand-900">
                 Sign in with the email registered
               </p>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-6">
               <SignInForm />
             </div>
 
-            <p className="mt-3 text-center text-xs leading-5 text-brand-800">
+            <p className="mt-4 text-center text-xs leading-5 text-brand-800">
               Trouble?{" "}
               <a
                 href="mailto:summit@paniit.org"
@@ -106,7 +108,7 @@ export default async function SignInPage() {
             </p>
           </div>
 
-          {/* Bottom flex spacer */}
+          {/* Bottom spacer absorbs remaining height */}
           <div className="flex-1" aria-hidden />
 
           {/* Neural AI footer pinned to bottom */}
@@ -117,7 +119,7 @@ export default async function SignInPage() {
             className="flex items-center justify-center gap-2.5 pt-2 text-center transition-opacity hover:opacity-80"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800/70">
-              Built by
+              Proudly built by
             </span>
             <Image
               src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
