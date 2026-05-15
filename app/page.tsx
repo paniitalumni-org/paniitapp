@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { SignInForm } from "./sign-in-form";
+import { GreetingRotator } from "./greeting-rotator";
 
 export const dynamic = "force-dynamic";
 
@@ -78,9 +79,7 @@ export default async function SignInPage() {
       <section className="relative z-10 -mt-24 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
         <div className="mx-auto w-full max-w-md rounded-t-3xl bg-white px-6 pb-6 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
           <div className="flex flex-col items-center text-center">
-            <h2 className="font-kannada font-semibold tracking-tight text-brand-900 text-[42px] leading-none sm:text-[48px]">
-              ನಮಸ್ಕಾರ
-            </h2>
+            <GreetingRotator />
             <p className="mt-3 text-sm leading-6 text-brand-900">
               Sign in with the email registered
             </p>
@@ -117,8 +116,7 @@ export default async function SignInPage() {
               className="h-7 w-auto object-contain"
             />
             <span
-              className="text-[15px] font-semibold tracking-[0.04em] text-brand-900"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              className="font-sans text-[15px] font-semibold tracking-[0.04em] text-brand-900"
             >
               Neural AI
             </span>

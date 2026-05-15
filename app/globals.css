@@ -85,12 +85,34 @@
   100% { transform: translateX(-110%) translateY(0)   scale(0.92); opacity: 0; }
 }
 
+@keyframes login-greeting {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(8px);
+  }
+  18%,
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.985);
+    filter: blur(8px);
+  }
+}
+
 @layer utilities {
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
   .animate-marquee-rtl {
     animation: marquee-rtl 35s linear infinite;
+  }
+  .animate-login-greeting {
+    animation: login-greeting 2.1s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .safe-top {
     padding-top: env(safe-area-inset-top);
