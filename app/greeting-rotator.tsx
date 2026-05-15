@@ -24,7 +24,7 @@ export function GreetingRotator() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % GREETINGS.length);
-    }, 2600);
+    }, 2000);
     return () => window.clearInterval(timer);
   }, []);
 
