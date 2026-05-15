@@ -6,10 +6,10 @@ import {
   Check,
   ChevronUp,
   Loader2,
-  MessageSquarePlus,
   MoreHorizontal,
   Pin,
   Reply,
+  Sparkles,
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -218,8 +218,8 @@ export function QaClient({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center rounded-lg border border-dashed border-brand-100 bg-white px-4 py-12 text-center">
-          <MessageSquarePlus className="h-9 w-9 text-brand-800/35" strokeWidth={1.5} />
+        <div className="mt-8 flex flex-col items-center px-4 text-center">
+          <Sparkles className="h-7 w-7 text-brand-800/50" strokeWidth={1.4} />
           <h3 className="mt-3 text-[15px] font-semibold text-brand-950">
             {sort === "mine"
               ? "You haven't asked yet"
@@ -227,7 +227,7 @@ export function QaClient({
               ? "Nothing answered yet"
               : "Be the first to ask"}
           </h3>
-          <p className="mt-1 max-w-xs text-[12px] leading-5 text-brand-900/70">
+          <p className="mt-1 max-w-xs text-[12px] leading-5 text-brand-900/65">
             Your question goes straight to the speakers.
           </p>
         </div>
@@ -649,13 +649,12 @@ function AskBar({
 
   return (
     <>
-      <div className="safe-bottom fixed inset-x-0 bottom-16 z-30 mx-auto max-w-2xl px-4">
+      <div className="safe-bottom fixed inset-x-0 bottom-[80px] z-30 mx-auto max-w-2xl px-4 lg:bottom-6">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
+          className="flex h-12 w-full items-center justify-center rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
         >
-          <MessageSquarePlus className="h-4 w-4" strokeWidth={1.7} />
           Ask a question
         </button>
       </div>
