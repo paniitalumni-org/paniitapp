@@ -10,6 +10,24 @@ import { DesktopNavTabs } from "./desktop-nav-tabs";
 
 const SUMMIT_WHATSAPP_URL = "https://wa.me/919999999999";
 
+const SOCIAL_LINKS = [
+  {
+    href: "https://x.com/paniitindia",
+    label: "PAN IIT on X",
+    Icon: XMark,
+  },
+  {
+    href: "https://instagram.com/paniitindia",
+    label: "PAN IIT on Instagram",
+    Icon: InstagramMark,
+  },
+  {
+    href: "https://linkedin.com/company/paniitalumni",
+    label: "PAN IIT on LinkedIn",
+    Icon: LinkedInMark,
+  },
+] as const;
+
 function firstName(full: string | null | undefined): string {
   if (!full) return "there";
   return full.trim().split(/\s+/)[0];
@@ -82,6 +100,23 @@ export async function TopBar() {
 
             <div className="flex-1" aria-hidden />
 
+            {/* Social icons — desktop only, mirroring paniit.org */}
+            <div className="hidden items-center gap-0.5 pr-1 lg:flex">
+              {SOCIAL_LINKS.map(({ href, label, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="inline-grid size-9 place-items-center rounded-full text-brand-800/70 transition-colors hover:bg-brand-50 hover:text-brand-900"
+                >
+                  <Icon className="size-[18px]" />
+                </a>
+              ))}
+              <span className="mx-2 h-5 w-px bg-brand-100" aria-hidden />
+            </div>
+
             <div className="flex shrink-0 items-center gap-1 lg:gap-2">
               <a
                 href={SUMMIT_WHATSAPP_URL}
@@ -119,6 +154,54 @@ export async function TopBar() {
         </div>
       </header>
     </TooltipProvider>
+  );
+}
+
+function XMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M18.244 2H21l-6.49 7.41L22 22h-6.43l-4.78-6.26L4.94 22H2.18l6.94-7.93L2 2h6.59l4.33 5.72L18.244 2zm-1.13 18.4h1.55L7.01 3.52H5.34L17.114 20.4z" />
+    </svg>
+  );
+}
+
+function InstagramMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.4" cy="6.6" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function LinkedInMark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.95v5.66H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.72V1.72C24 .77 23.21 0 22.23 0z" />
+    </svg>
   );
 }
 

@@ -198,7 +198,9 @@ export default async function HomePage() {
 
   return (
     <div className="-mx-4 space-y-5 pt-4 sm:-mx-6 lg:mx-auto lg:w-[85vw] lg:max-w-6xl lg:space-y-8 lg:px-0 lg:pt-8">
-      <div className="px-4 sm:px-6 lg:px-8">
+      {/* Carousel breaks out of the 85vw column on desktop so it spans
+          almost full screen with a slim margin on each side. */}
+      <div className="px-4 sm:px-6 lg:-mx-[5vw] lg:px-0 xl:-mx-[7vw]">
         <HeroCarousel />
       </div>
 
