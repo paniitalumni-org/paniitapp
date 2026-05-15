@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { CalendarDays, MapPin, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { SignInForm } from "./sign-in-form";
@@ -18,86 +19,101 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      {/* Left panel: brand */}
-      <aside className="hidden bg-gradient-to-br from-brand-800 via-brand-700 to-brand-900 lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
-        <Image
-          src="/logo/paniit.png"
-          alt="PAN IIT Alumni India"
-          width={512}
-          height={220}
-          priority
-          className="h-12 w-auto brightness-0 invert"
+    <main className="lg:grid lg:min-h-screen lg:grid-cols-2">
+      {/* HERO PANEL — visible top half on mobile, full-height left on desktop */}
+      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-32 pt-20 lg:flex lg:flex-col lg:justify-between lg:p-12 lg:pb-12 xl:p-16">
+        {/* Decorative dot grid */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.18]"
+          style={{
+            backgroundImage:
+              "radial-gradient(rgba(255,255,255,0.45) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+          aria-hidden
         />
-        <div className="max-w-md text-white">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/60">
-            Bangalore Summit 2026
-          </p>
-          <h1 className="mt-3 font-semibold leading-tight tracking-tight text-white text-3xl xl:text-4xl">
-            Sovereignty in Technology
-          </h1>
-          <p className="mt-4 text-sm leading-7 text-white/80">
-            One day. India&apos;s deepest network of builders, investors and policy minds.
-            The official PAN IIT Bangalore Summit app, in your pocket.
-          </p>
-          <dl className="mt-8 grid grid-cols-3 gap-4">
-            <Stat label="Date" value="May 16, 2026" />
-            <Stat label="Venue" value="Taj Yeshwantpur" />
-            <Stat label="Attendees" value="2,000+" />
-          </dl>
-        </div>
-        <p className="text-[11px] text-white/50">
-          © 2026 PAN IIT Alumni India · paniit.org
-        </p>
-      </aside>
+        {/* Soft glow behind the logo card */}
+        <div
+          className="pointer-events-none absolute left-1/2 top-1/3 -z-10 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl lg:left-[40%] lg:top-1/2"
+          aria-hidden
+        />
 
-      {/* Right panel: form */}
-      <section className="safe-top flex min-h-screen flex-col bg-white">
-        <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4 lg:hidden">
-          <Image
-            src="/logo/paniit.png"
-            alt="PAN IIT Alumni India"
-            width={512}
-            height={220}
-            priority
-            className="h-8 w-auto"
-          />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Summit 2026
-          </span>
-        </header>
-
-        <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
-          <div className="w-full max-w-sm">
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Member sign in
+        {/* Logo card */}
+        <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col items-center px-6 lg:max-w-md lg:px-0">
+          <div className="w-full rounded-2xl border border-white/10 bg-white px-8 py-7 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
+            <Image
+              src="/logo/paniit.png"
+              alt="PAN IIT Alumni India"
+              width={512}
+              height={220}
+              priority
+              className="mx-auto h-14 w-auto"
+            />
+            <div className="mt-4 border-t border-slate-200 pt-3 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">
+                Bangalore Summit
               </p>
-              <h2 className="text-2xl font-semibold tracking-tight text-brand-900 sm:text-[26px]">
-                Welcome to the summit
-              </h2>
-              <p className="text-sm leading-6 text-slate-600">
-                Sign in with the email you registered with.
+              <p className="mt-0.5 text-[11px] font-medium text-slate-600">
+                Sovereignty in Technology · May 16, 2026
               </p>
             </div>
+          </div>
 
-            <div className="mt-7">
-              <SignInForm />
-            </div>
-
-            <p className="mt-10 text-xs leading-5 text-slate-400">
-              By signing in you agree to the Summit Terms of Conduct. Trouble?{" "}
-              <a
-                href="mailto:summit@paniit.org"
-                className="font-medium text-brand-800 hover:text-brand-900"
-              >
-                summit@paniit.org
-              </a>
+          {/* Desktop-only tagline + metadata under the logo card */}
+          <div className="hidden text-center lg:mt-12 lg:block">
+            <h1 className="font-semibold leading-tight tracking-tight text-white text-3xl xl:text-4xl">
+              India&apos;s deepest network of
+              <br className="hidden xl:block" /> builders, investors &amp; policy minds.
+            </h1>
+            <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-white/70">
+              One day. 2,000+ attendees across 23 IITs. The official PAN IIT
+              Bangalore Summit app, in your pocket.
             </p>
+            <dl className="mx-auto mt-8 grid max-w-md grid-cols-3 gap-3 text-left">
+              <Stat icon={CalendarDays} label="Date" value="May 16, 2026" />
+              <Stat icon={MapPin} label="Venue" value="Taj Yeshwantpur" />
+              <Stat icon={Users} label="Attendees" value="2,000+" />
+            </dl>
           </div>
         </div>
 
-        <footer className="border-t border-slate-200 px-5 py-4 text-center text-[11px] text-slate-400 lg:hidden">
+        {/* Desktop-only footer attribution */}
+        <p className="relative z-10 hidden text-center text-[11px] text-white/40 lg:block">
+          © 2026 PAN IIT Alumni India · paniit.org
+        </p>
+      </section>
+
+      {/* FORM PANEL */}
+      <section className="relative z-10 -mt-24 flex flex-col bg-white lg:mt-0 lg:min-h-screen">
+        <div className="mx-auto -mt-2 w-full max-w-md rounded-t-3xl bg-white px-6 pb-10 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800">
+              Member sign in
+            </p>
+            <h2 className="text-2xl font-semibold tracking-tight text-brand-900 sm:text-[28px]">
+              Welcome back
+            </h2>
+            <p className="text-sm leading-6 text-slate-600">
+              Sign in with the email you registered with.
+            </p>
+          </div>
+
+          <div className="mt-7">
+            <SignInForm />
+          </div>
+
+          <p className="mt-8 text-xs leading-5 text-slate-500">
+            By signing in you agree to the Summit Terms of Conduct. Trouble?{" "}
+            <a
+              href="mailto:summit@paniit.org"
+              className="font-medium text-brand-800 hover:text-brand-900"
+            >
+              summit@paniit.org
+            </a>
+          </p>
+        </div>
+
+        <footer className="border-t border-slate-200 px-6 py-4 text-center text-[11px] text-slate-400 lg:hidden">
           © 2026 PAN IIT Alumni India · paniit.org
         </footer>
       </section>
@@ -105,11 +121,26 @@ export default async function SignInPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
   return (
-    <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-wider text-white/50">{label}</dt>
-      <dd className="mt-1 text-sm font-medium text-white">{value}</dd>
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 inline-grid size-7 shrink-0 place-items-center rounded-md bg-white/10 ring-1 ring-white/15">
+        <Icon className="size-3.5 text-white/80" />
+      </div>
+      <div className="min-w-0">
+        <dt className="text-[10px] font-semibold uppercase tracking-wider text-white/50">
+          {label}
+        </dt>
+        <dd className="mt-0.5 truncate text-xs font-medium text-white">{value}</dd>
+      </div>
     </div>
   );
 }
