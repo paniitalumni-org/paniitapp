@@ -52,7 +52,7 @@ export function ExhibitorsClient({
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search exhibitors, booths, categories…"
           aria-label="Search exhibitors"
-          className="h-11 w-full rounded-xl border border-brand-100 bg-white pl-10 pr-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+          className="h-11 w-full rounded-lg border border-brand-100 bg-white pl-10 pr-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
         />
       </div>
 
@@ -78,7 +78,7 @@ export function ExhibitorsClient({
             <li key={e.id}>
               <Link
                 href={`/exhibitors/${e.id}`}
-                className="group flex items-center gap-3 rounded-xl border border-brand-100 bg-white p-3 transition-all hover:border-brand-200 hover:shadow-sm"
+                className="group flex items-center gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
               >
                 <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-brand-50 ring-1 ring-brand-100">
                   {e.logo_url ? (

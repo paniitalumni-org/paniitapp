@@ -232,17 +232,17 @@ export function NetworkingClient({
 
   return (
     <div>
-      {/* Sub-tabs */}
-      <div className="mb-4 inline-flex rounded-full border border-brand-100 bg-white p-1 text-[13px] font-medium">
-        <SubTabButton active={tab === "people"} onClick={() => setTab("people")}>
+      {/* Sub-tabs — two separate buttons */}
+      <div className="mb-3 grid grid-cols-2 gap-2">
+        <FilterButton active={tab === "people"} onClick={() => setTab("people")}>
           People
-        </SubTabButton>
-        <SubTabButton
+        </FilterButton>
+        <FilterButton
           active={tab === "connections"}
           onClick={() => setTab("connections")}
         >
           Connections
-        </SubTabButton>
+        </FilterButton>
       </div>
 
       {/* Search + filter trigger */}
@@ -255,7 +255,7 @@ export function NetworkingClient({
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search name, company, role…"
             aria-label="Search attendees"
-            className="h-11 w-full rounded-xl border border-brand-100 bg-white pl-10 pr-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+            className="h-11 w-full rounded-lg border border-brand-100 bg-white pl-10 pr-3.5 text-sm font-medium text-brand-950 outline-none placeholder:font-normal placeholder:text-brand-800/45 focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
           />
         </div>
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -264,7 +264,7 @@ export function NetworkingClient({
               type="button"
               aria-label={`Filters${extraCount > 0 ? ` (${extraCount} active)` : ""}`}
               className={cn(
-                "relative inline-grid size-11 shrink-0 place-items-center rounded-xl border border-brand-100 bg-white text-brand-800 transition-colors hover:bg-brand-50",
+                "relative inline-grid size-11 shrink-0 place-items-center rounded-lg border border-brand-100 bg-white text-brand-800 transition-colors hover:bg-brand-50",
                 extraCount > 0 && "border-brand-800 text-brand-900"
               )}
             >
@@ -377,7 +377,7 @@ export function NetworkingClient({
   );
 }
 
-function SubTabButton({
+function FilterButton({
   active,
   onClick,
   children,
@@ -392,10 +392,10 @@ function SubTabButton({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full px-4 py-1.5 transition-colors",
+        "rounded-lg border px-4 py-2.5 text-[13px] font-semibold transition-colors",
         active
-          ? "bg-brand-800 text-white"
-          : "text-brand-800/70 hover:text-brand-900"
+          ? "border-brand-800 bg-brand-800 text-white"
+          : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
       )}
     >
       {children}
@@ -436,7 +436,7 @@ function AttendeeListItem({ p }: { p: AttendeeRow }) {
     <li>
       <Link
         href={`/attendees/${p.id}`}
-        className="group flex items-center gap-3 rounded-xl border border-brand-100 bg-white p-3 transition-all hover:border-brand-200 hover:shadow-sm"
+        className="group flex items-center gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
       >
         <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
           {p.photo_url ? (

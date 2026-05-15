@@ -9,10 +9,6 @@ import {
   QrCode,
   ScanLine,
   BookOpen,
-  Linkedin,
-  Instagram,
-  Youtube,
-  Facebook,
 } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import { createClient } from "@/lib/supabase/server";
@@ -53,11 +49,11 @@ const SUMMIT_MAPS_URL =
   "https://www.google.com/maps/dir/?api=1&destination=Taj+Yeshwantpur+Bengaluru";
 
 const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
-  { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <Linkedin className="size-[18px]" strokeWidth={1.6} /> },
-  { href: "https://www.instagram.com/paniit_alumni_india/", label: "Instagram", icon: <Instagram className="size-[18px]" strokeWidth={1.6} /> },
-  { href: "https://x.com/paniit_india", label: "X (Twitter)", icon: <XGlyph className="size-[15px]" /> },
-  { href: "https://www.youtube.com/@paniitalumniindia", label: "YouTube", icon: <Youtube className="size-[18px]" strokeWidth={1.6} /> },
-  { href: "https://www.facebook.com/paniitalumni/", label: "Facebook", icon: <Facebook className="size-[18px]" strokeWidth={1.6} /> },
+  { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <LinkedInLogo /> },
+  { href: "https://www.instagram.com/paniit_alumni_india/", label: "Instagram", icon: <InstagramLogo /> },
+  { href: "https://x.com/paniit_india", label: "X (Twitter)", icon: <XLogo /> },
+  { href: "https://www.youtube.com/@paniitalumniindia", label: "YouTube", icon: <YouTubeLogo /> },
+  { href: "https://www.facebook.com/paniitalumni/", label: "Facebook", icon: <FacebookLogo /> },
 ];
 
 export default async function HomePage() {
@@ -302,7 +298,7 @@ export default async function HomePage() {
       <section className="px-4 sm:px-6 lg:px-8">
         <SectionHeader title="Connect with us" />
         <div className="rounded-lg border border-brand-100 bg-white p-4">
-          <div className="flex flex-wrap justify-center gap-1.5">
+          <div className="flex flex-wrap justify-center gap-2">
             {SOCIALS.map((s) => (
               <a
                 key={s.label}
@@ -310,7 +306,8 @@ export default async function HomePage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="inline-grid size-10 place-items-center rounded-md text-brand-800 transition-colors hover:bg-brand-50"
+                title={s.label}
+                className="inline-grid size-10 place-items-center rounded-md transition-transform hover:-translate-y-0.5"
               >
                 {s.icon}
               </a>
@@ -355,16 +352,78 @@ function QuickAction({
   );
 }
 
-function XGlyph({ className }: { className?: string }) {
+/* Brand-color social logos — sized 28px so they read at a glance. */
+
+function LinkedInLogo() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2z" />
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden className="size-7">
+      <rect width="24" height="24" rx="5" fill="#0A66C2" />
+      <path
+        fill="#fff"
+        d="M7.06 9.5h2.55v8.2H7.06V9.5zm1.27-3.7a1.48 1.48 0 110 2.96 1.48 1.48 0 010-2.96zM11.4 9.5h2.45v1.12h.04c.34-.64 1.18-1.32 2.42-1.32 2.59 0 3.07 1.7 3.07 3.92v4.48h-2.55v-3.97c0-.95-.02-2.17-1.32-2.17-1.33 0-1.53 1.03-1.53 2.1v4.04H11.4V9.5z"
+      />
+    </svg>
+  );
+}
+
+function InstagramLogo() {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden className="size-7">
+      <defs>
+        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FCAF45" />
+          <stop offset="30%" stopColor="#F77737" />
+          <stop offset="55%" stopColor="#E1306C" />
+          <stop offset="85%" stopColor="#833AB4" />
+          <stop offset="100%" stopColor="#405DE6" />
+        </linearGradient>
+      </defs>
+      <rect width="24" height="24" rx="6" fill="url(#ig-grad)" />
+      <rect
+        x="5.5"
+        y="5.5"
+        width="13"
+        height="13"
+        rx="4"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.6"
+      />
+      <circle cx="12" cy="12" r="3.1" fill="none" stroke="#fff" strokeWidth="1.6" />
+      <circle cx="16.5" cy="7.6" r="0.9" fill="#fff" />
+    </svg>
+  );
+}
+
+function XLogo() {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden className="size-7">
+      <rect width="24" height="24" rx="5" fill="#000" />
+      <path
+        d="M16.05 5h2.16l-4.72 5.4L19 19h-4.34l-3.4-4.45L7.32 19H5.15l5.05-5.78L5 5h4.45l3.07 4.06L16.05 5zm-.76 12.7h1.2L8.78 6.23H7.5L15.29 17.7z"
+        fill="#fff"
+      />
+    </svg>
+  );
+}
+
+function YouTubeLogo() {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden className="size-7">
+      <rect width="24" height="24" rx="5" fill="#FF0000" />
+      <path d="M10.2 8.6v6.8L15.8 12 10.2 8.6z" fill="#fff" />
+    </svg>
+  );
+}
+
+function FacebookLogo() {
+  return (
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden className="size-7">
+      <rect width="24" height="24" rx="5" fill="#1877F2" />
+      <path
+        d="M13.6 19v-6.6h2.22l.33-2.58H13.6V8.16c0-.75.21-1.26 1.28-1.26h1.37V4.6c-.24-.03-1.05-.1-2-.1-1.98 0-3.34 1.21-3.34 3.43v1.9H8.7v2.58h2.21V19h2.69z"
+        fill="#fff"
+      />
     </svg>
   );
 }

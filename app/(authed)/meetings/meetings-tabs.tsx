@@ -159,34 +159,38 @@ export function MeetingsView({
       <button
         type="button"
         onClick={() => setAvailOpen(true)}
-        className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-5 py-4 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/40"
+        className="flex w-full items-center justify-between rounded-lg border border-brand-100 bg-white px-4 py-3.5 text-left transition-colors hover:bg-brand-50/30"
       >
-        <div className="flex items-center gap-3">
-          <span className="inline-grid size-10 place-items-center rounded-full bg-brand-50 text-brand-800">
-            <Clock4 className="size-[18px]" strokeWidth={1.8} />
-          </span>
-          <div>
-            <div className="text-sm font-semibold text-brand-950">
+        <span className="flex items-center gap-3">
+          <Clock4 className="size-[18px] text-brand-800" strokeWidth={1.5} />
+          <span className="flex flex-col leading-tight">
+            <span className="text-[13px] font-semibold text-brand-950">
               My availability
-            </div>
-            <div className="text-[12px] text-brand-900/70">
+            </span>
+            <span className="text-[11px] text-brand-900/65">
               Pick 30-min blocks on 16 May 2026
-            </div>
-          </div>
-        </div>
+            </span>
+          </span>
+        </span>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-800/75">
           Open
         </span>
       </button>
 
-      {/* Sub-tabs */}
-      <div className="inline-flex w-full rounded-full border border-brand-100 bg-white p-1 text-[13px] font-medium">
-        <SubTabButton active={tab === "by-me"} onClick={() => setTab("by-me")}>
-          Scheduled by me
-        </SubTabButton>
-        <SubTabButton active={tab === "by-others"} onClick={() => setTab("by-others")}>
-          Scheduled by others
-        </SubTabButton>
+      {/* Filter buttons — separate cards so each reads as its own action */}
+      <div className="grid grid-cols-2 gap-2">
+        <FilterButton
+          active={tab === "by-me"}
+          onClick={() => setTab("by-me")}
+          label="Scheduled by me"
+          count={byMe.length}
+        />
+        <FilterButton
+          active={tab === "by-others"}
+          onClick={() => setTab("by-others")}
+          label="Scheduled by others"
+          count={byOthers.length}
+        />
       </div>
 
       {/* List */}
@@ -240,6 +244,42 @@ export function MeetingsView({
   );
 }
 
+function FilterButton({
+  active,
+  onClick,
+  label,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  count: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex flex-col items-start gap-1 rounded-lg border px-4 py-3 text-left transition-colors",
+        active
+          ? "border-brand-800 bg-brand-800 text-white"
+          : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
+      )}
+    >
+      <span className="text-[13px] font-semibold leading-tight">{label}</span>
+      <span
+        className={cn(
+          "text-[11px] font-medium",
+          active ? "text-white/75" : "text-brand-800/70"
+        )}
+      >
+        {count} {count === 1 ? "meeting" : "meetings"}
+      </span>
+    </button>
+  );
+}
+
 function SubTabButton({
   active,
   onClick,
@@ -267,58 +307,86 @@ function SubTabButton({
 }
 
 function MeetingsGraph({ meetings }: { meetings: MeetingRow[] }) {
-  // 2-hour buckets, 8am to 10pm = 7 buckets.
-  const buckets = [
-    { label: "8a", lo: 8, hi: 10 },
-    { label: "10a", lo: 10, hi: 12 },
-    { label: "12p", lo: 12, hi: 14 },
-    { label: "2p", lo: 14, hi: 16 },
-    { label: "4p", lo: 16, hi: 18 },
-    { label: "6p", lo: 18, hi: 20 },
-    { label: "8p", lo: 20, hi: 22 },
-  ];
-  const counts = buckets.map(() => 0);
+  // Hourly buckets 8am→10pm, 14 columns. Cleaner column density reads more
+  // like a real chart than 7 wide bars and surfaces the busy/quiet hours.
+  const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  const counts = HOURS.map(() => 0);
   for (const m of meetings) {
     const s = asSlot(m.accepted_slot);
     if (!s) continue;
     const h = slotHourIST(s.start);
-    const idx = buckets.findIndex((b) => h >= b.lo && h < b.hi);
+    const idx = HOURS.indexOf(h);
     if (idx >= 0) counts[idx] += 1;
   }
   const max = Math.max(1, ...counts);
   const total = counts.reduce((a, b) => a + b, 0);
+  const peakHour = counts.indexOf(max);
+  const peakLabel =
+    total === 0
+      ? "No meetings yet"
+      : `Peak ${formatHourLabel(HOURS[peakHour])}`;
 
   return (
-    <div className="rounded-lg border border-brand-100 bg-white p-5">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-          Day at a glance
-        </h2>
-        <span className="text-[11px] font-medium text-brand-900/70">
-          {total} confirmed
-        </span>
+    <div className="rounded-lg border border-brand-100 bg-white px-4 pb-4 pt-4">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h2 className="text-[13px] font-semibold tracking-tight text-brand-950">
+            Day at a glance
+          </h2>
+          <p className="mt-0.5 text-[11px] text-brand-900/65">{peakLabel}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[20px] font-semibold leading-none tabular-nums text-brand-950">
+            {total}
+          </p>
+          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
+            confirmed
+          </p>
+        </div>
       </div>
-      <div className="mt-3 flex items-end gap-1.5">
-        {buckets.map((b, i) => (
-          <div key={b.label} className="flex flex-1 flex-col items-center gap-1">
+
+      <div className="mt-3 flex h-20 items-end gap-[3px]">
+        {HOURS.map((h, i) => {
+          const c = counts[i];
+          const heightPct = (c / max) * 100;
+          return (
             <div
-              className={cn(
-                "w-full rounded-md transition-all",
-                counts[i] > 0 ? "bg-brand-800" : "bg-brand-100"
-              )}
-              style={{
-                height: `${counts[i] > 0 ? 8 + (counts[i] / max) * 44 : 6}px`,
-              }}
-              aria-hidden
-            />
-            <span className="text-[10px] font-medium tabular-nums text-brand-800/70">
-              {b.label}
-            </span>
-          </div>
-        ))}
+              key={h}
+              className="group relative flex h-full flex-1 items-end"
+              title={`${formatHourLabel(h)} — ${c} ${c === 1 ? "meeting" : "meetings"}`}
+            >
+              <div
+                className={cn(
+                  "w-full rounded-sm transition-all",
+                  c > 0 ? "bg-brand-800" : "bg-brand-50"
+                )}
+                style={{ height: `${Math.max(c > 0 ? 12 : 6, heightPct)}%` }}
+                aria-hidden
+              />
+              {c > 0 ? (
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-semibold tabular-nums text-brand-800/85">
+                  {c}
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex justify-between text-[10px] font-medium tabular-nums text-brand-800/65">
+        <span>8a</span>
+        <span>12p</span>
+        <span>4p</span>
+        <span>9p</span>
       </div>
     </div>
   );
+}
+
+function formatHourLabel(h: number): string {
+  if (h === 0) return "12a";
+  if (h < 12) return `${h}a`;
+  if (h === 12) return "12p";
+  return `${h - 12}p`;
 }
 
 function InboxRow({
