@@ -59,19 +59,14 @@ export function SessionCard({
       href={`/agenda/${session.id}`}
       className="relative block overflow-hidden rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:border-slate-300"
     >
-      <div
-        className="absolute left-0 top-0 h-full w-[3px]"
-        style={{ backgroundColor: trackColor(session.track) }}
-        aria-hidden
-      />
-      <div className="flex items-start justify-between gap-3 pl-2">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium tabular-nums text-slate-900">
               {rangeIST(session.start_at, session.end_at)}
             </span>
             {session.is_featured ? (
-              <span className="text-[10px] font-medium uppercase tracking-wider text-iit-500">
+              <span className="rounded-[4px] border border-iit-100 bg-iit-50 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-iit-600">
                 Featured
               </span>
             ) : null}
@@ -88,20 +83,20 @@ export function SessionCard({
         <BookmarkButton sessionId={session.id} initial={bookmarked} />
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 pl-2 text-xs text-slate-600">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
         {session.venues?.name ? (
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3 w-3 text-slate-400" />
             {session.venues.name}
           </span>
         ) : null}
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+        <span className="rounded-[4px] border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
           {TRACK_LABELS[session.track] ?? session.track}
         </span>
       </div>
 
       {showCapacity && cap ? (
-        <div className="mt-3 pl-2">
+        <div className="mt-3">
           <div className="h-1 overflow-hidden rounded-full bg-slate-100">
             <div
               className={`h-full ${cap.fill} transition-all`}
