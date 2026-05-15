@@ -12,7 +12,7 @@ export default async function ExhibitorsPage() {
     const { data } = await supabase
       .from("exhibitors")
       .select(
-        "id, name, tagline, logo_url, category, booth_number, location_floor"
+        "id, name, tagline, logo_url, category, booth_number, location_floor, website"
       )
       .order("display_order", { ascending: true })
       .order("name", { ascending: true });

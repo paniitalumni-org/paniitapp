@@ -110,14 +110,14 @@ export default async function ExhibitorDetailPage({
               {exhibitor.tagline}
             </p>
           ) : null}
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-brand-800/80">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {exhibitor.category ? (
-              <span className="rounded-full bg-brand-50 px-2.5 py-1">
+              <span className="inline-flex items-center rounded-[4px] border border-slate-900/25 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-950">
                 {exhibitor.category}
               </span>
             ) : null}
             {exhibitor.booth_number || exhibitor.location_floor ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1 rounded-[4px] border border-slate-900/25 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-950">
                 <MapPin className="size-3" strokeWidth={1.8} />
                 {[exhibitor.booth_number, exhibitor.location_floor]
                   .filter(Boolean)
@@ -129,7 +129,7 @@ export default async function ExhibitorDetailPage({
                 href={exhibitor.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-brand-100 px-2.5 py-1 text-brand-800 hover:bg-brand-50"
+                className="inline-flex items-center gap-1 rounded-[4px] border border-slate-900/25 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-950 hover:bg-slate-50"
               >
                 <ExternalLink className="size-3" strokeWidth={1.8} />
                 Website
