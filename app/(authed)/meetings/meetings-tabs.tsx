@@ -788,6 +788,7 @@ function AvailabilitySheet({
   acceptedWindows: Slot[];
 }) {
   const supabase = useMemo(() => createClient(), []);
+  const { toast } = useToast();
   const grid = useMemo(() => buildAvailabilitySlots(), []);
   const [rows, setRows] = useState<AvailabilityRow[] | null>(null);
   const [pendingStarts, setPendingStarts] = useState<Set<string>>(new Set());
@@ -811,16 +812,23 @@ function AvailabilitySheet({
   }, [acceptedWindows]);
 
   const fetchAvail = useCallback(async () => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("availability_slots")
       .select("slot_start, slot_end, status")
       .eq("user_id", userId);
+    if (error) {
+      toast({
+        title: "Could not load availability",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
     setRows((data as AvailabilityRow[] | null) ?? []);
-  }, [supabase, userId]);
+  }, [supabase, toast, userId]);
 
   useEffect(() => {
     if (!open) return;
-    setRows(null);
     void fetchAvail();
   }, [open, fetchAvail]);
 
@@ -842,17 +850,27 @@ function AvailabilitySheet({
     });
 
     try {
-      await supabase.from("availability_slots").upsert(
-        {
-          user_id: userId,
-          slot_start: slot.start,
-          slot_end: slot.end,
-          status: next,
-        },
-        { onConflict: "user_id,slot_start" }
-      );
+      const res = await fetch("/api/availability/slot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot, status: next }),
+      });
+      if (res.ok) return;
+
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      await fetchAvail();
+      toast({
+        title: "Could not save availability",
+        description: data.error ?? "Try again.",
+        variant: "destructive",
+      });
     } catch {
       await fetchAvail();
+      toast({
+        title: "Could not save availability",
+        description: "Check your connection and try again.",
+        variant: "destructive",
+      });
     } finally {
       setPendingStarts((cur) => {
         const nextPending = new Set(cur);
@@ -904,7 +922,9 @@ function AvailabilitySheet({
               <span className="size-2 rounded-full bg-brand-800" aria-hidden />
               Available slots
             </span>
-            <span className="tabular-nums text-brand-800">{availableCount}</span>
+            <span className="tabular-nums text-brand-800">
+              {rows === null ? "..." : availableCount}
+            </span>
           </div>
           <Legend />
 
