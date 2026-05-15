@@ -19,9 +19,9 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="grid h-[100svh] grid-rows-[minmax(178px,31svh)_1fr] overflow-hidden lg:grid-cols-2 lg:grid-rows-none">
+    <main className="flex h-[100svh] flex-col overflow-hidden lg:grid lg:h-screen lg:grid-cols-2 lg:overflow-visible">
       {/* HERO PANEL */}
-      <section className="relative isolate flex items-center overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] px-5 py-4 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12 xl:p-16">
+      <section className="relative isolate flex flex-1 items-end overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] px-5 pb-16 pt-10 lg:flex-none lg:items-center lg:justify-center lg:p-12 lg:pb-12 xl:p-16">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -44,7 +44,7 @@ export default async function SignInPage() {
               width={512}
               height={220}
               priority
-              className="mx-auto h-9 w-auto lg:h-11"
+              className="mx-auto h-10 w-auto lg:h-11"
             />
             <div className="mt-2 border-t border-brand-100 pt-2 text-center lg:mt-3 lg:pt-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800">
@@ -75,9 +75,9 @@ export default async function SignInPage() {
         </div>
       </section>
 
-      {/* FORM PANEL */}
-      <section className="relative z-10 flex min-h-0 flex-col bg-white lg:min-h-screen">
-        <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-3 pt-5 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:h-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
+      {/* FORM PANEL — overlaps the hero from below */}
+      <section className="relative z-10 -mt-10 flex min-h-0 flex-col lg:mt-0 lg:min-h-screen lg:bg-white">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-3 pt-6 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:h-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
           <div>
             <div className="flex flex-col items-center text-center">
               <GreetingRotator />
