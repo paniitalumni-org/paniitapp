@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronUp, MessageCircle, Sparkles, ShieldCheck, Pin, MoreHorizontal, Check, X, Loader2 } from "lucide-react";
+import { ChevronUp, MessageCircle, User as UserIcon, ShieldCheck, Pin, MoreHorizontal, Check, X, Loader2, RotateCcw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -289,7 +289,7 @@ export function QAClient({
                     ) : null}
                     {isMine ? (
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-navy-50 px-1.5 py-0.5 text-[10px] font-medium text-navy-700">
-                        <Sparkles className="h-2.5 w-2.5" />
+                        <UserIcon className="h-2.5 w-2.5" />
                         Your question
                       </span>
                     ) : null}
@@ -414,7 +414,7 @@ function ModMenu({
             { label: "Mark answered", icon: Check, action: onAnswer },
             { label: "Pin", icon: Pin, action: onPin },
             { label: "Dismiss", icon: X, action: onDismiss },
-            { label: "Restore", icon: Sparkles, action: onRestore },
+            { label: "Restore", icon: RotateCcw, action: onRestore },
           ].map((opt) => (
             <button
               key={opt.label}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Sparkles } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
 import { TRACK_COLOR_BG, TRACK_LABELS } from "@/lib/constants";
 import { rangeIST } from "@/lib/date";
@@ -54,8 +54,7 @@ export function SessionCard({
         <div className="mt-1 flex items-start gap-2">
           <h3 className="text-[15px] font-semibold leading-snug text-navy-900">{session.title}</h3>
           {session.is_featured ? (
-            <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full border border-gold-200 bg-gold-50 px-1.5 py-0.5 text-[10px] font-semibold text-gold-700">
-              <Sparkles className="h-2.5 w-2.5" />
+            <span className="inline-flex shrink-0 items-center rounded-sm border border-navy-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-navy-700">
               Featured
             </span>
           ) : null}

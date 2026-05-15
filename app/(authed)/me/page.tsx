@@ -7,7 +7,7 @@ import {
   LogOut,
   QrCode,
   Award,
-  Sparkles,
+  FileText,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -118,7 +118,7 @@ export default async function MePage() {
         <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100 bg-white">
           <MeRow icon={QrCode} label="My QR badge" href="/me/qr" />
           <MeRow icon={Award} label="Sponsors & perks" href="/sponsors" />
-          <MeRow icon={Sparkles} label="My summit recap" href="/recap" />
+          <MeRow icon={FileText} label="My summit recap" href="/recap" />
         </ul>
       </div>
 

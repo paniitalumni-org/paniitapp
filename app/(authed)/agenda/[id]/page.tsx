@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, MapPin, Sparkles } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -144,8 +144,7 @@ export default async function SessionDetailPage({
             {TRACK_LABELS[track] ?? track}
           </span>
           {session.is_featured ? (
-            <span className="ml-1 inline-flex items-center gap-0.5 rounded-full border border-gold-300/40 bg-gold-400/20 px-1.5 py-0.5 text-[10px] font-semibold text-gold-200">
-              <Sparkles className="h-2.5 w-2.5" />
+            <span className="ml-1 inline-flex items-center rounded-sm border border-white/30 bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
               Featured
             </span>
           ) : null}

@@ -3,23 +3,23 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Phone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
-import { formatPhoneE164, isValidIndianPhone } from "@/lib/utils";
 
-type Step = "phone" | "code";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type Step = "email" | "code";
 
 export function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const redirectTo = search.get("redirect") || "/agenda";
   const { toast } = useToast();
-  const [step, setStep] = useState<Step>("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -27,17 +27,20 @@ export function LoginForm() {
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
-    if (!isValidIndianPhone(phone)) {
+    const trimmed = email.trim().toLowerCase();
+    if (!EMAIL_RE.test(trimmed)) {
       toast({
-        title: "Check your phone number",
-        description: "Enter a 10-digit Indian mobile starting with 6, 7, 8, or 9.",
+        title: "Enter a valid email",
+        description: "Use the address you registered with for the summit.",
         variant: "destructive",
       });
       return;
     }
-    const e164 = formatPhoneE164(phone);
     startTransition(async () => {
-      const { error } = await supabase.auth.signInWithOtp({ phone: e164 });
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: { shouldCreateUser: true },
+      });
       if (error) {
         toast({
           title: "Could not send code",
@@ -47,8 +50,8 @@ export function LoginForm() {
         return;
       }
       toast({
-        title: "Code sent",
-        description: `We just texted a 6-digit code to ${e164}.`,
+        title: "Verification code sent",
+        description: `Check ${trimmed} for a 6-digit code.`,
       });
       setStep("code");
     });
@@ -57,23 +60,20 @@ export function LoginForm() {
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     if (code.length !== 6) {
-      toast({
-        title: "Enter all 6 digits",
-        variant: "destructive",
-      });
+      toast({ title: "Enter all 6 digits", variant: "destructive" });
       return;
     }
-    const e164 = formatPhoneE164(phone);
+    const trimmed = email.trim().toLowerCase();
     startTransition(async () => {
       const { data, error } = await supabase.auth.verifyOtp({
-        phone: e164,
+        email: trimmed,
         token: code,
-        type: "sms",
+        type: "email",
       });
       if (error || !data.user) {
         toast({
-          title: "Code didn't match",
-          description: error?.message || "Try again or re-send the code.",
+          title: "Code did not match",
+          description: error?.message || "Request a new code and try again.",
           variant: "destructive",
         });
         return;
@@ -89,119 +89,160 @@ export function LoginForm() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-paniit-gradient">
-      <div className="absolute inset-0 bg-dot-grid opacity-10" aria-hidden />
-
-      <div className="safe-top relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-10 pt-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-white/80 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Link>
-
-        <div className="mt-8 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur">
-            <span className="font-serif text-base font-bold text-white">PI</span>
-          </div>
-          <h1 className="mt-5 font-serif text-2xl font-bold text-white">Welcome to PAN IIT 2026</h1>
-          <p className="mt-1.5 text-sm text-white/70">Sign in with your phone to continue.</p>
+    <div className="min-h-screen bg-white">
+      <header className="border-b border-navy-100 bg-white">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
+          <Link href="/login" className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-items-center rounded-sm bg-navy-900 text-white">
+              <span className="font-serif text-xs font-semibold tracking-wide">PI</span>
+            </div>
+            <div className="leading-tight">
+              <div className="font-serif text-[15px] font-semibold text-navy-900">
+                PAN IIT Alumni India
+              </div>
+              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-navy-500">
+                Bangalore Summit 2026
+              </div>
+            </div>
+          </Link>
+          <nav className="hidden items-center gap-8 md:flex">
+            <a
+              href="https://paniit.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-navy-700 transition-colors hover:text-navy-900"
+            >
+              About
+            </a>
+            <a
+              href="https://paniit.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-navy-700 transition-colors hover:text-navy-900"
+            >
+              Summit
+            </a>
+            <a
+              href="https://paniit.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-navy-700 transition-colors hover:text-navy-900"
+            >
+              Contact
+            </a>
+          </nav>
         </div>
+      </header>
 
-        <div className="mt-8 rounded-2xl border border-navy-100 bg-white p-6 shadow-xl shadow-black/10">
-          {step === "phone" ? (
-            <form onSubmit={handleSendCode} className="space-y-4">
-              <div>
-                <Label htmlFor="phone" className="mb-2 block">
-                  Mobile number
-                </Label>
-                <div className="flex items-stretch gap-2">
-                  <div className="inline-flex items-center gap-1 rounded-lg border border-navy-200 bg-navy-50 px-3 text-sm font-medium text-navy-700">
-                    <Phone className="h-3.5 w-3.5" />
-                    +91
-                  </div>
+      <main className="mx-auto flex w-full max-w-6xl items-center justify-center px-6 py-16 md:py-24">
+        <div className="w-full max-w-md">
+          <div className="mb-10 text-center">
+            <div className="inline-flex items-center gap-2 border-b border-navy-200 pb-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-navy-600">
+              Member Sign In
+            </div>
+            <h1 className="mt-6 font-serif text-3xl font-semibold leading-tight text-navy-900 md:text-4xl">
+              Welcome back
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-navy-600">
+              Sign in with your registered email to access the official PAN IIT Bangalore Summit 2026 app.
+            </p>
+          </div>
+
+          <div className="border border-navy-100 bg-white p-8 shadow-sm">
+            {step === "email" ? (
+              <form onSubmit={handleSendCode} className="space-y-5">
+                <div>
+                  <Label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-navy-700">
+                    Email address
+                  </Label>
                   <Input
-                    id="phone"
-                    inputMode="numeric"
-                    autoComplete="tel-national"
-                    placeholder="98765 43210"
-                    value={phone}
-                    maxLength={10}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    className="tabular-nums tracking-wider"
-                    aria-label="Mobile number"
+                    id="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 rounded-none border-navy-200 text-base"
+                    aria-label="Email address"
+                    required
                   />
                 </div>
-                <p className="mt-2 text-xs text-navy-400">
-                  We&apos;ll text you a one-time code. Standard SMS rates apply.
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 w-full rounded-none bg-navy-900 text-sm font-semibold uppercase tracking-wider text-white hover:bg-navy-800"
+                  disabled={pending}
+                >
+                  {pending ? "Sending..." : "Continue"}
+                </Button>
+                <p className="text-center text-xs leading-relaxed text-navy-500">
+                  We will email a one-time verification code. No password required.
                 </p>
-              </div>
-              <Button type="submit" size="lg" className="w-full" disabled={pending}>
-                {pending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Send code
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-              <p className="flex items-center justify-center gap-1.5 text-xs text-navy-400">
-                <ShieldCheck className="h-3.5 w-3.5 text-navy-500" />
-                Your number is never shared with other attendees.
-              </p>
-            </form>
-          ) : (
-            <form onSubmit={handleVerify} className="space-y-4">
-              <div>
-                <Label htmlFor="code" className="mb-2 block">
-                  6-digit code
-                </Label>
-                <Input
-                  id="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  placeholder="------"
-                  value={code}
-                  maxLength={6}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="h-14 text-center text-2xl font-semibold tabular-nums tracking-[0.4em]"
-                  aria-label="Verification code"
-                  autoFocus
-                />
-                <p className="mt-2 text-xs text-navy-400">
-                  Sent to +91 {phone.replace(/(\d{5})(\d{5})/, "$1 $2")}.
-                </p>
-              </div>
-              <Button type="submit" size="lg" className="w-full" disabled={pending}>
-                {pending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Verify &amp; continue
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </Button>
-              <button
-                type="button"
-                onClick={() => {
-                  setStep("phone");
-                  setCode("");
-                }}
-                className="block w-full text-center text-sm text-navy-600 hover:text-navy-900"
-              >
-                Use a different number
-              </button>
-            </form>
-          )}
-        </div>
+              </form>
+            ) : (
+              <form onSubmit={handleVerify} className="space-y-5">
+                <div>
+                  <Label htmlFor="code" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-navy-700">
+                    Verification code
+                  </Label>
+                  <Input
+                    id="code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="------"
+                    value={code}
+                    maxLength={6}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="h-14 rounded-none border-navy-200 text-center text-2xl font-semibold tabular-nums tracking-[0.5em]"
+                    aria-label="Verification code"
+                    autoFocus
+                  />
+                  <p className="mt-3 text-xs text-navy-500">
+                    Sent to <span className="font-medium text-navy-800">{email}</span>
+                  </p>
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 w-full rounded-none bg-navy-900 text-sm font-semibold uppercase tracking-wider text-white hover:bg-navy-800"
+                  disabled={pending}
+                >
+                  {pending ? "Verifying..." : "Verify and continue"}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("email");
+                    setCode("");
+                  }}
+                  className="block w-full text-center text-xs font-medium uppercase tracking-wider text-navy-600 transition-colors hover:text-navy-900"
+                >
+                  Use a different email
+                </button>
+              </form>
+            )}
+          </div>
 
-        <p className="mt-6 text-center text-xs text-white/60">
-          By signing in you agree to receive event-related notifications.
-        </p>
-      </div>
-    </main>
+          <p className="mt-8 text-center text-xs leading-relaxed text-navy-500">
+            By signing in you agree to receive event-related communications from PAN IIT Alumni India.
+          </p>
+        </div>
+      </main>
+
+      <footer className="border-t border-navy-100 bg-white">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-navy-500 md:flex-row">
+          <div>© 2026 PAN IIT Alumni India. All rights reserved.</div>
+          <a
+            href="https://paniit.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-navy-700 transition-colors hover:text-navy-900"
+          >
+            paniit.org
+          </a>
+        </div>
+      </footer>
+    </div>
   );
 }
