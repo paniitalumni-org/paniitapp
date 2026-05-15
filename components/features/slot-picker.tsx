@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  buildDaySlots,
+  buildAvailabilitySlots,
   classifySlot,
   slotLabel,
   type Slot,
@@ -17,16 +17,18 @@ interface ConflictWindow {
 }
 
 interface Props {
+  inviteeId: string;
   selected: Slot[];
   onChange: (next: Slot[]) => void;
   max?: number;
 }
 
-export function SlotPicker({ selected, onChange, max = 3 }: Props) {
+export function SlotPicker({ inviteeId, selected, onChange, max = 3 }: Props) {
   const supabase = useMemo(() => createClient(), []);
-  const slots = useMemo(() => buildDaySlots(), []);
+  const slots = useMemo(() => buildAvailabilitySlots(), []);
   const [bookmarked, setBookmarked] = useState<ConflictWindow[]>([]);
   const [accepted, setAccepted] = useState<ConflictWindow[]>([]);
+  const [availableStarts, setAvailableStarts] = useState<Set<string> | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -64,11 +66,30 @@ export function SlotPicker({ selected, onChange, max = 3 }: Props) {
     })();
   }, [supabase]);
 
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("availability_slots")
+        .select("slot_start")
+        .eq("user_id", inviteeId)
+        .eq("status", "available");
+
+      setAvailableStarts(
+        new Set(
+          ((data as { slot_start: string }[] | null) ?? []).map((r) =>
+            new Date(r.slot_start).toISOString()
+          )
+        )
+      );
+    })();
+  }, [inviteeId, supabase]);
+
   function isPicked(s: Slot): boolean {
     return selected.some((p) => p.start === s.start);
   }
 
   function toggle(s: Slot) {
+    if (!availableStarts?.has(s.start)) return;
     if (isPicked(s)) {
       onChange(selected.filter((p) => p.start !== s.start));
       return;
@@ -93,7 +114,8 @@ export function SlotPicker({ selected, onChange, max = 3 }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-        <LegendDot color="bg-white border border-slate-300" /> Free
+        <LegendDot color="bg-white border border-slate-300" /> Available
+        <LegendDot color="bg-slate-100 border border-slate-200" /> Not available
         <LegendDot color="bg-amber-100 border border-amber-400" /> Conflicts with bookmark
         <LegendDot color="bg-iit-100 border border-iit-400" /> Conflicts with meeting
         <LegendDot color="bg-brand-800" /> Selected
@@ -108,17 +130,21 @@ export function SlotPicker({ selected, onChange, max = 3 }: Props) {
             <div className="grid grid-cols-4 gap-1.5">
               {items.map((s) => {
                 const c = classifySlot(s, bookmarked, accepted);
+                const inviteeAvailable = availableStarts?.has(s.start) ?? false;
                 const picked = isPicked(s);
+                const disabled = !inviteeAvailable || (c === "hard" && !picked);
                 return (
                   <button
                     key={s.start}
                     type="button"
                     onClick={() => toggle(s)}
-                    disabled={c === "hard" && !picked}
+                    disabled={disabled}
                     aria-pressed={picked}
                     className={cn(
                       "h-9 rounded-md border text-[11px] font-medium tabular-nums transition-colors",
-                      conflictStyles(c, picked)
+                      inviteeAvailable
+                        ? conflictStyles(c, picked)
+                        : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
                     )}
                   >
                     {slotLabel(s)}
@@ -131,7 +157,7 @@ export function SlotPicker({ selected, onChange, max = 3 }: Props) {
       </div>
 
       <div className="text-xs text-slate-500">
-        Pick up to {max} slots. The other person picks one to accept.
+        Pick up to {max} available slots. The other person picks one to accept.
       </div>
     </div>
   );

@@ -81,7 +81,7 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
           <SheetTitle>Request a 15-min meeting</SheetTitle>
         </SheetHeader>
         <div className="space-y-5 px-6 pb-6 pt-2">
-          <SlotPicker selected={slots} onChange={setSlots} max={3} />
+          <SlotPicker inviteeId={inviteeId} selected={slots} onChange={setSlots} max={3} />
 
           <div>
             <Label
