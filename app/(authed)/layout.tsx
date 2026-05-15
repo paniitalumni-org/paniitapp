@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { TopBar } from "@/components/features/top-bar";
 import { BottomNav } from "@/components/features/bottom-nav";
+import { ChatFab } from "@/components/features/chat/chat-fab";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 
@@ -44,6 +45,7 @@ export default async function AuthedLayout({
         {children}
       </main>
       <BottomNav />
+      <ChatFab />
     </div>
   );
 }

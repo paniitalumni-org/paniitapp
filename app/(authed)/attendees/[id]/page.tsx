@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Linkedin, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChatBubbleGlyph } from "@/components/features/chat/chat-icon";
 import {
   SessionCard,
   type SessionCardData,
@@ -175,8 +177,17 @@ export default async function AttendeeProfilePage({
         ) : null}
       </section>
 
-      {/* Schedule meeting — full width, no surrounding card */}
-      <ScheduleMeetingButton inviteeId={profile.id} />
+      {/* Schedule meeting + Chat — full-width CTAs */}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <ScheduleMeetingButton inviteeId={profile.id} />
+        <Link
+          href={`/chat/${profile.id}`}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-brand-100 bg-white text-[13px] font-semibold tracking-tight text-brand-900 transition-colors hover:bg-brand-50/30"
+        >
+          <ChatBubbleGlyph className="size-[18px]" strokeWidth={1.6} />
+          Chat
+        </Link>
+      </div>
 
       {/* About */}
       {profile.bio ? (

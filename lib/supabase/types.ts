@@ -104,6 +104,26 @@ export interface Partner {
   created_at: string;
 }
 
+// Direct messages between attendees. conversations + messages tables are
+// owner-managed by Supabase migrations; messages references a conversation
+// row whose participant_a / participant_b are the two attendees.
+export interface Conversation {
+  id: string;
+  participant_a: string;
+  participant_b: string;
+  last_message_at: string | null;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  body: string;
+  created_at: string;
+  read_at: string | null;
+}
+
 export interface KeyParticipant {
   id: string;
   full_name: string;

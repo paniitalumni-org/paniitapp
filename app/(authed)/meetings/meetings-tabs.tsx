@@ -582,9 +582,13 @@ function AvailabilitySheet({
 
   // Status lookup: my-declared status overrides system "booked" inferred from
   // accepted meetings. Default = unset (treat as not available).
+  // Keys are canonical ISO strings because Postgres timestamptz comes back as
+  // "+00:00" while our slot ISO is "...000Z" — same instant, different text.
   const lookup = useMemo(() => {
     const m = new Map<string, AvailStatus>();
-    for (const r of rows ?? []) m.set(r.slot_start, r.status);
+    for (const r of rows ?? []) {
+      m.set(new Date(r.slot_start).toISOString(), r.status);
+    }
     return m;
   }, [rows]);
 
@@ -607,8 +611,6 @@ function AvailabilitySheet({
     setRows(null);
     void fetchAvail();
   }, [open, fetchAvail]);
-
-  const [mode, setMode] = useState<"available" | "blocked">("available");
 
   async function setStatus(slot: Slot, next: AvailStatus | null) {
     setPending(slot.start);
@@ -641,16 +643,12 @@ function AvailabilitySheet({
     return lookup.get(slot.start) ?? null;
   }
 
-  // Tap = apply current mode to the slot. Tapping a slot already in that
-  // mode clears it. Booked slots (from accepted meetings) are immutable.
+  // Tap an unset slot to mark it available; tap again to clear it. Booked
+  // slots (from accepted meetings) are immutable.
   function toggle(slot: Slot) {
     const cur = effectiveStatus(slot);
     if (cur === "booked") return;
-    if (cur === mode) {
-      void setStatus(slot, null);
-    } else {
-      void setStatus(slot, mode);
-    }
+    void setStatus(slot, cur === "available" ? null : "available");
   }
 
   // Group slots into morning (8-12), afternoon (12-17), evening (17-22)
@@ -666,7 +664,6 @@ function AvailabilitySheet({
   ];
 
   const availableCount = (rows ?? []).filter((r) => r.status === "available").length;
-  const blockedCount = (rows ?? []).filter((r) => r.status === "blocked").length;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -674,26 +671,16 @@ function AvailabilitySheet({
         <SheetHeader>
           <SheetTitle>My availability · 16 May 2026</SheetTitle>
           <SheetDescription>
-            Pick the mode below, then tap any 15-minute slot. Tap again to clear it.
+            Tap any 15-minute slot to mark yourself available. Tap again to clear it.
           </SheetDescription>
         </SheetHeader>
         <div className="px-6 pb-6 pt-3">
-          {/* Mode switch */}
-          <div className="mb-3 grid grid-cols-2 gap-1.5 rounded-lg border border-brand-100 bg-white p-1">
-            <ModeButton
-              active={mode === "available"}
-              onClick={() => setMode("available")}
-              swatch="bg-brand-800"
-              label="Mark available"
-              count={availableCount}
-            />
-            <ModeButton
-              active={mode === "blocked"}
-              onClick={() => setMode("blocked")}
-              swatch="bg-iit-500"
-              label="Mark blocked"
-              count={blockedCount}
-            />
+          <div className="mb-3 flex items-center justify-between rounded-lg border border-brand-100 bg-brand-50/50 px-3 py-2 text-[12px] font-semibold text-brand-900">
+            <span className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-brand-800" aria-hidden />
+              Available slots
+            </span>
+            <span className="tabular-nums text-brand-800">{availableCount}</span>
           </div>
           <Legend />
 
@@ -712,15 +699,13 @@ function AvailabilitySheet({
                     {sec.slots.map((s) => {
                       const st = effectiveStatus(s);
                       const isPending = pending === s.start;
-                      const ariaPressed =
-                        st === "available" || st === "blocked";
                       return (
                         <button
                           key={s.start}
                           type="button"
                           onClick={() => toggle(s)}
                           disabled={st === "booked" || isPending}
-                          aria-pressed={ariaPressed}
+                          aria-pressed={st === "available"}
                           aria-label={`${formatInTimeZone(
                             new Date(s.start),
                             SUMMIT_TZ,
@@ -729,11 +714,9 @@ function AvailabilitySheet({
                           className={cn(
                             "rounded-md border px-2 py-2 text-[12px] font-semibold tabular-nums transition-colors",
                             st === "available" &&
-                              "border-brand-800 bg-brand-800 text-white",
+                              "border-brand-800 bg-brand-800 text-white shadow-sm",
                             st === "booked" &&
                               "cursor-not-allowed border-emerald-500 bg-emerald-500 text-white",
-                            st === "blocked" &&
-                              "border-iit-500 bg-iit-500 text-white",
                             !st &&
                               "border-brand-100 bg-white text-brand-900/75 hover:border-brand-300 hover:bg-brand-50/50",
                             isPending && "opacity-60"
@@ -754,45 +737,12 @@ function AvailabilitySheet({
   );
 }
 
-function ModeButton({
-  active,
-  onClick,
-  swatch,
-  label,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  swatch: string;
-  label: string;
-  count: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[12px] font-semibold transition-colors",
-        active
-          ? "bg-brand-50 text-brand-950 ring-1 ring-brand-200"
-          : "text-brand-900/65 hover:bg-brand-50/40"
-      )}
-    >
-      <span className={cn("size-2 rounded-full", swatch)} aria-hidden />
-      {label}
-      <span className="text-[11px] font-medium text-brand-800/75">{count}</span>
-    </button>
-  );
-}
-
 function Legend() {
   return (
     <div className="mb-4 flex flex-wrap gap-3 text-[11px] font-medium text-brand-900/75">
       <Swatch className="bg-brand-800" label="Available" />
-      <Swatch className="bg-emerald-500" label="Booked (auto)" />
-      <Swatch className="bg-iit-500" label="Blocked" />
-      <Swatch className="border border-brand-100 bg-white" label="Unset" />
+      <Swatch className="bg-emerald-500" label="Booked" />
+      <Swatch className="border border-brand-100 bg-white" label="Tap to add" />
     </div>
   );
 }
