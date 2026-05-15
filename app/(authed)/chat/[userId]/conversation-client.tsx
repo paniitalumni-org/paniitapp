@@ -108,7 +108,20 @@ export function ConversationView({
         async (payload) => {
           const m = payload.new as ChatMessage;
           setMessages((prev) => {
+            // Already have this persisted row.
             if (prev.some((x) => x.id === m.id)) return prev;
+            // If this is the realtime echo of our own optimistic send,
+            // replace the optimistic placeholder instead of appending.
+            if (m.sender_id === me) {
+              const idx = prev.findIndex(
+                (x) => x.id.startsWith("optimistic-") && x.body === m.body
+              );
+              if (idx >= 0) {
+                const next = prev.slice();
+                next[idx] = m;
+                return next;
+              }
+            }
             return [...prev, m];
           });
           if (m.sender_id !== me) {
