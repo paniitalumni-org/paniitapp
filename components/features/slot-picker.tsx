@@ -38,33 +38,28 @@ export function SlotPicker({ selected, onChange, max = 3 }: Props) {
       const [bm, mt] = await Promise.all([
         supabase
           .from("session_bookmarks")
-          .select("sessions(starts_at, ends_at)")
+          .select("sessions(start_at, end_at)")
           .eq("user_id", user.id),
         supabase
           .from("meetings")
-          .select("scheduled_start, scheduled_end, status, requester_id, invitee_id")
+          .select("accepted_slot, status, requester_id, invitee_id")
           .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
           .eq("status", "accepted"),
       ]);
 
-      const bms = (bm.data as { sessions: { starts_at: string; ends_at: string } | null }[] | null) ?? [];
+      const bms = (bm.data as { sessions: { start_at: string; end_at: string } | null }[] | null) ?? [];
       setBookmarked(
         bms
           .map((r) => r.sessions)
-          .filter((s): s is { starts_at: string; ends_at: string } => !!s)
-          .map((s) => ({ start: s.starts_at, end: s.ends_at }))
+          .filter((s): s is { start_at: string; end_at: string } => !!s)
+          .map((s) => ({ start: s.start_at, end: s.end_at }))
       );
 
-      const mts = (mt.data as {
-        scheduled_start: string | null;
-        scheduled_end: string | null;
-      }[] | null) ?? [];
+      const mts = (mt.data as { accepted_slot: { start: string; end: string } | null }[] | null) ?? [];
       setAccepted(
         mts
-          .filter((m): m is { scheduled_start: string; scheduled_end: string } =>
-            !!m.scheduled_start && !!m.scheduled_end
-          )
-          .map((m) => ({ start: m.scheduled_start, end: m.scheduled_end }))
+          .map((m) => m.accepted_slot)
+          .filter((s): s is { start: string; end: string } => !!s)
       );
     })();
   }, [supabase]);

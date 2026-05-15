@@ -14,8 +14,10 @@ interface InitialProfile {
   branch?: string | null;
   bio?: string | null;
   linkedin_url?: string | null;
-  asks?: string | null;
-  offers?: string | null;
+  twitter_url?: string | null;
+  asks?: string[] | null;
+  offers?: string[] | null;
+  interests?: string[] | null;
 }
 
 function SubmitButton() {
@@ -43,6 +45,10 @@ function errorMessage(state: UpdateProfileResult | null): string | null {
     default:
       return null;
   }
+}
+
+function arrToText(arr: string[] | null | undefined): string {
+  return (arr ?? []).join(", ");
 }
 
 export function EditProfileForm({ initial }: { initial: InitialProfile }) {
@@ -78,26 +84,42 @@ export function EditProfileForm({ initial }: { initial: InitialProfile }) {
       </div>
       <Field label="Branch" name="branch" defaultValue={initial.branch ?? ""} />
       <TextField label="Bio" name="bio" rows={4} defaultValue={initial.bio ?? ""} />
-      <Field
-        label="LinkedIn URL"
-        name="linkedin_url"
-        type="url"
-        defaultValue={initial.linkedin_url ?? ""}
-        placeholder="https://linkedin.com/in/..."
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <Field
+          label="LinkedIn URL"
+          name="linkedin_url"
+          type="url"
+          defaultValue={initial.linkedin_url ?? ""}
+          placeholder="https://linkedin.com/in/..."
+        />
+        <Field
+          label="Twitter / X URL"
+          name="twitter_url"
+          type="url"
+          defaultValue={initial.twitter_url ?? ""}
+          placeholder="https://x.com/..."
+        />
+      </div>
+      <TextField
+        label="Interests"
+        name="interests"
+        rows={2}
+        defaultValue={arrToText(initial.interests)}
+        helper="Comma-separated tags — e.g. AI, Semiconductors, Climate."
       />
       <TextField
         label="Looking for"
         name="asks"
-        rows={3}
-        defaultValue={initial.asks ?? ""}
-        helper="What you're hoping to find at the summit."
+        rows={2}
+        defaultValue={arrToText(initial.asks)}
+        helper="Comma-separated. What you're hoping to find at the summit."
       />
       <TextField
         label="Can offer"
         name="offers"
-        rows={3}
-        defaultValue={initial.offers ?? ""}
-        helper="What you can help other attendees with."
+        rows={2}
+        defaultValue={arrToText(initial.offers)}
+        helper="Comma-separated. What you can help other attendees with."
       />
 
       {message ? (

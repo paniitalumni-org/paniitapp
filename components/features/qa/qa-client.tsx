@@ -28,7 +28,7 @@ import { cn, initials } from "@/lib/utils";
 interface MiniProfile {
   id: string;
   full_name: string | null;
-  avatar_url: string | null;
+  photo_url: string | null;
   role: string | null;
 }
 
@@ -36,13 +36,15 @@ export interface QuestionRow {
   id: string;
   session_id: string;
   user_id: string;
-  body: string;
+  question: string;
   upvotes: number;
-  is_anonymous: boolean | null;
-  is_pinned: boolean | null;
-  answered_by: string | null;
-  answered_at: string | null;
-  status: "open" | "answered" | "dismissed" | "duplicate" | null;
+  is_answered: boolean | null;
+  // Optional columns from migrations/0003_qa_replies.sql — may be missing.
+  is_anonymous?: boolean | null;
+  is_pinned?: boolean | null;
+  answered_by?: string | null;
+  answered_at?: string | null;
+  status?: "open" | "answered" | "dismissed" | "duplicate" | null;
   created_at: string;
   profiles: MiniProfile | null;
 }
@@ -150,11 +152,8 @@ export function QaClient({
   async function refetchQuestions() {
     const { data } = await supabase
       .from("session_questions")
-      .select(
-        "id, session_id, user_id, body, upvotes, is_anonymous, is_pinned, answered_by, answered_at, status, created_at, profiles:user_id(id, full_name, avatar_url, role)"
-      )
+      .select("*, profiles:user_id(id, full_name, photo_url, role)")
       .eq("session_id", sessionId)
-      .order("is_pinned", { ascending: false })
       .order("upvotes", { ascending: false })
       .order("created_at", { ascending: false });
     if (data) setQuestions(data as unknown as QuestionRow[]);
@@ -166,7 +165,7 @@ export function QaClient({
     const { data } = await supabase
       .from("question_replies")
       .select(
-        "id, question_id, user_id, body, is_official, upvotes, created_at, profiles:user_id(id, full_name, avatar_url, role)"
+        "id, question_id, user_id, body, is_official, upvotes, created_at, profiles:user_id(id, full_name, photo_url, role)"
       )
       .in("question_id", ids)
       .order("is_official", { ascending: false })
@@ -175,21 +174,22 @@ export function QaClient({
     if (data) setReplies(data as unknown as ReplyRow[]);
   }
 
+  const isAnswered = (q: QuestionRow) => q.status === "answered" || q.is_answered === true;
+  const isDismissed = (q: QuestionRow) => q.status === "dismissed";
+
   const filtered = useMemo(() => {
     const pinned = questions.filter((q) => q.is_pinned);
     const rest = questions.filter((q) => !q.is_pinned);
-    const visible = (q: QuestionRow) => q.status !== "dismissed";
+    const visible = (q: QuestionRow) => !isDismissed(q);
     let list: QuestionRow[];
     if (sort === "mine") {
       list = [...pinned, ...rest].filter((q) => q.user_id === userId).filter(visible);
     } else if (sort === "answered") {
-      list = [...pinned, ...rest].filter((q) => q.status === "answered").filter(visible);
+      list = [...pinned, ...rest].filter(isAnswered).filter(visible);
     } else if (sort === "recent") {
       list = [
         ...pinned,
-        ...rest
-          .slice()
-          .sort((a, b) => b.created_at.localeCompare(a.created_at)),
+        ...rest.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)),
       ].filter(visible);
     } else {
       list = [...pinned, ...rest].filter(visible);
@@ -247,7 +247,7 @@ export function QaClient({
               myRVotes={myRVotes}
               onUpvoteQ={(id, on) => upvoteQuestion(id, on, supabase, setMyQVotes)}
               onUpvoteR={(id, on) => upvoteReply(id, on, supabase, setMyRVotes)}
-              onAnswered={(id, on) => setQuestionStatus(id, on ? "answered" : "open", userId, supabase)}
+              onAnswered={(id, on) => setQuestionAnswered(id, on, userId, supabase)}
               onPinned={(id, on) => setQuestionPinned(id, on, supabase)}
               onDismissed={(id) => setQuestionStatus(id, "dismissed", userId, supabase)}
               onRestored={(id) => setQuestionStatus(id, "open", userId, supabase)}
@@ -331,7 +331,38 @@ async function setQuestionStatus(
     update.answered_by = null;
     update.answered_at = null;
   }
-  await supabase.from("session_questions").update(update).eq("id", questionId);
+  // If 0003 hasn't run yet, only is_answered exists. Send both — Postgres
+  // ignores unknown columns on this kind of UPDATE? No — it errors. So we
+  // fall back to is_answered if the first update fails.
+  const { error } = await supabase.from("session_questions").update(update).eq("id", questionId);
+  if (error) {
+    await supabase
+      .from("session_questions")
+      .update({ is_answered: status === "answered" })
+      .eq("id", questionId);
+  }
+}
+
+async function setQuestionAnswered(
+  questionId: string,
+  on: boolean,
+  userId: string | null,
+  supabase: ReturnType<typeof createClient>
+) {
+  // Best-effort: write the full set; fall back to is_answered only.
+  const full: Record<string, unknown> = {
+    is_answered: on,
+    status: on ? "answered" : "open",
+    answered_by: on ? userId : null,
+    answered_at: on ? new Date().toISOString() : null,
+  };
+  const { error } = await supabase.from("session_questions").update(full).eq("id", questionId);
+  if (error) {
+    await supabase
+      .from("session_questions")
+      .update({ is_answered: on })
+      .eq("id", questionId);
+  }
 }
 
 async function setQuestionPinned(
@@ -386,13 +417,13 @@ function QuestionCard({
   const isAnswered = q.status === "answered";
   const isDismissed = q.status === "dismissed";
   const canModerate = isModerator || isSpeakerHere;
-  const showAvatar = !q.is_anonymous && q.profiles?.avatar_url;
+  const showAvatar = !q.is_anonymous && q.profiles?.photo_url;
 
   return (
     <li className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
-          {showAvatar ? <AvatarImage src={q.profiles!.avatar_url!} alt={author} /> : null}
+          {showAvatar ? <AvatarImage src={q.profiles!.photo_url!} alt={author} /> : null}
           <AvatarFallback className="bg-brand-50 text-brand-800">
             {q.is_anonymous ? "??" : initials(author)}
           </AvatarFallback>
@@ -420,7 +451,7 @@ function QuestionCard({
             ) : null}
           </div>
           <p className="mt-1 text-[15px] font-medium leading-snug text-brand-900 whitespace-pre-line">
-            {q.body}
+            {q.question}
           </p>
 
           <div className="mt-2 flex items-center gap-1.5">
@@ -490,8 +521,8 @@ function QuestionCard({
             {replies.map((r) => (
               <li key={r.id} className="flex items-start gap-2.5">
                 <Avatar className="h-7 w-7 shrink-0">
-                  {r.profiles?.avatar_url ? (
-                    <AvatarImage src={r.profiles.avatar_url} alt={r.profiles.full_name ?? ""} />
+                  {r.profiles?.photo_url ? (
+                    <AvatarImage src={r.profiles.photo_url} alt={r.profiles.full_name ?? ""} />
                   ) : null}
                   <AvatarFallback className="bg-slate-100 text-slate-700 text-[10px]">
                     {initials(r.profiles?.full_name ?? "?")}
@@ -591,12 +622,18 @@ function AskBar({
     const text = body.trim();
     if (!text || text.length > 280 || !userId) return;
     startTransition(async () => {
-      const { error } = await supabase.from("session_questions").insert({
+      const payload: Record<string, unknown> = {
         session_id: sessionId,
         user_id: userId,
-        body: text,
-        is_anonymous: anon,
-      });
+        question: text,
+      };
+      // is_anonymous only exists after 0003_qa_replies.sql; tolerate either schema.
+      if (anon) payload.is_anonymous = true;
+      let { error } = await supabase.from("session_questions").insert(payload);
+      if (error && anon) {
+        delete payload.is_anonymous;
+        ({ error } = await supabase.from("session_questions").insert(payload));
+      }
       if (!error) {
         setBody("");
         setAnon(false);

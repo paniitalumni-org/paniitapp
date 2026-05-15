@@ -6,13 +6,14 @@ import { EmptyState } from "@/components/features/empty-state";
 interface SponsorRow {
   id: string;
   name: string;
-  tier: "title" | "platinum" | "gold" | "silver" | "partner";
+  tier: "title" | "platinum" | "gold" | "silver" | "partner" | string;
   description: string | null;
-  offer: string | null;
+  offer_title: string | null;
+  offer_description: string | null;
   booth_number: string | null;
 }
 
-const tierOrder: Record<SponsorRow["tier"], number> = {
+const tierOrder: Record<string, number> = {
   title: 0,
   platinum: 1,
   gold: 2,
@@ -20,7 +21,7 @@ const tierOrder: Record<SponsorRow["tier"], number> = {
   partner: 4,
 };
 
-const tierLabel: Record<SponsorRow["tier"], string> = {
+const tierLabel: Record<string, string> = {
   title: "Title sponsor",
   platinum: "Platinum",
   gold: "Gold",
@@ -28,7 +29,7 @@ const tierLabel: Record<SponsorRow["tier"], string> = {
   partner: "Partner",
 };
 
-const tierCard: Record<SponsorRow["tier"], string> = {
+const tierCard: Record<string, string> = {
   title: "border-2 border-brand-800 bg-brand-50",
   platinum: "border border-slate-300 bg-slate-50",
   gold: "border border-slate-200 bg-white",
@@ -45,15 +46,15 @@ export default async function SponsorsPage() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sponsors")
-      .select("id, name, tier, description, offer, booth_number");
+      .select("id, name, tier, description, offer_title, offer_description, booth_number");
     if (error) errored = true;
     sponsors = (data as SponsorRow[] | null) ?? [];
   } catch {
     errored = true;
   }
 
-  sponsors.sort((a, b) => tierOrder[a.tier] - tierOrder[b.tier]);
-  const byTier = sponsors.reduce<Map<SponsorRow["tier"], SponsorRow[]>>((acc, s) => {
+  sponsors.sort((a, b) => (tierOrder[a.tier] ?? 99) - (tierOrder[b.tier] ?? 99));
+  const byTier = sponsors.reduce<Map<string, SponsorRow[]>>((acc, s) => {
     if (!acc.has(s.tier)) acc.set(s.tier, []);
     acc.get(s.tier)!.push(s);
     return acc;
@@ -79,23 +80,23 @@ export default async function SponsorsPage() {
           {Array.from(byTier.entries()).map(([tier, items]) => (
             <section key={tier}>
               <div className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500">
-                {tierLabel[tier]}
+                {tierLabel[tier] ?? tier}
               </div>
               <ul className="space-y-2">
                 {items.map((s) => (
                   <li key={s.id}>
                     <Link
                       href={`/sponsors/${s.id}`}
-                      className={`block rounded-lg p-4 transition-colors hover:border-slate-300 ${tierCard[tier]}`}
+                      className={`block rounded-lg p-4 transition-colors hover:border-slate-300 ${tierCard[tier] ?? tierCard.partner}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="text-base font-semibold text-brand-900">{s.name}</div>
                           {s.description ? (
-                            <p className="mt-1 text-xs leading-5 text-slate-600">{s.description}</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-600 line-clamp-2">{s.description}</p>
                           ) : null}
-                          {s.offer ? (
-                            <p className="mt-2 text-xs font-medium text-slate-700">{s.offer}</p>
+                          {s.offer_title ? (
+                            <p className="mt-2 text-xs font-medium text-slate-700">{s.offer_title}</p>
                           ) : null}
                         </div>
                         {s.booth_number ? (

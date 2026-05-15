@@ -78,12 +78,15 @@ export async function signIn(_prev: unknown, formData: FormData): Promise<SignIn
     .eq("id", verified.user.id)
     .maybeSingle();
 
+  const fallbackName = allowRow?.full_name || email.split("@")[0];
+  const fallbackRole = allowRow?.role || "alumni";
+
   await admin.from("profiles").upsert(
     {
       id: verified.user.id,
       email,
-      full_name: existing?.full_name ?? allowRow?.full_name ?? null,
-      role: existing?.role ?? allowRow?.role ?? null,
+      full_name: existing?.full_name ?? fallbackName,
+      role: existing?.role ?? fallbackRole,
       iit_campus: existing?.iit_campus ?? allowRow?.iit_campus ?? null,
       graduation_year: existing?.graduation_year ?? allowRow?.graduation_year ?? null,
       branch: existing?.branch ?? allowRow?.branch ?? null,

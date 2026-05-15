@@ -10,7 +10,7 @@ interface Row {
   full_name: string | null;
   designation: string | null;
   company: string | null;
-  avatar_url: string | null;
+  photo_url: string | null;
   role: string | null;
   iit_campus: string | null;
 }
@@ -23,7 +23,7 @@ export default async function OfficeHoursPage() {
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
-      .select("id, full_name, designation, company, avatar_url, role, iit_campus")
+      .select("id, full_name, designation, company, photo_url, role, iit_campus")
       .eq("office_hours_enabled", true)
       .in("role", ["vc", "alumni"])
       .order("full_name", { ascending: true, nullsFirst: false });
@@ -65,7 +65,7 @@ export default async function OfficeHoursPage() {
                 className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-colors hover:border-slate-300"
               >
                 <Avatar className="h-10 w-10 shrink-0">
-                  {p.avatar_url ? <AvatarImage src={p.avatar_url} alt="" /> : null}
+                  {p.photo_url ? <AvatarImage src={p.photo_url} alt="" /> : null}
                   <AvatarFallback className="bg-brand-50 text-brand-800">
                     {initials(p.full_name ?? "?")}
                   </AvatarFallback>

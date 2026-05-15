@@ -9,8 +9,8 @@ export interface SessionCardData {
   title: string;
   description: string | null;
   track: string;
-  starts_at: string;
-  ends_at: string;
+  start_at: string;
+  end_at: string;
   is_featured: boolean | null;
   capacity: number | null;
   current_checkins: number | null;
@@ -68,7 +68,7 @@ export function SessionCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium tabular-nums text-slate-900">
-              {rangeIST(session.starts_at, session.ends_at)}
+              {rangeIST(session.start_at, session.end_at)}
             </span>
             {session.is_featured ? (
               <span className="text-[10px] font-medium uppercase tracking-wider text-iit-500">

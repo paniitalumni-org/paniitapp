@@ -14,7 +14,7 @@ export default async function AdminPage() {
   let allowed = false;
   let stats: Stat[] = [];
   let topSessions: { id: string; title: string; current_checkins: number | null }[] = [];
-  let topQuestions: { id: string; session_id: string; body: string; upvotes: number }[] = [];
+  let topQuestions: { id: string; session_id: string; question: string; upvotes: number }[] = [];
 
   try {
     const supabase = await createClient();
@@ -51,8 +51,8 @@ export default async function AdminPage() {
         .limit(5),
       supabase
         .from("session_questions")
-        .select("id, session_id, body, upvotes, status")
-        .neq("status", "answered")
+        .select("id, session_id, question, upvotes, is_answered")
+        .eq("is_answered", false)
         .order("upvotes", { ascending: false })
         .limit(5),
     ]);
@@ -132,7 +132,7 @@ export default async function AdminPage() {
                   href={`/agenda/${q.session_id}`}
                   className="line-clamp-2 text-sm text-brand-900 hover:underline"
                 >
-                  {q.body}
+                  {q.question}
                 </Link>
                 <span className="shrink-0 text-xs tabular-nums text-slate-500">
                   ▲ {q.upvotes}

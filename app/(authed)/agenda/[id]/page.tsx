@@ -16,8 +16,8 @@ interface SessionRow {
   title: string;
   description: string | null;
   track: string;
-  starts_at: string;
-  ends_at: string;
+  start_at: string;
+  end_at: string;
   is_featured: boolean | null;
   capacity: number | null;
   current_checkins: number | null;
@@ -31,7 +31,7 @@ interface SpeakerRow {
     full_name: string | null;
     designation: string | null;
     company: string | null;
-    avatar_url: string | null;
+    photo_url: string | null;
   } | null;
 }
 
@@ -58,7 +58,7 @@ export default async function SessionDetailPage({
     const { data } = await supabase
       .from("sessions")
       .select(
-        "id, title, description, track, starts_at, ends_at, is_featured, capacity, current_checkins, venues(name, floor)"
+        "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name, floor)"
       )
       .eq("id", id)
       .maybeSingle();
@@ -68,7 +68,7 @@ export default async function SessionDetailPage({
     const { data: sp } = await supabase
       .from("session_speakers")
       .select(
-        "speaker_id, profiles:speaker_id(id, full_name, designation, company, avatar_url)"
+        "speaker_id, profiles:speaker_id(id, full_name, designation, company, photo_url)"
       )
       .eq("session_id", id);
     speakers = (sp as unknown as SpeakerRow[] | null) ?? [];
@@ -131,7 +131,7 @@ export default async function SessionDetailPage({
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
           <span className="inline-flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
-            <span className="tabular-nums">{rangeIST(session.starts_at, session.ends_at)}</span>
+            <span className="tabular-nums">{rangeIST(session.start_at, session.end_at)}</span>
           </span>
           {session.venues?.name ? (
             <span className="inline-flex items-center gap-1.5">
@@ -151,8 +151,8 @@ export default async function SessionDetailPage({
         <BookmarkButton sessionId={session.id} initial={bookmarked} withLabel size="md" />
         <CheckInButton
           sessionId={session.id}
-          startsAtIso={session.starts_at}
-          endsAtIso={session.ends_at}
+          startsAtIso={session.start_at}
+          endsAtIso={session.end_at}
           initialCheckedIn={checkedIn}
         />
       </div>
@@ -182,8 +182,8 @@ export default async function SessionDetailPage({
                       className="flex flex-col items-center rounded-lg border border-slate-200 bg-white p-3 text-center transition-colors hover:border-slate-300"
                     >
                       <Avatar className="h-16 w-16">
-                        {p.avatar_url ? (
-                          <AvatarImage src={p.avatar_url} alt={p.full_name ?? ""} />
+                        {p.photo_url ? (
+                          <AvatarImage src={p.photo_url} alt={p.full_name ?? ""} />
                         ) : null}
                         <AvatarFallback className="bg-brand-50 text-brand-800">
                           {initials(p.full_name ?? "?")}

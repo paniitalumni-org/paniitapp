@@ -86,11 +86,18 @@ export async function GET(req: Request) {
       .eq("id", user.id)
       .maybeSingle();
 
+    // profiles.full_name and profiles.role are NOT NULL — fall back to safe defaults.
+    const fallbackName =
+      allowRow.full_name ||
+      (typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null) ||
+      email.split("@")[0];
+    const fallbackRole = allowRow.role || "alumni";
+
     const merged = {
       id: user.id,
       email,
-      full_name: existing?.full_name ?? allowRow.full_name ?? user.user_metadata?.full_name ?? null,
-      role: existing?.role ?? allowRow.role ?? null,
+      full_name: existing?.full_name ?? fallbackName,
+      role: existing?.role ?? fallbackRole,
       iit_campus: existing?.iit_campus ?? allowRow.iit_campus ?? null,
       graduation_year: existing?.graduation_year ?? allowRow.graduation_year ?? null,
       branch: existing?.branch ?? allowRow.branch ?? null,

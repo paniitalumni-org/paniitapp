@@ -21,7 +21,7 @@ export interface AttendeeRow {
   iit_campus: string | null;
   graduation_year: number | null;
   interests: string[] | null;
-  avatar_url: string | null;
+  photo_url: string | null;
   available_for_meetings: boolean | null;
   office_hours_enabled: boolean | null;
 }
@@ -83,7 +83,7 @@ export function AttendeesClient({ initialRows }: { initialRows: AttendeeRow[] })
       let q = supabase
         .from("profiles")
         .select(
-          "id, full_name, designation, company, role, iit_campus, graduation_year, interests, avatar_url, available_for_meetings, office_hours_enabled"
+          "id, full_name, designation, company, role, iit_campus, graduation_year, interests, photo_url, available_for_meetings, office_hours_enabled"
         )
         .order("full_name", { ascending: true, nullsFirst: false })
         .range(offset, offset + PAGE_SIZE - 1);
@@ -231,8 +231,8 @@ export function AttendeesClient({ initialRows }: { initialRows: AttendeeRow[] })
                   className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition-colors hover:border-slate-300"
                 >
                   <Avatar className="h-12 w-12 shrink-0">
-                    {p.avatar_url ? (
-                      <AvatarImage src={p.avatar_url} alt={p.full_name ?? ""} />
+                    {p.photo_url ? (
+                      <AvatarImage src={p.photo_url} alt={p.full_name ?? ""} />
                     ) : null}
                     <AvatarFallback className="bg-brand-50 text-brand-800">
                       {initials(p.full_name ?? "?")}

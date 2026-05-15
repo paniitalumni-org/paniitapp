@@ -5,18 +5,35 @@ import { EditProfileForm } from "./edit-form";
 
 export const dynamic = "force-dynamic";
 
+interface InitialProfile {
+  full_name: string;
+  designation: string;
+  company: string;
+  iit_campus: string;
+  graduation_year: number | null;
+  branch: string;
+  bio: string;
+  linkedin_url: string;
+  twitter_url: string;
+  asks: string[] | null;
+  offers: string[] | null;
+  interests: string[] | null;
+}
+
 export default async function MeEditPage() {
-  let initial = {
+  const initial: InitialProfile = {
     full_name: "",
     designation: "",
     company: "",
     iit_campus: "",
-    graduation_year: null as number | null,
+    graduation_year: null,
     branch: "",
     bio: "",
     linkedin_url: "",
-    asks: "",
-    offers: "",
+    twitter_url: "",
+    asks: null,
+    offers: null,
+    interests: null,
   };
 
   try {
@@ -29,11 +46,27 @@ export default async function MeEditPage() {
     const { data } = await supabase
       .from("profiles")
       .select(
-        "full_name, designation, company, iit_campus, graduation_year, branch, bio, linkedin_url, asks, offers"
+        "full_name, designation, company, iit_campus, graduation_year, branch, bio, linkedin_url, twitter_url, asks, offers, interests"
       )
       .eq("id", user.id)
       .maybeSingle();
-    if (data) initial = { ...initial, ...data };
+    if (data) {
+      const d = data as Partial<InitialProfile>;
+      Object.assign(initial, {
+        full_name: d.full_name ?? "",
+        designation: d.designation ?? "",
+        company: d.company ?? "",
+        iit_campus: d.iit_campus ?? "",
+        graduation_year: d.graduation_year ?? null,
+        branch: d.branch ?? "",
+        bio: d.bio ?? "",
+        linkedin_url: d.linkedin_url ?? "",
+        twitter_url: d.twitter_url ?? "",
+        asks: d.asks ?? null,
+        offers: d.offers ?? null,
+        interests: d.interests ?? null,
+      });
+    }
   } catch (err) {
     rethrowIfRedirect(err);
   }

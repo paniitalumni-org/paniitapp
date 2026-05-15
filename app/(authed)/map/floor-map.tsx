@@ -16,7 +16,10 @@ import { cn } from "@/lib/utils";
 export interface VenueRow {
   id: string;
   name: string;
-  floor: number | null;
+  // venues.floor is text in the DB (e.g. "ground", "1st").
+  // map_floor is integer if you want a sortable/orderable floor.
+  floor: string | null;
+  map_floor: number | null;
   map_x: number | null;
   map_y: number | null;
   capacity: number | null;
@@ -25,8 +28,8 @@ export interface VenueRow {
 export interface SessionAtVenue {
   id: string;
   title: string;
-  starts_at: string;
-  ends_at: string;
+  start_at: string;
+  end_at: string;
   venue_id: string | null;
   track: string | null;
 }
@@ -77,7 +80,11 @@ export function FloorMap({
 }) {
   const floors = useMemo(() => {
     const set = new Set<number>();
-    venues.forEach((v) => set.add(v.floor ?? 0));
+    venues.forEach((v) => {
+      if (v.map_floor != null) set.add(v.map_floor);
+      else if (v.floor != null) set.add(/^\d+$/.test(v.floor) ? Number(v.floor) : 0);
+      else set.add(0);
+    });
     return Array.from(set).sort((a, b) => a - b);
   }, [venues]);
 
@@ -85,10 +92,16 @@ export function FloorMap({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<VenueRow | null>(null);
 
-  const floorVenues = useMemo(
-    () => venues.filter((v) => (v.floor ?? 0) === floor),
-    [venues, floor]
-  );
+  const floorVenues = useMemo(() => {
+    return venues.filter((v) => {
+      const f = v.map_floor != null
+        ? v.map_floor
+        : v.floor != null && /^\d+$/.test(v.floor)
+        ? Number(v.floor)
+        : 0;
+      return f === floor;
+    });
+  }, [venues, floor]);
 
   const matchedIds = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -104,7 +117,7 @@ export function FloorMap({
     if (!selected) return [];
     return sessions
       .filter((s) => s.venue_id === selected.id)
-      .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+      .sort((a, b) => a.start_at.localeCompare(b.start_at));
   }, [selected, sessions]);
 
   return (
@@ -244,9 +257,7 @@ export function FloorMap({
               <SheetHeader>
                 <SheetTitle>{selected.name}</SheetTitle>
                 <SheetDescription>
-                  {selected.floor === 0
-                    ? "Ground floor"
-                    : `Floor ${selected.floor ?? 0}`}
+                  {selected.floor ?? `Floor ${selected.map_floor ?? 0}`}
                   {selected.capacity ? ` · Capacity ${selected.capacity}` : ""}
                 </SheetDescription>
               </SheetHeader>
@@ -261,7 +272,7 @@ export function FloorMap({
                         className="rounded-md border border-slate-200 bg-white p-3"
                       >
                         <div className="text-xs font-medium tabular-nums text-slate-900">
-                          {rangeIST(s.starts_at, s.ends_at)}
+                          {rangeIST(s.start_at, s.end_at)}
                         </div>
                         <div className="mt-0.5 text-sm font-semibold text-brand-900">
                           {s.title}

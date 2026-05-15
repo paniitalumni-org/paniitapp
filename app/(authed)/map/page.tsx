@@ -15,13 +15,13 @@ export default async function MapPage() {
     const [v, s] = await Promise.all([
       supabase
         .from("venues")
-        .select("id, name, floor, map_x, map_y, capacity")
-        .order("floor", { ascending: true })
+        .select("id, name, floor, map_floor, map_x, map_y, capacity")
+        .order("map_floor", { ascending: true, nullsFirst: true })
         .order("name", { ascending: true }),
       supabase
         .from("sessions")
-        .select("id, title, starts_at, ends_at, venue_id, track")
-        .order("starts_at", { ascending: true }),
+        .select("id, title, start_at, end_at, venue_id, track")
+        .order("start_at", { ascending: true }),
     ]);
     venues = (v.data as VenueRow[] | null) ?? [];
     sessions = (s.data as SessionAtVenue[] | null) ?? [];

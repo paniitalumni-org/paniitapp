@@ -21,9 +21,9 @@ interface ProfileRow {
   linkedin_url: string | null;
   twitter_url: string | null;
   interests: string[] | null;
-  asks: string | null;
-  offers: string | null;
-  avatar_url: string | null;
+  asks: string[] | null;
+  offers: string[] | null;
+  photo_url: string | null;
 }
 
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export default async function AttendeeProfilePage({
     const { data } = await supabase
       .from("profiles")
       .select(
-        "id, full_name, designation, company, role, bio, iit_campus, graduation_year, branch, linkedin_url, twitter_url, interests, asks, offers, avatar_url"
+        "id, full_name, designation, company, role, bio, iit_campus, graduation_year, branch, linkedin_url, twitter_url, interests, asks, offers, photo_url"
       )
       .eq("id", id)
       .maybeSingle();
@@ -58,7 +58,7 @@ export default async function AttendeeProfilePage({
     const { data: sp } = await supabase
       .from("session_speakers")
       .select(
-        "sessions(id, title, description, track, starts_at, ends_at, is_featured, capacity, current_checkins, venues(name))"
+        "sessions(id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name))"
       )
       .eq("speaker_id", id);
 
@@ -105,8 +105,8 @@ export default async function AttendeeProfilePage({
         <div className="h-32 w-full bg-brand-800" aria-hidden />
         <div className="-mt-12 px-4">
           <Avatar className="h-24 w-24 ring-4 ring-white">
-            {profile.avatar_url ? (
-              <AvatarImage src={profile.avatar_url} alt={profile.full_name ?? ""} />
+            {profile.photo_url ? (
+              <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
             ) : null}
             <AvatarFallback className="bg-brand-50 text-2xl text-brand-800">
               {initials(profile.full_name ?? "?")}
@@ -153,15 +153,15 @@ export default async function AttendeeProfilePage({
         </section>
       ) : null}
 
-      {profile.asks ? (
+      {profile.asks?.length ? (
         <Section title="Looking for">
-          <p className="text-sm leading-6 text-slate-700 whitespace-pre-line">{profile.asks}</p>
+          <ChipList items={profile.asks} />
         </Section>
       ) : null}
 
-      {profile.offers ? (
+      {profile.offers?.length ? (
         <Section title="Can offer">
-          <p className="text-sm leading-6 text-slate-700 whitespace-pre-line">{profile.offers}</p>
+          <ChipList items={profile.offers} />
         </Section>
       ) : null}
 
@@ -231,5 +231,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
       <div className="mt-2">{children}</div>
     </section>
+  );
+}
+
+function ChipList({ items }: { items: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((i) => (
+        <span key={i} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+          {i}
+        </span>
+      ))}
+    </div>
   );
 }

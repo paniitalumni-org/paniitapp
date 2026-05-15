@@ -13,7 +13,7 @@ export default async function MeetingsPage({
 
   let userId: string | null = null;
   let meetings: MeetingRow[] = [];
-  let bookmarks: { id: string; title: string; starts_at: string; ends_at: string }[] = [];
+  let bookmarks: { id: string; title: string; start_at: string; end_at: string }[] = [];
 
   try {
     const supabase = await createClient();
@@ -26,7 +26,7 @@ export default async function MeetingsPage({
       const { data: rows } = await supabase
         .from("meetings")
         .select(
-          "id, requester_id, invitee_id, message, location, proposed_slots, scheduled_start, scheduled_end, status, created_at, requester:requester_id(id, full_name, avatar_url, designation, company), invitee:invitee_id(id, full_name, avatar_url, designation, company)"
+          "id, requester_id, invitee_id, message, location, proposed_slots, accepted_slot, status, created_at, requester:requester_id(id, full_name, photo_url, designation, company), invitee:invitee_id(id, full_name, photo_url, designation, company)"
         )
         .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -34,11 +34,11 @@ export default async function MeetingsPage({
 
       const { data: bm } = await supabase
         .from("session_bookmarks")
-        .select("sessions(id, title, starts_at, ends_at)")
+        .select("sessions(id, title, start_at, end_at)")
         .eq("user_id", user.id);
-      bookmarks = ((bm as { sessions: { id: string; title: string; starts_at: string; ends_at: string } | null }[] | null) ?? [])
+      bookmarks = ((bm as { sessions: { id: string; title: string; start_at: string; end_at: string } | null }[] | null) ?? [])
         .map((r) => r.sessions)
-        .filter((s): s is { id: string; title: string; starts_at: string; ends_at: string } => !!s);
+        .filter((s): s is { id: string; title: string; start_at: string; end_at: string } => !!s);
     }
   } catch {
     /* env not configured */

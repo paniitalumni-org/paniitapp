@@ -43,9 +43,9 @@ export default async function AgendaPage({
     const query = supabase
       .from("sessions")
       .select(
-        "id, title, description, track, starts_at, ends_at, is_featured, capacity, current_checkins, venues(name)"
+        "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name)"
       )
-      .order("starts_at", { ascending: true });
+      .order("start_at", { ascending: true });
 
     const { data, error } = await query;
     if (error) errored = true;
@@ -69,7 +69,7 @@ export default async function AgendaPage({
   });
 
   const grouped = filtered.reduce<Map<string, SessionCardData[]>>((acc, s) => {
-    const k = hourKey(s.starts_at);
+    const k = hourKey(s.start_at);
     if (!acc.has(k)) acc.set(k, []);
     acc.get(k)!.push(s);
     return acc;

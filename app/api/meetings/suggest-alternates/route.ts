@@ -5,6 +5,13 @@ import { buildDaySlots, classifySlot } from "@/lib/slots";
 
 const Body = z.object({ meeting_id: z.string().uuid() });
 
+interface AcceptedRow {
+  accepted_slot: { start: string; end: string } | null;
+}
+interface BookmarkRow {
+  sessions: { start_at: string; end_at: string } | null;
+}
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -15,7 +22,6 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid_input" }, { status: 400 });
 
-  // Try the Postgres RPC first.
   const { data, error } = await supabase.rpc("suggest_alternative_slots", {
     p_user_id: user.id,
     p_count: 3,
@@ -24,27 +30,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ slots: data });
   }
 
-  // Fallback: scan the day grid for 3 conflict-free 15-min slots.
   const [bms, mts] = await Promise.all([
     supabase
       .from("session_bookmarks")
-      .select("sessions(starts_at, ends_at)")
+      .select("sessions(start_at, end_at)")
       .eq("user_id", user.id),
     supabase
       .from("meetings")
-      .select("scheduled_start, scheduled_end")
+      .select("accepted_slot")
       .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
       .eq("status", "accepted"),
   ]);
   const bookmarks =
-    ((bms.data as { sessions: { starts_at: string; ends_at: string } | null }[] | null) ?? [])
+    ((bms.data as BookmarkRow[] | null) ?? [])
       .map((r) => r.sessions)
-      .filter((s): s is { starts_at: string; ends_at: string } => !!s)
-      .map((s) => ({ start: s.starts_at, end: s.ends_at }));
+      .filter((s): s is { start_at: string; end_at: string } => !!s)
+      .map((s) => ({ start: s.start_at, end: s.end_at }));
   const accepted =
-    ((mts.data as { scheduled_start: string | null; scheduled_end: string | null }[] | null) ?? [])
-      .filter((m): m is { scheduled_start: string; scheduled_end: string } => !!m.scheduled_start && !!m.scheduled_end)
-      .map((m) => ({ start: m.scheduled_start, end: m.scheduled_end }));
+    ((mts.data as AcceptedRow[] | null) ?? [])
+      .map((m) => m.accepted_slot)
+      .filter((s): s is { start: string; end: string } => !!s);
 
   const free = buildDaySlots().filter((s) => classifySlot(s, bookmarks, accepted) === "free");
   return NextResponse.json({ slots: free.slice(0, 3) });

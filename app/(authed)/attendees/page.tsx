@@ -10,7 +10,7 @@ export default async function AttendeesPage() {
     const { data } = await supabase
       .from("profiles")
       .select(
-        "id, full_name, designation, company, role, iit_campus, graduation_year, interests, avatar_url, available_for_meetings, office_hours_enabled"
+        "id, full_name, designation, company, role, iit_campus, graduation_year, interests, photo_url, available_for_meetings, office_hours_enabled"
       )
       .order("full_name", { ascending: true, nullsFirst: false })
       .range(0, 49);

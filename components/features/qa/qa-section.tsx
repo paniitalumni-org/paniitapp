@@ -7,13 +7,13 @@ export async function QaSection({ sessionId }: { sessionId: string }) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // session_questions has: question, upvotes, is_answered (boolean). The
+  // status/is_anonymous/is_pinned/answered_by/answered_at columns come from
+  // 0003_qa_replies.sql; if it hasn't run yet, we degrade gracefully.
   const { data: questions } = await supabase
     .from("session_questions")
-    .select(
-      "id, session_id, user_id, body, upvotes, is_anonymous, is_pinned, answered_by, answered_at, status, created_at, profiles:user_id(id, full_name, avatar_url, role)"
-    )
+    .select("*, profiles:user_id(id, full_name, photo_url, role)")
     .eq("session_id", sessionId)
-    .order("is_pinned", { ascending: false })
     .order("upvotes", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -23,13 +23,13 @@ export async function QaSection({ sessionId }: { sessionId: string }) {
     ? await supabase
         .from("question_replies")
         .select(
-          "id, question_id, user_id, body, is_official, upvotes, created_at, profiles:user_id(id, full_name, avatar_url, role)"
+          "id, question_id, user_id, body, is_official, upvotes, created_at, profiles:user_id(id, full_name, photo_url, role)"
         )
         .in("question_id", questionIds)
         .order("is_official", { ascending: false })
         .order("upvotes", { ascending: false })
         .order("created_at", { ascending: true })
-    : { data: [] as ReplyRow[] };
+    : { data: [] as unknown as ReplyRow[] };
 
   const { data: myQUpvotes } = user && questionIds.length
     ? await supabase

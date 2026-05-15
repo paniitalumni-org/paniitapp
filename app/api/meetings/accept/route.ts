@@ -7,6 +7,10 @@ const Body = z.object({
   slot: z.object({ start: z.string(), end: z.string() }),
 });
 
+interface AcceptedRow {
+  accepted_slot: { start: string; end: string } | null;
+}
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -23,13 +27,11 @@ export async function POST(req: Request) {
     p_meeting_id: meeting_id,
     p_slot: slot,
   });
-
   if (!rpcErr) {
     return NextResponse.json({ ok: true, via: "rpc", result: rpcData });
   }
 
-  // Fallback: load the meeting, verify the caller is the invitee, check conflicts,
-  // then atomically write status='accepted' guarded by current status='pending'.
+  // Fallback path.
   const { data: meeting } = await supabase
     .from("meetings")
     .select("id, requester_id, invitee_id, status, proposed_slots")
@@ -41,28 +43,23 @@ export async function POST(req: Request) {
   if (meeting.status !== "pending")
     return NextResponse.json({ error: "already_resolved" }, { status: 409 });
 
-  // Conflict check against accepted meetings for either side.
+  // Conflict scan: any other accepted meeting for either side that overlaps?
   const { data: clashes } = await supabase
     .from("meetings")
-    .select("id, scheduled_start, scheduled_end")
+    .select("accepted_slot")
     .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
     .eq("status", "accepted");
-  const conflict = (clashes ?? []).some(
-    (m: { scheduled_start: string | null; scheduled_end: string | null }) =>
-      m.scheduled_start &&
-      m.scheduled_end &&
-      new Date(slot.start) < new Date(m.scheduled_end) &&
-      new Date(m.scheduled_start) < new Date(slot.end)
+  const conflict = ((clashes as AcceptedRow[] | null) ?? []).some(
+    (m) =>
+      m.accepted_slot &&
+      new Date(slot.start) < new Date(m.accepted_slot.end) &&
+      new Date(m.accepted_slot.start) < new Date(slot.end)
   );
   if (conflict) return NextResponse.json({ error: "conflict" }, { status: 409 });
 
   const { data: updated, error: updErr } = await supabase
     .from("meetings")
-    .update({
-      status: "accepted",
-      scheduled_start: slot.start,
-      scheduled_end: slot.end,
-    })
+    .update({ status: "accepted", accepted_slot: slot })
     .eq("id", meeting_id)
     .eq("status", "pending")
     .select()
@@ -70,7 +67,6 @@ export async function POST(req: Request) {
   if (updErr || !updated)
     return NextResponse.json({ error: updErr?.message ?? "race" }, { status: 409 });
 
-  // Insert canonical connection (smaller uuid first).
   const a = meeting.requester_id < meeting.invitee_id ? meeting.requester_id : meeting.invitee_id;
   const b = meeting.requester_id < meeting.invitee_id ? meeting.invitee_id : meeting.requester_id;
   await supabase

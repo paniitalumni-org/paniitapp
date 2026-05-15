@@ -7,15 +7,17 @@ import { CopyOfferCode } from "./copy-code";
 interface SponsorRow {
   id: string;
   name: string;
-  tier: "title" | "platinum" | "gold" | "silver" | "partner";
+  tier: "title" | "platinum" | "gold" | "silver" | "partner" | string;
   description: string | null;
-  offer: string | null;
-  offer_code: string | null;
+  offer_title: string | null;
+  offer_description: string | null;
+  offer_redeem_code: string | null;
   booth_number: string | null;
-  website_url: string | null;
+  website: string | null;
+  logo_url: string | null;
 }
 
-const tierLabel: Record<SponsorRow["tier"], string> = {
+const tierLabel: Record<string, string> = {
   title: "Title sponsor",
   platinum: "Platinum sponsor",
   gold: "Gold sponsor",
@@ -36,7 +38,9 @@ export default async function SponsorDetailPage({
     const supabase = await createClient();
     const { data } = await supabase
       .from("sponsors")
-      .select("id, name, tier, description, offer, offer_code, booth_number, website_url")
+      .select(
+        "id, name, tier, description, offer_title, offer_description, offer_redeem_code, booth_number, website, logo_url"
+      )
       .eq("id", id)
       .maybeSingle();
     sponsor = (data as SponsorRow | null) ?? null;
@@ -59,7 +63,7 @@ export default async function SponsorDetailPage({
 
       <header className="space-y-1">
         <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
-          {tierLabel[sponsor.tier]}
+          {tierLabel[sponsor.tier] ?? sponsor.tier}
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
           {sponsor.name}
@@ -71,9 +75,9 @@ export default async function SponsorDetailPage({
               Booth {sponsor.booth_number}
             </span>
           ) : null}
-          {sponsor.website_url ? (
+          {sponsor.website ? (
             <a
-              href={sponsor.website_url}
+              href={sponsor.website}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium text-brand-800 hover:text-brand-900"
@@ -91,15 +95,20 @@ export default async function SponsorDetailPage({
         </p>
       ) : null}
 
-      {sponsor.offer ? (
+      {sponsor.offer_title || sponsor.offer_description ? (
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Offer for summit attendees
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-800 whitespace-pre-line">
-            {sponsor.offer}
-          </p>
-          {sponsor.offer_code ? <CopyOfferCode code={sponsor.offer_code} /> : null}
+          {sponsor.offer_title ? (
+            <p className="mt-2 text-base font-medium text-brand-900">{sponsor.offer_title}</p>
+          ) : null}
+          {sponsor.offer_description ? (
+            <p className="mt-1 text-sm leading-6 text-slate-700 whitespace-pre-line">
+              {sponsor.offer_description}
+            </p>
+          ) : null}
+          {sponsor.offer_redeem_code ? <CopyOfferCode code={sponsor.offer_redeem_code} /> : null}
         </section>
       ) : null}
 

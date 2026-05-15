@@ -16,7 +16,7 @@ import { cn, initials } from "@/lib/utils";
 interface MiniProfile {
   id: string;
   full_name: string | null;
-  avatar_url: string | null;
+  photo_url: string | null;
   designation: string | null;
   company: string | null;
 }
@@ -28,8 +28,7 @@ export interface MeetingRow {
   message: string | null;
   location: string | null;
   proposed_slots: Slot[] | null;
-  scheduled_start: string | null;
-  scheduled_end: string | null;
+  accepted_slot: Slot | null;
   status: "pending" | "accepted" | "declined" | "rescheduled" | "cancelled";
   created_at: string;
   requester: MiniProfile | null;
@@ -52,7 +51,7 @@ export function MeetingsTabs({
 }: {
   userId: string | null;
   meetings: MeetingRow[];
-  bookmarks: { id: string; title: string; starts_at: string; ends_at: string }[];
+  bookmarks: { id: string; title: string; start_at: string; end_at: string }[];
   initialTab?: Tab;
 }) {
   const [tab, setTab] = useState<Tab>(initialTab);
@@ -78,10 +77,10 @@ export function MeetingsTabs({
   );
 
   const myAcceptedWindows = accepted
-    .filter((m) => m.scheduled_start && m.scheduled_end)
-    .map((m) => ({ start: m.scheduled_start!, end: m.scheduled_end! }));
+    .filter((m) => m.accepted_slot)
+    .map((m) => m.accepted_slot!) as Slot[];
 
-  const myBookmarkWindows = bookmarks.map((b) => ({ start: b.starts_at, end: b.ends_at }));
+  const myBookmarkWindows = bookmarks.map((b) => ({ start: b.start_at, end: b.end_at }));
 
   async function accept(meetingId: string, slot: Slot) {
     setPendingId(meetingId);
@@ -162,8 +161,8 @@ export function MeetingsTabs({
               <li key={m.id} className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-10 w-10 shrink-0">
-                    {m.requester?.avatar_url ? (
-                      <AvatarImage src={m.requester.avatar_url} alt="" />
+                    {m.requester?.photo_url ? (
+                      <AvatarImage src={m.requester.photo_url} alt="" />
                     ) : null}
                     <AvatarFallback className="bg-brand-50 text-brand-800">
                       {initials(m.requester?.full_name ?? "?")}
@@ -244,8 +243,8 @@ export function MeetingsTabs({
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar className="h-10 w-10 shrink-0">
-                      {m.invitee?.avatar_url ? (
-                        <AvatarImage src={m.invitee.avatar_url} alt="" />
+                      {m.invitee?.photo_url ? (
+                        <AvatarImage src={m.invitee.photo_url} alt="" />
                       ) : null}
                       <AvatarFallback className="bg-brand-50 text-brand-800">
                         {initials(m.invitee?.full_name ?? "?")}
@@ -265,9 +264,9 @@ export function MeetingsTabs({
                   </div>
                   <StatusPill status={m.status} />
                 </div>
-                {m.scheduled_start ? (
+                {m.accepted_slot ? (
                   <div className="mt-3 text-sm tabular-nums text-slate-700">
-                    {rangeIST(m.scheduled_start, m.scheduled_end ?? m.scheduled_start)}
+                    {rangeIST(m.accepted_slot.start, m.accepted_slot.end)}
                   </div>
                 ) : null}
                 {m.status === "accepted" ? (
@@ -336,23 +335,23 @@ function CalendarView({
   userId,
 }: {
   accepted: MeetingRow[];
-  bookmarks: { id: string; title: string; starts_at: string; ends_at: string }[];
+  bookmarks: { id: string; title: string; start_at: string; end_at: string }[];
   userId: string | null;
 }) {
   const events: { kind: "meeting" | "session"; start: string; end: string; title: string }[] = [
     ...accepted
-      .filter((m) => m.scheduled_start && m.scheduled_end)
+      .filter((m) => m.accepted_slot)
       .map((m) => ({
         kind: "meeting" as const,
-        start: m.scheduled_start!,
-        end: m.scheduled_end!,
+        start: m.accepted_slot!.start,
+        end: m.accepted_slot!.end,
         title:
           (m.requester_id === userId ? m.invitee?.full_name : m.requester?.full_name) ?? "Meeting",
       })),
     ...bookmarks.map((b) => ({
       kind: "session" as const,
-      start: b.starts_at,
-      end: b.ends_at,
+      start: b.start_at,
+      end: b.end_at,
       title: b.title,
     })),
   ].sort((a, b) => a.start.localeCompare(b.start));

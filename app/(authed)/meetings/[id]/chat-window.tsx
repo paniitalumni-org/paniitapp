@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 interface Message {
   id: string;
   conversation_id: string;
-  user_id: string;
+  sender_id: string;
   body: string;
   read_at: string | null;
   created_at: string;
@@ -27,19 +27,17 @@ export function ChatWindow({
   const [pending, startTransition] = useTransition();
   const endRef = useRef<HTMLDivElement | null>(null);
 
-  // Initial load
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("messages")
-        .select("id, conversation_id, user_id, body, read_at, created_at")
+        .select("id, conversation_id, sender_id, body, read_at, created_at")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
       setMessages((data as Message[] | null) ?? []);
     })();
   }, [supabase, conversationId]);
 
-  // Realtime subscription
   useEffect(() => {
     const ch = supabase
       .channel(`conv-${conversationId}`)
@@ -76,9 +74,8 @@ export function ChatWindow({
     };
   }, [supabase, conversationId]);
 
-  // Mark partner messages as read on view
   useEffect(() => {
-    const unread = messages.filter((m) => m.user_id !== userId && !m.read_at);
+    const unread = messages.filter((m) => m.sender_id !== userId && !m.read_at);
     if (unread.length === 0) return;
     (async () => {
       const ids = unread.map((m) => m.id);
@@ -89,7 +86,6 @@ export function ChatWindow({
     })();
   }, [messages, userId, supabase]);
 
-  // Scroll to bottom on new message
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
@@ -100,7 +96,7 @@ export function ChatWindow({
     startTransition(async () => {
       const { error } = await supabase
         .from("messages")
-        .insert({ conversation_id: conversationId, user_id: userId, body: text });
+        .insert({ conversation_id: conversationId, sender_id: userId, body: text });
       if (!error) setBody("");
     });
   }
@@ -109,23 +105,16 @@ export function ChatWindow({
     <div className="flex flex-1 flex-col">
       <div className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
         {messages.length === 0 ? (
-          <div className="py-12 text-center text-sm text-slate-500">
-            No messages yet. Say hi.
-          </div>
+          <div className="py-12 text-center text-sm text-slate-500">No messages yet. Say hi.</div>
         ) : null}
         {messages.map((m) => {
-          const mine = m.user_id === userId;
+          const mine = m.sender_id === userId;
           return (
-            <div
-              key={m.id}
-              className={cn("flex", mine ? "justify-end" : "justify-start")}
-            >
+            <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
                   "max-w-[80%] rounded-lg px-3 py-2 text-sm leading-6",
-                  mine
-                    ? "bg-brand-800 text-white"
-                    : "bg-slate-100 text-slate-900"
+                  mine ? "bg-brand-800 text-white" : "bg-slate-100 text-slate-900"
                 )}
               >
                 <div className="whitespace-pre-line">{m.body}</div>

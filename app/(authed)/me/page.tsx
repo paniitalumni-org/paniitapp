@@ -20,8 +20,8 @@ interface ProfileRow {
   branch: string | null;
   linkedin_url: string | null;
   interests: string[] | null;
-  asks: string | null;
-  offers: string | null;
+  asks: string[] | null;
+  offers: string[] | null;
   office_hours_enabled: boolean | null;
 }
 
@@ -113,8 +113,12 @@ export default async function MePage() {
       {profile?.interests?.length ? (
         <ChipSection title="Interests" items={profile.interests} />
       ) : null}
-      {profile?.asks ? <PlainSection title="Looking for" body={profile.asks} /> : null}
-      {profile?.offers ? <PlainSection title="Can offer" body={profile.offers} /> : null}
+      {profile?.asks?.length ? (
+        <ChipSection title="Looking for" items={profile.asks} />
+      ) : null}
+      {profile?.offers?.length ? (
+        <ChipSection title="Can offer" items={profile.offers} />
+      ) : null}
 
       {profile?.linkedin_url ? (
         <a
@@ -227,11 +231,3 @@ function ChipSection({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function PlainSection({ title, body }: { title: string; body: string }) {
-  return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-slate-700">{body}</p>
-    </section>
-  );
-}

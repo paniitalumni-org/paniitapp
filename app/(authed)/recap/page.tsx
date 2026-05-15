@@ -7,7 +7,7 @@ import { initials } from "@/lib/utils";
 interface MiniProfile {
   id: string;
   full_name: string | null;
-  avatar_url: string | null;
+  photo_url: string | null;
   designation: string | null;
   company: string | null;
 }
@@ -35,7 +35,7 @@ export default async function RecapPage() {
       supabase
         .from("connections")
         .select(
-          "user_a, user_b, ua:user_a(id, full_name, avatar_url, designation, company), ub:user_b(id, full_name, avatar_url, designation, company)"
+          "user_a, user_b, ua:user_a(id, full_name, photo_url, designation, company), ub:user_b(id, full_name, photo_url, designation, company)"
         )
         .or(`user_a.eq.${user.id},user_b.eq.${user.id}`),
       supabase
@@ -50,7 +50,7 @@ export default async function RecapPage() {
         .from("session_questions")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .eq("status", "answered"),
+        .eq("is_answered", true),
       supabase
         .from("meetings")
         .select("id", { count: "exact", head: true })
@@ -133,7 +133,7 @@ export default async function RecapPage() {
                   className="flex flex-col items-center rounded-lg border border-slate-200 bg-white p-3 text-center transition-colors hover:border-slate-300"
                 >
                   <Avatar className="h-12 w-12">
-                    {p.avatar_url ? <AvatarImage src={p.avatar_url} alt="" /> : null}
+                    {p.photo_url ? <AvatarImage src={p.photo_url} alt="" /> : null}
                     <AvatarFallback className="bg-brand-50 text-brand-800">
                       {initials(p.full_name ?? "?")}
                     </AvatarFallback>

@@ -25,8 +25,10 @@ const ProfileSchema = z.object({
   branch: z.string().trim().max(120),
   bio: z.string().trim().max(2000),
   linkedin_url: UrlOrEmpty,
-  asks: z.string().trim().max(500),
-  offers: z.string().trim().max(500),
+  twitter_url: UrlOrEmpty,
+  asks: z.string().trim().max(2000),
+  offers: z.string().trim().max(2000),
+  interests: z.string().trim().max(2000),
 });
 
 export type UpdateProfileResult =
@@ -34,6 +36,14 @@ export type UpdateProfileResult =
   | { error: "unauth" }
   | { error: "invalid"; message: string }
   | { error: "db"; message: string };
+
+function splitToArray(input: string): string[] | null {
+  const items = input
+    .split(/[,\n]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return items.length ? Array.from(new Set(items)) : null;
+}
 
 export async function updateProfile(
   _prev: unknown,
@@ -55,8 +65,10 @@ export async function updateProfile(
       "branch",
       "bio",
       "linkedin_url",
+      "twitter_url",
       "asks",
       "offers",
+      "interests",
     ].map((k) => [k, (formData.get(k) ?? "").toString()])
   );
 
@@ -74,8 +86,10 @@ export async function updateProfile(
     branch: parsed.data.branch || null,
     bio: parsed.data.bio || null,
     linkedin_url: parsed.data.linkedin_url || null,
-    asks: parsed.data.asks || null,
-    offers: parsed.data.offers || null,
+    twitter_url: parsed.data.twitter_url || null,
+    asks: splitToArray(parsed.data.asks),
+    offers: splitToArray(parsed.data.offers),
+    interests: splitToArray(parsed.data.interests),
   };
 
   const { error } = await supabase.from("profiles").update(update).eq("id", user.id);

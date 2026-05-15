@@ -8,21 +8,20 @@ interface MeetingRow {
   id: string;
   requester_id: string;
   invitee_id: string;
-  scheduled_start: string | null;
-  scheduled_end: string | null;
+  accepted_slot: { start: string; end: string } | null;
   location: string | null;
   status: string;
   requester: {
     id: string;
     full_name: string | null;
-    avatar_url: string | null;
+    photo_url: string | null;
     designation: string | null;
     company: string | null;
   } | null;
   invitee: {
     id: string;
     full_name: string | null;
-    avatar_url: string | null;
+    photo_url: string | null;
     designation: string | null;
     company: string | null;
   } | null;
@@ -46,7 +45,7 @@ export default async function MeetingChatPage({
   const { data } = await supabase
     .from("meetings")
     .select(
-      "id, requester_id, invitee_id, scheduled_start, scheduled_end, location, status, requester:requester_id(id, full_name, avatar_url, designation, company), invitee:invitee_id(id, full_name, avatar_url, designation, company)"
+      "id, requester_id, invitee_id, accepted_slot, location, status, requester:requester_id(id, full_name, photo_url, designation, company), invitee:invitee_id(id, full_name, photo_url, designation, company)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -54,23 +53,26 @@ export default async function MeetingChatPage({
   if (!meeting) notFound();
   if (meeting.requester_id !== user.id && meeting.invitee_id !== user.id) notFound();
 
-  // Find or create conversation for this meeting.
+  // Find or create the canonical 1:1 conversation between these two participants.
+  // The conversations table doesn't have a meeting_id; it pairs participants directly.
+  const a =
+    meeting.requester_id < meeting.invitee_id ? meeting.requester_id : meeting.invitee_id;
+  const b =
+    meeting.requester_id < meeting.invitee_id ? meeting.invitee_id : meeting.requester_id;
+
   let conversationId: string | null = null;
   const { data: existing } = await supabase
     .from("conversations")
     .select("id")
-    .eq("meeting_id", meeting.id)
+    .eq("participant_a", a)
+    .eq("participant_b", b)
     .maybeSingle();
   if (existing?.id) {
     conversationId = existing.id;
   } else if (meeting.status === "accepted") {
     const { data: created } = await supabase
       .from("conversations")
-      .insert({
-        meeting_id: meeting.id,
-        user_a: meeting.requester_id < meeting.invitee_id ? meeting.requester_id : meeting.invitee_id,
-        user_b: meeting.requester_id < meeting.invitee_id ? meeting.invitee_id : meeting.requester_id,
-      })
+      .insert({ participant_a: a, participant_b: b })
       .select("id")
       .maybeSingle();
     conversationId = created?.id ?? null;
@@ -93,7 +95,7 @@ export default async function MeetingChatPage({
             {other?.full_name ?? "Conversation"}
           </h1>
           <p className="text-xs text-slate-500">
-            {[other?.designation, other?.company].filter(Boolean).join(" · ") || " "}
+            {[other?.designation, other?.company].filter(Boolean).join(" · ") || " "}
           </p>
         </div>
       </header>
