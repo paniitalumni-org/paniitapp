@@ -14,12 +14,8 @@ const SLIDES: Slide[] = [
     alt: "PAN IIT 2026 — promotional banner 1",
   },
   {
-    src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_0/pan_image_5.png",
-    alt: "PAN IIT 2026 — promotional banner 2",
-  },
-  {
     src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_359/pan_image_2_50.png",
-    alt: "PAN IIT 2026 — promotional banner 3",
+    alt: "PAN IIT 2026 — promotional banner 2",
   },
   {
     src: "https://afilemanager.s3.dualstack.ap-southeast-1.amazonaws.com/prod/cid_2567/PANIITGuestpanel1.png",
