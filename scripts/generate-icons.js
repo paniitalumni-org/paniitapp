@@ -1,5 +1,5 @@
-// Generates PWA icons (192, 512, maskable-512) with a navy background and "PI" monogram.
-// Requires the `sharp` dev dependency. Run: npm run generate-icons
+// Generates PWA icons (192, 512, maskable-512) with PAN IIT brand navy + white "PI" monogram.
+// Run: npm run generate-icons
 const fs = require("node:fs");
 const path = require("node:path");
 const sharp = require("sharp");
@@ -7,47 +7,25 @@ const sharp = require("sharp");
 const OUT_DIR = path.join(__dirname, "..", "public", "icons");
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const NAVY = "#1e3a5f";
-const GOLD = "#e7b139";
+const BRAND = "#1B1464";
 
 function svgIcon({ size, maskable }) {
-  // Maskable icons need a safe zone — keep glyph within ~80% of canvas.
-  const glyphScale = maskable ? 0.55 : 0.7;
-  const glyphSize = Math.round(size * glyphScale);
   const fontSize = Math.round(size * 0.42);
   const radius = maskable ? 0 : Math.round(size * 0.18);
-
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${NAVY}" />
-      <stop offset="100%" stop-color="#162a45" />
-    </linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#f4df95" />
-      <stop offset="100%" stop-color="${GOLD}" />
-    </linearGradient>
-  </defs>
-  <rect width="${size}" height="${size}" rx="${radius}" fill="url(#bg)" />
+  <rect width="${size}" height="${size}" rx="${radius}" fill="${BRAND}" />
   <text
     x="50%"
     y="50%"
     text-anchor="middle"
     dominant-baseline="central"
-    font-family="Georgia, 'Times New Roman', serif"
+    font-family="Inter, system-ui, -apple-system, Segoe UI, sans-serif"
     font-weight="700"
     font-size="${fontSize}"
     fill="#ffffff"
+    letter-spacing="-2"
   >PI</text>
-  <rect
-    x="${(size - glyphSize) / 2}"
-    y="${size - Math.round(size * 0.12)}"
-    width="${glyphSize}"
-    height="${Math.round(size * 0.025)}"
-    rx="${Math.round(size * 0.012)}"
-    fill="url(#gold)"
-  />
 </svg>`;
 }
 

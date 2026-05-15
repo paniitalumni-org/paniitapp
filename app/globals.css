@@ -5,34 +5,34 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 215 45% 16%;
+    --foreground: 246 53% 16%;
 
     --card: 0 0% 100%;
-    --card-foreground: 215 45% 16%;
+    --card-foreground: 246 53% 16%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 45% 16%;
+    --popover-foreground: 246 53% 16%;
 
-    --primary: 213 53% 24%;
+    --primary: 247 65% 23%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 25% 95%;
-    --secondary-foreground: 215 45% 16%;
+    --secondary: 248 35% 96%;
+    --secondary-foreground: 246 53% 16%;
 
-    --muted: 210 25% 95%;
-    --muted-foreground: 215 20% 40%;
+    --muted: 248 20% 96%;
+    --muted-foreground: 246 15% 40%;
 
-    --accent: 43 80% 56%;
-    --accent-foreground: 215 45% 16%;
+    --accent: 348 100% 43%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 348 100% 43%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 20% 90%;
-    --input: 215 20% 90%;
-    --ring: 213 53% 24%;
+    --border: 248 20% 90%;
+    --input: 248 20% 90%;
+    --ring: 247 65% 23%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 }
 
@@ -57,13 +57,6 @@
 }
 
 @layer utilities {
-  .bg-paniit-gradient {
-    background: linear-gradient(135deg, #1e3a5f 0%, #2f5485 50%, #1e3a5f 100%);
-  }
-  .bg-dot-grid {
-    background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
-    background-size: 18px 18px;
-  }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
@@ -72,9 +65,6 @@
   }
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
-  }
-  .text-balance {
-    text-wrap: balance;
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;

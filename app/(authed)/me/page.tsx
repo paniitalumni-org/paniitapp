@@ -1,37 +1,30 @@
 import Link from "next/link";
-import {
-  ChevronRight,
-  Building2,
-  GraduationCap,
-  Linkedin,
-  LogOut,
-  QrCode,
-  Award,
-  FileText,
-} from "lucide-react";
+import { Building2, GraduationCap, Linkedin, LogOut, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { PushPrompt } from "@/components/features/push-prompt";
-import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+interface ProfileRow {
+  full_name: string | null;
+  email: string | null;
+  role: string | null;
+  company: string | null;
+  designation: string | null;
+  bio: string | null;
+  iit_campus: string | null;
+  graduation_year: number | null;
+  branch: string | null;
+  linkedin_url: string | null;
+  interests: string[] | null;
+  asks: string | null;
+  offers: string | null;
+}
+
 export default async function MePage() {
-  let profile: {
-    full_name?: string | null;
-    role?: string | null;
-    company?: string | null;
-    designation?: string | null;
-    iit_campus?: string | null;
-    graduation_year?: number | null;
-    branch?: string | null;
-    linkedin_url?: string | null;
-    interests?: string[] | null;
-    office_hours_enabled?: boolean | null;
-  } | null = null;
+  let profile: ProfileRow | null = null;
 
   try {
     const supabase = await createClient();
@@ -42,38 +35,61 @@ export default async function MePage() {
       const { data } = await supabase
         .from("profiles")
         .select(
-          "full_name, role, company, designation, iit_campus, graduation_year, branch, linkedin_url, interests, office_hours_enabled"
+          "full_name, email, role, company, designation, bio, iit_campus, graduation_year, branch, linkedin_url, interests, asks, offers"
         )
         .eq("id", user.id)
         .maybeSingle();
-      profile = data;
+      profile = (data as ProfileRow | null) ?? null;
     }
   } catch {
     // env not configured
   }
 
   return (
-    <div className="pb-10">
-      <div className="bg-paniit-gradient px-5 pb-6 pt-6 text-white">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-14 w-14 bg-white/15 ring-2 ring-white/30">
-            <AvatarFallback className="bg-white/15 text-white">
-              {initials(profile?.full_name ?? "You")}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="text-base font-semibold">{profile?.full_name ?? "Your profile"}</div>
-            <div className="text-xs text-white/70">
-              {profile?.designation ? `${profile.designation} · ` : ""}
-              {profile?.company ?? "Add your company"}
-            </div>
-          </div>
+    <div className="px-4 pb-10 pt-6 space-y-6">
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
+            {profile?.full_name ?? "Your profile"}
+          </h1>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {profile?.designation || profile?.company
+              ? [profile?.designation, profile?.company].filter(Boolean).join(" · ")
+              : "Welcome to the summit."}
+          </p>
+        </div>
+        <Link href="/me/edit">
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Pencil className="h-3.5 w-3.5" />
+            Edit
+          </Button>
+        </Link>
+      </header>
+
+      <div className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-4">
+        <Avatar className="h-16 w-16">
+          <AvatarFallback className="bg-brand-50 text-brand-800">
+            {initials(profile?.full_name ?? "You")}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1 space-y-1">
+          {profile?.role ? (
+            <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-700">
+              {profile.role}
+            </span>
+          ) : null}
+          {profile?.email ? (
+            <div className="truncate text-xs text-slate-500">{profile.email}</div>
+          ) : null}
         </div>
       </div>
 
-      <div className="-mt-3 mx-4 rounded-xl border border-navy-100 bg-white p-4 shadow-sm">
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <Detail icon={GraduationCap} label="IIT">
+      <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
+          Education
+        </h2>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+          <Detail icon={GraduationCap} label="IIT campus">
             {profile?.iit_campus ?? "—"}
             {profile?.graduation_year ? ` · ${profile.graduation_year}` : ""}
           </Detail>
@@ -81,71 +97,39 @@ export default async function MePage() {
             {profile?.branch ?? "—"}
           </Detail>
         </div>
-        {profile?.interests?.length ? (
-          <div className="mt-4">
-            <div className="mb-1.5 text-[11px] uppercase tracking-[0.18em] text-navy-500">
-              Interests
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {profile.interests.map((i) => (
-                <span
-                  key={i}
-                  className="rounded-full bg-navy-50 px-2.5 py-0.5 text-[11px] text-navy-700"
-                >
-                  {i}
-                </span>
-              ))}
-            </div>
-          </div>
-        ) : null}
-        {profile?.linkedin_url ? (
-          <a
-            href={profile.linkedin_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-navy-700 hover:text-navy-900"
-          >
-            <Linkedin className="h-3.5 w-3.5" />
-            LinkedIn
-          </a>
-        ) : null}
-      </div>
+      </section>
 
-      <div className="mt-6 px-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
-          Quick actions
-        </h2>
-        <ul className="divide-y divide-navy-100 rounded-xl border border-navy-100 bg-white">
-          <MeRow icon={QrCode} label="My QR badge" href="/me/qr" />
-          <MeRow icon={Award} label="Sponsors & perks" href="/sponsors" />
-          <MeRow icon={FileText} label="My summit recap" href="/recap" />
-        </ul>
-      </div>
-
-      <div className="mt-4 px-4">
-        <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
-          Notifications
-        </h2>
-        <PushPrompt vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
-      </div>
-
-      {profile?.role === "vc" || profile?.role === "alumni" ? (
-        <div className="mt-4 px-4">
-          <h2 className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-500">
-            Availability
-          </h2>
-          <OfficeHoursToggle initial={!!profile.office_hours_enabled} />
-        </div>
+      {profile?.bio ? (
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">Bio</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">{profile.bio}</p>
+        </section>
       ) : null}
 
-      <Separator className="my-6" />
+      {profile?.interests?.length ? (
+        <ChipSection title="Interests" items={profile.interests} />
+      ) : null}
+      {profile?.asks ? <PlainSection title="Looking for" body={profile.asks} /> : null}
+      {profile?.offers ? <PlainSection title="Can offer" body={profile.offers} /> : null}
 
-      <div className="px-4">
+      {profile?.linkedin_url ? (
+        <a
+          href={profile.linkedin_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm font-medium text-brand-800 hover:text-brand-900"
+        >
+          <Linkedin className="h-4 w-4" />
+          LinkedIn
+        </a>
+      ) : null}
+
+      <div className="pt-2">
         <form action="/api/auth/signout" method="post">
           <Button
             variant="outline"
             type="submit"
-            className="w-full text-destructive border-destructive/30 hover:bg-destructive/5"
+            className="w-full border-iit-200 text-iit-500 hover:bg-iit-50"
           >
             <LogOut className="h-4 w-4" />
             Sign out
@@ -166,42 +150,39 @@ function Detail({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-0.5">
-      <div className="flex items-center gap-1 text-[11px] uppercase tracking-[0.18em] text-navy-500">
+    <div>
+      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-500">
         <Icon className="h-3 w-3" />
         {label}
       </div>
-      <div className="text-sm font-medium text-navy-900">{children}</div>
+      <div className="mt-1 text-sm font-medium text-brand-900">{children}</div>
     </div>
   );
 }
 
-function MeRow({
-  icon: Icon,
-  label,
-  href,
-  disabled,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  href: string;
-  disabled?: string;
-}) {
+function ChipSection({ title, items }: { title: string; items: string[] }) {
   return (
-    <li>
-      <Link
-        href={href}
-        className="flex items-center justify-between px-4 py-3 transition hover:bg-navy-50"
-      >
-        <span className="flex items-center gap-3 text-sm text-navy-900">
-          <Icon className="h-4 w-4 text-navy-600" />
-          {label}
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-navy-400">
-          {disabled ? disabled : null}
-          <ChevronRight className="h-4 w-4" />
-        </span>
-      </Link>
-    </li>
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {items.map((i) => (
+          <span
+            key={i}
+            className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+          >
+            {i}
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PlainSection({ title, body }: { title: string; body: string }) {
+  return (
+    <section className="rounded-lg border border-slate-200 bg-white p-4">
+      <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-700">{body}</p>
+    </section>
   );
 }

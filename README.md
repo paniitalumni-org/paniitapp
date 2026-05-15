@@ -1,44 +1,76 @@
 # PAN IIT Bangalore Summit 2026 — Event PWA
 
-Mobile-first event app for the **PAN IIT Bangalore Summit 2026** — *Sovereignty in
-Technology* — May 16, 2026 at Taj Yeshwantpur, Bengaluru.
+Mobile-first event app for the **PAN IIT Bangalore Summit 2026** — *Sovereignty in Technology* — May 16, 2026 at Taj Yeshwantpur, Bengaluru.
 
-Built with Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui + Supabase
-(Auth, Postgres, Realtime, Storage), shipped as an installable PWA.
+Built with Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui + Supabase, shipped as an installable PWA.
 
-> **Status: all six phases scaffolded and building cleanly.** Replace seed data,
-> apply migrations, wire VAPID keys, deploy to Vercel.
+> **Status: Phase 1 complete.** Email-only sign-in, profile read/edit, shell + 5-tab nav, PWA assets. Phases 2–6 follow per the build spec.
 
 ---
 
 ## Quick start
 
 ```bash
-# 1. Clone and install
 git clone https://github.com/paniitalumni-org/paniitapp.git
 cd paniitapp
 npm install --legacy-peer-deps
 
-# 2. Set environment variables
+# Set env vars (see "Environment variables" below)
 cp .env.local.example .env.local
-# fill in NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
-# SUPABASE_SERVICE_ROLE_KEY, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY,
-# NEXT_PUBLIC_VAPID_PUBLIC_KEY (same as VAPID_PUBLIC_KEY)
+# fill values in
 
-# 3. Apply Supabase migrations
-psql "$SUPABASE_DB_URL" -f supabase/migrations/0001_init.sql        # owner-provided
-psql "$SUPABASE_DB_URL" -f supabase/migrations/0002_qa_replies.sql  # this repo
+# Apply migrations against the Supabase project
+psql "$SUPABASE_DB_URL" -f supabase/migrations/0001_init.sql        # owner-provided seed
+psql "$SUPABASE_DB_URL" -f supabase/migrations/0002_email_unique.sql # this repo, Phase 1
 
-# 4. Generate VAPID keys
-npx web-push generate-vapid-keys
-
-# 5. Deploy push Edge Function (optional)
-supabase functions deploy send-push
-
-# 6. Run the dev server
-npm run dev
-# → http://localhost:3000
+npm run dev   # http://localhost:3000
 ```
+
+## Environment variables
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://fncnndrexzmqqengbkvi.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:tech@paniit.org
+```
+
+The service-role key is **server-only** and never reaches the client bundle. It's used by `lib/supabase/server.ts → createServiceRoleClient()` solely inside server actions and route handlers.
+
+## Migrations
+
+| File | What it does | Run when |
+| --- | --- | --- |
+| `supabase/migrations/0001_init.sql` | Owner-provided seed: profiles (with 2,000 pre-registered attendees), sessions, venues, sponsors, announcements, etc. | Already applied |
+| `supabase/migrations/0002_email_unique.sql` | Partial unique index on `lower(email)` so the sign-in lookup deterministically resolves one profile. | **Run before testing sign-in.** Paste into Supabase SQL editor or `psql` against the DB URL. |
+
+## Bulk-importing the attendee registration CSV
+
+The Supabase `profiles` table expects one row per registered attendee, with `email` populated (used for sign-in). Use the Supabase SQL editor's CSV import tool or `psql \copy`:
+
+```sql
+-- via psql
+\copy public.profiles (id, email, full_name, role, iit_campus, graduation_year, branch, company, designation, interests)
+  from 'attendees.csv' csv header;
+```
+
+After importing, run migration `0002_email_unique.sql` if it hasn't been run yet — it will fail loudly if there are duplicate emails, which is what you want.
+
+## Auth: email-only sign-in (intentional, hardening later)
+
+Phase 1 sign-in is intentionally simple:
+
+1. User opens the app → lands on `/` (the sign-in page).
+2. User types an email → server action queries `profiles.email`.
+3. If the email isn't on the registered list → inline error: *"This email isn't on the registered attendee list."*
+4. If it matches → server-side `admin.generateLink({ type: "magiclink" })` returns an OTP that we immediately `verifyOtp` on a Supabase SSR server client. No email round-trip; cookies are set and the user is redirected to `/agenda`.
+
+**No password. No emailed OTP. No magic link.** Threat model for Phase 1: trust the registration list, optimize friction-free entry on summit day. **Anyone who knows another attendee's registered email could currently impersonate them.** A password layer will be added in Phase 7.
+
+See `DECISIONS.md` for the design choice.
 
 ## Scripts
 
@@ -48,152 +80,63 @@ npm run dev
 | `npm run build` | Production build |
 | `npm run start` | Run the production build |
 | `npm run lint` | Run `next lint` |
-| `npm run generate-icons` | Regenerate `public/icons/*.png` from the SVG template |
+| `npm run generate-icons` | Regenerate `public/icons/*.png` |
 
-## Stack
-
-- **Next.js 15** (App Router) + **TypeScript** + **React 19**
-- **Tailwind CSS v3** + **shadcn/ui** (primitives in `components/ui/*`)
-- **Supabase** via `@supabase/ssr` — Postgres + Auth + Realtime + Storage
-- **Phone OTP** auth (Supabase + MSG91/Twilio configured server-side)
-- **PWA**: hand-written `public/sw.js` + `manifest.json` (no `next-pwa`)
-- **Forms**: `react-hook-form` + `zod`
-- **Dates**: `date-fns` + `date-fns-tz`, all times in `Asia/Kolkata`
-- **Icons**: `lucide-react`
-- **QR**: `qrcode` (generate) + `html5-qrcode` (scan)
-- **Push**: Web Push API + VAPID (in-app `/api/push/send` and Edge Function)
-
-## Features (what's built)
-
-### Public
-- Premium landing hero with `bg-paniit-gradient`, dot-grid overlay, gold gradient text on "Technology", 6-feature grid, CTA section, footer
-- Phone-OTP login (locked `+91`, 6-digit code with tabular-nums)
-- 3-step onboarding wizard (role/company → IIT details → interests/asks/offers)
-
-### Agenda
-- Sticky time-strip header, track filter chips, "My agenda" bookmarks toggle
-- Live capacity meter (green/amber/red, realtime via Supabase channel)
-- Session detail page: speakers grid, bookmark, check-in (10-min open window), live **Q&A discussion**
-
-### Live Q&A
-- Sort tabs (Top / Recent / My questions / Answered)
-- Anonymous posting with deterministic pseudonym (`Attendee #347`)
-- Reply threads with vertical guide line; **verified checkmark** on speaker/organizer replies (auto-flagged by trigger)
-- Moderator menu (pin / mark answered / dismiss / restore)
-- Optimistic upvotes; realtime updates to questions, replies, upvotes
-
-### Network
-- Searchable directory (debounced) with filter sheet: roles, IIT campus, interests, year range, "available for meetings"
-- Attendee profile with asks (gold) / offers (navy outline) / interests, LinkedIn / Twitter, "Speaking at" list
-
-### Meetings
-- `SlotPicker` over 15-min blocks 08:00–21:00 IST with soft/hard conflict classification
-- Inbox / Sent / Calendar tabs
-- Accept via `/api/meetings/accept` → `accept_meeting` RPC with fallback to in-app implementation
-- Counter-propose alternates, decline, suggested alternatives on conflict
-- 1:1 chat (realtime, read receipts via `read_at`)
-
-### Map
-- Two-floor toggle, hand-coded SVG with `map_x` / `map_y` positioning
-- Tap a hall → bottom sheet with today's sessions
-- Search highlights matching halls in gold
-
-### QR
-- `/me/qr` — full-screen QR badge (token-encoded) **and** scanner via `html5-qrcode`
-- Scan → upserts bidirectional `connections` row + navigates to profile
-
-### Office Hours
-- Profile toggle (`/me` for VC/Alumni roles)
-- `/attendees/office-hours` lists currently-available people; booking re-uses the normal meeting flow
-
-### Sponsors
-- Tiered listing (Title → Platinum → Gold → Silver → Partner)
-- Detail page with attendee offer, copyable promo code, "find on map" link
-
-### Admin (`/admin`)
-- Role-gated to `organizer`/`admin`
-- Live stats (registered / check-ins / meetings / accepted)
-- Announcement composer (priority, audience) — high/urgent priorities also trigger push
-- Top sessions by check-in, hot unanswered questions across sessions
-
-### Recap (`/recap`)
-- People you met (avatar grid linked to profiles)
-- Sessions attended, questions asked/answered
-- `/recap/export?format=vcf|csv` downloads contacts as vCard or CSV
-
-### Push
-- VAPID-keyed Web Push
-- `/api/push/subscribe` saves the `PushSubscription` to `profiles.push_subscription`
-- `/api/push/send` (admin-only) sends to a user list
-- `supabase/functions/send-push` Edge Function for backend-triggered pushes (10-min bookmark reminders, meeting events, official-reply alerts)
-- `public/sw.js` handles incoming notifications + click → navigate
-
-### PWA
-- `manifest.json`, hand-written `public/sw.js` (network-first with safe-origin guard)
-- Generated 192/512/maskable icons via `scripts/generate-icons.js`
-- Installable on iOS Safari ("Add to Home Screen") and Android Chrome (PWA prompt)
-
-## Design system
-
-- Premium navy / white / gold palette, paniit.org-inspired
-- Inter (sans) + Source Serif 4 (display)
-- Track colors mapped in `tailwind.config.ts` (`track.ai`, `track.deeptech`, etc.)
-- Gradient utility: `.bg-paniit-gradient`
-- shadcn HSL variables in `app/globals.css`, tuned to the palette
-
-## File structure
+## File structure (Phase 1)
 
 ```
 app/
-  (public)/login           ← phone OTP form
-  (public)/onboard         ← 3-step wizard
-  (authed)/layout.tsx      ← profile gate, TopBar + BottomNav
-  (authed)/agenda          ← list, detail, Q&A discussion
-  (authed)/attendees       ← directory, profile, office-hours
-  (authed)/meetings        ← inbox/sent/calendar, 1:1 chat
-  (authed)/map             ← SVG floor map with venue sheets
-  (authed)/me              ← profile, QR, push & office-hours toggles
-  (authed)/sponsors        ← tiered list + detail with offer code
-  (authed)/admin           ← role-gated dashboard + announcement composer
-  (authed)/recap           ← post-event summary + contact export
-  api/
-    auth/signout
-    meetings/{accept, suggest-alternates}
-    push/{subscribe, send}
+  page.tsx                     ← sign-in page (the entry point — NOT a marketing landing)
+  sign-in-form.tsx             ← client form (email + Continue)
+  actions/
+    sign-in.ts                 ← server action: lookup → generateLink → verifyOtp
+    update-profile.ts          ← server action: update profile row
+  (authed)/
+    layout.tsx                 ← auth gate + TopBar/BottomNav chrome
+    agenda/page.tsx            ← seeded sessions, time + venue + track
+    network/page.tsx           ← Phase 2 placeholder
+    meetings/page.tsx          ← Phase 3 placeholder
+    map/page.tsx               ← venue list grouped by floor
+    sponsors/page.tsx          ← seeded sponsors grouped by tier
+    me/page.tsx                ← read-only profile
+    me/edit/page.tsx           ← editable form
+  api/auth/signout/route.ts
+  layout.tsx                   ← Inter font, SW registration
+  globals.css                  ← PAN IIT design tokens
 components/
-  ui/                      ← shadcn primitives
-  features/                ← top-bar, bottom-nav, session-card, slot-picker,
-                             my-qr, qr-scanner, push-prompt, schedule-meeting-
-                             button, office-hours-toggle, qa/
+  ui/                          ← shadcn primitives
+  features/
+    top-bar.tsx                ← 56px, brand-800 lockup + bell
+    bottom-nav.tsx             ← 64px, 5 tabs
+    empty-state.tsx
 lib/
-  supabase/                ← client.ts, server.ts, middleware.ts, types.ts
-  utils.ts, constants.ts, date.ts, slots.ts
+  supabase/{client,server,middleware,types}.ts
+  utils.ts, constants.ts, date.ts, redirect.ts
 public/
   manifest.json, sw.js, icons/
 scripts/
-  generate-icons.js        ← `npm run generate-icons`
+  generate-icons.js
 supabase/
-  migrations/0001_init.sql   ← owner-provided
-  migrations/0002_qa_replies.sql
-  functions/send-push        ← Deno Edge Function
-middleware.ts              ← refreshes session + gates (authed) routes
-vercel.json                ← framework config + security headers
+  migrations/0001_init.sql       ← owner-provided
+  migrations/0002_email_unique.sql
+middleware.ts                  ← refreshes session, gates (authed)
+vercel.json                    ← install/build/region/headers
 ```
+
+## Design tokens
+
+- **Brand navy** `#1B1464` — primary. Used for headings (`text-brand-900`), primary buttons (`bg-brand-800`), nav active states.
+- **IIT red** `#DD002B` — accent. Used sparingly: error states, destructive actions, urgent announcement banners.
+- **Slate** for all neutrals.
+- **Inter** font only. No serif anywhere.
+
+Tighter radius (`--radius: 0.5rem`) for an institutional feel.
 
 ## Deploying to Vercel
 
 1. Connect the GitHub repo at vercel.com/new.
-2. Add env vars (see `.env.local.example`) — including `NEXT_PUBLIC_VAPID_PUBLIC_KEY`.
-3. `vercel.json` already pins:
-   - Install command: `npm install --legacy-peer-deps`
-   - Build region: `bom1` (Mumbai)
-   - Strict security headers (HSTS, no-frame, no-sniff, permissions-policy)
-4. Deploy. The middleware reads Supabase URL/anon at build and runtime.
-
-## Adding more shadcn primitives
-
-```bash
-npx shadcn@latest add <component>
-```
+2. Add env vars (Production scope) — at minimum `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+3. `vercel.json` pins install command, build region (`bom1`), and security headers.
+4. Deploy. Hard-refresh after first build to clear any stale service worker from earlier deployments.
 
 See `DECISIONS.md` for engineering judgement calls per phase.

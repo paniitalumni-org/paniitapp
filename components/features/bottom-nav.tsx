@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Users, CalendarClock, Map as MapIcon, User } from "lucide-react";
+import { Calendar, Users, CalendarClock, Map as MapIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const tabs = [
-  { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/attendees", label: "Network", icon: Users },
+const TABS = [
+  { href: "/agenda", label: "Agenda", icon: Calendar },
+  { href: "/network", label: "Network", icon: Users },
   { href: "/meetings", label: "Meetings", icon: CalendarClock },
   { href: "/map", label: "Map", icon: MapIcon },
   { href: "/me", label: "Me", icon: User },
@@ -17,24 +17,25 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-navy-100 bg-white/95 backdrop-blur">
-      <ul className="mx-auto flex h-16 w-full max-w-2xl items-stretch justify-between px-2">
-        {tabs.map((t) => {
-          const active = pathname === t.href || pathname.startsWith(`${t.href}/`);
-          const Icon = t.icon;
+    <nav
+      aria-label="Primary"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white"
+    >
+      <ul className="mx-auto grid h-16 w-full max-w-2xl grid-cols-5">
+        {TABS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
           return (
-            <li key={t.href} className="flex-1">
+            <li key={href} className="flex">
               <Link
-                href={t.href}
-                aria-label={t.label}
+                href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-full flex-col items-center justify-center gap-0.5 text-[11px] font-medium transition",
-                  active ? "text-navy-800" : "text-navy-400 hover:text-navy-600"
+                  "flex w-full flex-col items-center justify-center gap-1 transition-colors",
+                  active ? "text-brand-800" : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                <Icon className={cn("h-5 w-5", active && "stroke-[2.25]")} />
-                {t.label}
+                <Icon className="h-5 w-5" />
+                <span className="text-[11px] font-medium leading-none">{label}</span>
               </Link>
             </li>
           );

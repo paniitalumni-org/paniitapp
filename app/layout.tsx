@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -9,16 +9,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const serif = Source_Serif_4({
-  subsets: ["latin"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "PAN IIT Bangalore 2026",
+  title: "PAN IIT Bangalore Summit 2026",
   description:
-    "Sovereignty in Technology — the official mobile event app for the PAN IIT Bangalore Summit 2026.",
+    "The official mobile app for the PAN IIT Bangalore Summit 2026 — Sovereignty in Technology.",
   applicationName: "PAN IIT 2026",
   manifest: "/manifest.json",
   appleWebApp: {
@@ -34,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1e3a5f",
+  themeColor: "#1B1464",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -44,8 +38,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${serif.variable}`}>
-      <body className="min-h-screen bg-background font-sans text-navy-900 antialiased">
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         {children}
         <Toaster />
         <script
