@@ -418,7 +418,7 @@ function RoleChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[12px] font-medium transition-colors",
+        "shrink-0 whitespace-nowrap rounded-[4px] border px-3.5 py-1.5 text-[12px] font-medium transition-colors",
         active
           ? "border-brand-800 bg-brand-800 text-white"
           : "border-brand-100 bg-white text-brand-900 hover:border-brand-200 hover:bg-brand-50"
@@ -650,7 +650,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors",
+        "rounded-[4px] border px-2.5 py-1 text-[11px] font-medium transition-colors",
         active
           ? "border-brand-800 bg-brand-800 text-white"
           : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50"
