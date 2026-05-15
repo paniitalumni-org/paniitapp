@@ -2,52 +2,122 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const PREFIX = "paniit2026:";
 
+// Two-note "ding" via Web Audio so we don't need to ship an asset.
+function playSuccessChime() {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioCtor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtor) return;
+    const ctx = new AudioCtor();
+    const now = ctx.currentTime;
+    const playTone = (freq: number, start: number, dur: number, vol: number) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, now + start);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + start + dur);
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start(now + start);
+      o.stop(now + start + dur);
+    };
+    playTone(880, 0, 0.18, 0.2);
+    playTone(1320, 0.12, 0.28, 0.18);
+    // Close the context after the chime is fully scheduled to free resources
+    window.setTimeout(() => {
+      void ctx.close().catch(() => {});
+    }, 600);
+  } catch {
+    /* ignore audio failures (locked-by-policy, etc.) */
+  }
+}
+
+interface ScannerInstance {
+  stop: () => Promise<void>;
+  clear: () => void;
+}
+
 export function QrScanner() {
   const router = useRouter();
   const { toast } = useToast();
   const elId = "qr-scanner-region";
-  const [started, setStarted] = useState(false);
+  const [status, setStatus] = useState<"starting" | "running" | "error">(
+    "starting"
+  );
   const [pending, setPending] = useState(false);
-  const scannerRef = useRef<{ stop: () => Promise<void>; clear: () => void } | null>(null);
+  const scannerRef = useRef<ScannerInstance | null>(null);
+  const handlingRef = useRef(false);
 
-  async function start() {
-    setStarted(true);
-    try {
-      const { Html5Qrcode } = await import("html5-qrcode");
-      const scanner = new Html5Qrcode(elId);
-      scannerRef.current = scanner;
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 240 },
-        async (decoded) => {
-          await handleDecoded(decoded);
-        },
-        () => {
-          /* ignore frame errors */
-        }
-      );
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Could not start camera";
-      toast({ title: "Camera error", description: msg, variant: "destructive" });
-      setStarted(false);
-    }
-  }
-
+  // Always cleanly stop the camera when the component unmounts. Without this,
+  // navigating away (Home tab, etc.) while the scanner is live throws a
+  // "client-side exception" because html5-qrcode tries to drive detached DOM.
   useEffect(() => {
+    let cancelled = false;
+
+    async function boot() {
+      try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (cancelled) return;
+        const scanner = new Html5Qrcode(elId);
+        scannerRef.current = scanner;
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 240 },
+          (decoded) => {
+            void handleDecoded(decoded);
+          },
+          () => {
+            /* ignore per-frame decode errors */
+          }
+        );
+        if (!cancelled) setStatus("running");
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : "Could not start camera";
+        toast({
+          title: "Camera error",
+          description: msg,
+          variant: "destructive",
+        });
+        setStatus("error");
+      }
+    }
+
+    void boot();
+
     return () => {
-      void scannerRef.current?.stop().catch(() => {});
-      scannerRef.current?.clear();
+      cancelled = true;
+      const s = scannerRef.current;
+      scannerRef.current = null;
+      if (!s) return;
+      // Stop is async — swallow errors so React's unmount can complete cleanly.
+      Promise.resolve()
+        .then(() => s.stop())
+        .catch(() => {})
+        .finally(() => {
+          try {
+            s.clear();
+          } catch {
+            /* node already gone */
+          }
+        });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleDecoded(text: string) {
-    if (pending) return;
+    if (handlingRef.current) return;
+    handlingRef.current = true;
     setPending(true);
     const token = text.startsWith(PREFIX) ? text.slice(PREFIX.length) : text;
     try {
@@ -65,7 +135,10 @@ export function QrScanner() {
         .eq("qr_token", token)
         .maybeSingle();
       if (!target) {
-        toast({ title: "Code didn't match an attendee", variant: "destructive" });
+        toast({
+          title: "Code didn't match an attendee",
+          variant: "destructive",
+        });
         return;
       }
       if (target.id === user.id) {
@@ -74,43 +147,56 @@ export function QrScanner() {
       }
       const a = user.id < target.id ? user.id : target.id;
       const b = user.id < target.id ? target.id : user.id;
-      await supabase.from("connections").upsert(
-        { user_a: a, user_b: b },
-        { onConflict: "user_a,user_b" }
-      );
+      await supabase
+        .from("connections")
+        .upsert({ user_a: a, user_b: b }, { onConflict: "user_a,user_b" });
+      playSuccessChime();
       toast({ title: `Connected with ${target.full_name ?? "attendee"}` });
-      await scannerRef.current?.stop().catch(() => {});
-      scannerRef.current?.clear();
+      // Stop the camera before navigating so the unmount cleanup has nothing to fight.
+      const s = scannerRef.current;
+      scannerRef.current = null;
+      if (s) {
+        try {
+          await s.stop();
+        } catch {
+          /* already stopped */
+        }
+        try {
+          s.clear();
+        } catch {
+          /* node gone */
+        }
+      }
       router.push(`/attendees/${target.id}`);
     } finally {
       setPending(false);
+      handlingRef.current = false;
     }
-  }
-
-  if (!started) {
-    return (
-      <button
-        type="button"
-        onClick={start}
-        className="inline-flex h-10 items-center gap-2 rounded-md bg-brand-800 px-5 text-sm font-medium text-white hover:bg-brand-900"
-      >
-        <Camera className="h-4 w-4" />
-        Open camera scanner
-      </button>
-    );
   }
 
   return (
     <div className="space-y-2">
-      <div id={elId} className="overflow-hidden rounded-lg border border-slate-200 bg-black" />
-      {pending ? (
-        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+      <div
+        id={elId}
+        className="aspect-square overflow-hidden rounded-lg border border-brand-100 bg-black"
+      />
+      {status === "starting" ? (
+        <div className="flex items-center justify-center gap-2 text-sm text-brand-800/75">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Saving connection...
+          Starting camera…
         </div>
+      ) : pending ? (
+        <div className="flex items-center justify-center gap-2 text-sm text-brand-800/75">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Saving connection…
+        </div>
+      ) : status === "running" ? (
+        <p className="text-center text-xs text-brand-800/75">
+          Point the camera at another attendee&apos;s QR badge to swap contacts.
+        </p>
       ) : (
-        <p className="text-xs text-slate-500">
-          Point the camera at another attendee's QR badge to swap contacts.
+        <p className="text-center text-xs text-iit-500">
+          Camera blocked — check browser permissions and try again.
         </p>
       )}
     </div>

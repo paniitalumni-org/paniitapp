@@ -99,6 +99,30 @@ export default async function SignInPage() {
               summit@paniit.org
             </a>
           </p>
+
+          <a
+            href="https://neuralai.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 flex flex-col items-center gap-1.5 text-center transition-opacity hover:opacity-80"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800/70">
+              Built by
+            </span>
+            <Image
+              src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
+              alt="Neural AI"
+              width={120}
+              height={32}
+              className="h-7 w-auto object-contain"
+            />
+            <span
+              className="text-[15px] font-semibold tracking-[0.04em] text-brand-900"
+              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+            >
+              Neural AI
+            </span>
+          </a>
         </div>
       </section>
     </main>

@@ -6,7 +6,7 @@ import {
   Home,
   CalendarDays,
   UsersRound,
-  Building2,
+  Store,
   CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ const TABS = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/attendees", label: "Networking", icon: UsersRound },
-  { href: "/exhibitors", label: "Exhibitors", icon: Building2 },
+  { href: "/exhibitors", label: "Exhibitors", icon: Store },
   { href: "/meetings", label: "Meetings", icon: CalendarClock },
 ] as const;
 

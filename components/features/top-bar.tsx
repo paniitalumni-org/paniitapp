@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { initials } from "@/lib/utils";
 import { NotificationsBell } from "./notifications-bell";
-import { QrConnect } from "./qr-connect";
+
+const SUMMIT_WHATSAPP_URL = "https://wa.me/919999999999";
 
 function firstName(full: string | null | undefined): string {
   if (!full) return "there";
@@ -57,11 +58,36 @@ export async function TopBar() {
             </p>
           </Link>
           <div className="flex items-center gap-1">
-            <QrConnect />
+            <a
+              href={SUMMIT_WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Summit help on WhatsApp"
+              className="inline-grid size-10 place-items-center rounded-full transition-transform hover:-translate-y-0.5"
+            >
+              <WhatsAppMark className="size-[26px]" />
+            </a>
             <NotificationsBell />
           </div>
         </div>
       </header>
     </TooltipProvider>
+  );
+}
+
+function WhatsAppMark({ className }: { className?: string }) {
+  // Background-removed WhatsApp glyph in brand green.
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <path
+        fill="#25D366"
+        d="M16.05 4C9.42 4 4.04 9.38 4.04 16.01a11.94 11.94 0 001.72 6.16L4 28l5.99-1.72A12 12 0 0028.06 16C28.06 9.38 22.68 4 16.05 4zm0 21.94c-1.94 0-3.83-.52-5.5-1.5l-.39-.23-3.55 1.02 1.04-3.46-.25-.4a9.94 9.94 0 1118.6-5.36 9.94 9.94 0 01-9.95 9.93zm5.7-7.45c-.31-.16-1.85-.91-2.14-1.01-.29-.11-.5-.16-.71.16-.21.31-.81 1.01-.99 1.22-.18.21-.36.23-.67.08-.31-.16-1.32-.49-2.51-1.55-.93-.83-1.55-1.85-1.73-2.16-.18-.31-.02-.48.13-.63.13-.13.31-.36.47-.54.16-.18.21-.31.32-.51.11-.21.05-.39-.03-.55-.08-.16-.71-1.71-.97-2.34-.25-.61-.51-.53-.71-.54-.18-.01-.39-.01-.6-.01-.21 0-.55.08-.83.39-.29.31-1.09 1.06-1.09 2.59 0 1.53 1.11 3.01 1.27 3.22.16.21 2.19 3.34 5.31 4.69.74.32 1.32.51 1.78.65.74.24 1.42.21 1.96.13.6-.09 1.85-.75 2.11-1.47.26-.72.26-1.34.18-1.47-.08-.13-.29-.21-.6-.36z"
+      />
+    </svg>
   );
 }

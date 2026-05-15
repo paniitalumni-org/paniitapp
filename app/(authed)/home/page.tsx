@@ -4,11 +4,7 @@ import {
   CalendarDays,
   ChevronRight,
   MapPin,
-  Mail,
   Compass,
-  QrCode,
-  ScanLine,
-  BookOpen,
 } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import { createClient } from "@/lib/supabase/server";
@@ -17,6 +13,7 @@ import { SUMMIT_TZ } from "@/lib/constants";
 import { HeroCarousel } from "./hero-carousel";
 import { KeyParticipantsStrip } from "./key-participants-strip";
 import { PartnersGroups } from "./partners-groups";
+import { QuickActions } from "./quick-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -213,12 +210,7 @@ export default async function HomePage() {
 
       {/* Quick actions — 2 per row, icon + label horizontal, no icon backdrop */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-2">
-          <QuickAction href="/me/qr" icon={<QrCode className="size-[18px]" strokeWidth={1.5} />} label="My QR" />
-          <QuickAction href="/scan" icon={<ScanLine className="size-[18px]" strokeWidth={1.5} />} label="Scan QR" />
-          <QuickAction href="mailto:summit@paniit.org" icon={<Mail className="size-[18px]" strokeWidth={1.5} />} label="Contact us" />
-          <QuickAction href="/sponsors" icon={<BookOpen className="size-[18px]" strokeWidth={1.5} />} label="Resources" />
-        </div>
+        <QuickActions />
       </section>
 
       {/* Today's calendar */}
@@ -327,28 +319,6 @@ function SectionHeader({ title }: { title: string }) {
     <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
       {title}
     </h2>
-  );
-}
-
-function QuickAction({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white px-3.5 py-3 transition-colors hover:bg-brand-50/30"
-    >
-      <span className="text-brand-800">{icon}</span>
-      <span className="text-[13px] font-semibold leading-tight text-brand-950">
-        {label}
-      </span>
-    </Link>
   );
 }
 

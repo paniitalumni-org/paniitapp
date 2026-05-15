@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 interface Slide {
@@ -102,15 +101,18 @@ export function HeroCarousel() {
         {rendered.map((s, i) => (
           <article
             key={i}
-            className="relative aspect-[4/3] snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-brand-50"
+            className="relative snap-center shrink-0 basis-full overflow-hidden rounded-lg border border-brand-100 bg-white"
           >
-            <Image
+            {/* Plain img keeps each image at its natural aspect ratio so the
+                frame matches the source instead of letter-boxing to a fixed
+                shape. Loading=eager only for the first slide. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={s.src}
               alt={s.alt}
-              fill
-              priority={i === 0}
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-contain"
+              loading={i === 0 ? "eager" : "lazy"}
+              decoding="async"
+              className="block h-auto w-full"
             />
           </article>
         ))}
