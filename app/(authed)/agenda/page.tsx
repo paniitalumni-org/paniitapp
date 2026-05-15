@@ -107,8 +107,6 @@ export default async function AgendaPage({
     return true;
   });
 
-  const matchCount = filtered.reduce((acc, s) => (isRecommended(s) ? acc + 1 : acc), 0);
-
   const grouped = filtered.reduce<Map<string, SessionCardData[]>>((acc, s) => {
     const k = hourKey(s.start_at);
     if (!acc.has(k)) acc.set(k, []);
@@ -146,17 +144,6 @@ export default async function AgendaPage({
               your profile
             </Link>{" "}
             to highlight matching sessions and people across the summit.
-          </p>
-        </div>
-      ) : matchCount > 0 ? (
-        <div className="mb-4 rounded-lg border border-brand-100 bg-white p-3">
-          <p className="text-[12px] leading-5 text-brand-900">
-            <span className="font-semibold text-brand-950">{matchCount} session{matchCount === 1 ? "" : "s"}</span>{" "}
-            line up with your interests. Look for the{" "}
-            <span className="rounded-[3px] border border-emerald-300 bg-white px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-              Recommended
-            </span>{" "}
-            tag below.
           </p>
         </div>
       ) : null}
