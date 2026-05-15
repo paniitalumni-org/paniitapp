@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TopBar } from "@/components/features/top-bar";
 import { BottomNav } from "@/components/features/bottom-nav";
 import { SideNav } from "@/components/features/side-nav";
@@ -26,15 +27,17 @@ export default async function AuthedLayout({ children }: { children: React.React
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <SidebarProvider defaultOpen className="min-h-screen">
       <TopBar />
-      <div className="mx-auto flex w-full max-w-7xl">
+      <div className="flex w-full">
         <SideNav isAdmin={isAdmin} />
-        <main className="min-w-0 flex-1 pb-24 lg:pb-10">
-          <div className="mx-auto w-full max-w-3xl">{children}</div>
-        </main>
+        <SidebarInset className="bg-slate-50">
+          <main className="mx-auto w-full max-w-3xl px-4 pb-24 sm:px-6 lg:max-w-4xl lg:px-8 lg:pb-10 xl:max-w-5xl">
+            {children}
+          </main>
+        </SidebarInset>
       </div>
       <BottomNav />
-    </div>
+    </SidebarProvider>
   );
 }

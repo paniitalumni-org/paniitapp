@@ -11,8 +11,19 @@ import {
   Award,
   Shield,
   FileText,
+  Coffee,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
 const PRIMARY = [
   { href: "/agenda", label: "Agenda", icon: Calendar },
@@ -22,96 +33,85 @@ const PRIMARY = [
   { href: "/me", label: "Profile", icon: User },
 ] as const;
 
-const SECONDARY = [
+const DISCOVER = [
   { href: "/sponsors", label: "Sponsors", icon: Award },
-  { href: "/attendees/office-hours", label: "Office hours", icon: User },
+  { href: "/attendees/office-hours", label: "Office hours", icon: Coffee },
   { href: "/recap", label: "Recap", icon: FileText },
-];
+] as const;
 
-const ADMIN = [{ href: "/admin", label: "Admin", icon: Shield }] as const;
+const ORGANISERS = [{ href: "/admin", label: "Admin dashboard", icon: Shield }] as const;
 
 export function SideNav({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
 
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
   return (
-    <aside className="hidden lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] lg:w-64 lg:shrink-0 lg:flex-col lg:border-r lg:border-slate-200 lg:bg-white">
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <NavGroup>
-          {PRIMARY.map((item) => (
-            <NavLink key={item.href} {...item} pathname={pathname} />
-          ))}
-        </NavGroup>
-        <Divider />
-        <NavGroup label="More">
-          {SECONDARY.map((item) => (
-            <NavLink key={item.href} {...item} pathname={pathname} />
-          ))}
-        </NavGroup>
-        {isAdmin ? (
-          <>
-            <Divider />
-            <NavGroup label="Organisers">
-              {ADMIN.map((item) => (
-                <NavLink key={item.href} {...item} pathname={pathname} />
+    <Sidebar collapsible="icon" variant="inset" className="top-14 h-[calc(100svh-3.5rem)]">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {PRIMARY.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               ))}
-            </NavGroup>
-          </>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Discover</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {DISCOVER.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {isAdmin ? (
+          <SidebarGroup>
+            <SidebarGroupLabel>Organisers</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {ORGANISERS.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton asChild isActive={isActive(item.href)} tooltip={item.label}>
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         ) : null}
-      </nav>
-      <div className="border-t border-slate-200 px-5 py-4 text-[11px] leading-5 text-slate-400">
-        PAN IIT Bangalore Summit · May 16, 2026 · Taj Yeshwantpur
-      </div>
-    </aside>
-  );
-}
+      </SidebarContent>
 
-function NavGroup({ label, children }: { label?: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-0.5">
-      {label ? (
-        <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          {label}
+      <SidebarFooter>
+        <div className="px-2 pb-2 text-[11px] leading-5 text-slate-400 group-data-[collapsible=icon]:hidden">
+          PAN IIT Bangalore Summit
+          <br />
+          May 16, 2026 · Taj Yeshwantpur
         </div>
-      ) : null}
-      {children}
-    </div>
-  );
-}
-
-function Divider() {
-  return <div className="my-4 h-px bg-slate-200" />;
-}
-
-function NavLink({
-  href,
-  label,
-  icon: Icon,
-  pathname,
-}: {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  pathname: string;
-}) {
-  const active = pathname === href || pathname.startsWith(`${href}/`);
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors",
-        active
-          ? "bg-brand-50 font-medium text-brand-800"
-          : "text-slate-700 hover:bg-slate-50 hover:text-brand-900"
-      )}
-    >
-      <Icon
-        className={cn(
-          "h-4 w-4 shrink-0",
-          active ? "text-brand-800" : "text-slate-400 group-hover:text-slate-600"
-        )}
-      />
-      {label}
-    </Link>
+      </SidebarFooter>
+    </Sidebar>
   );
 }

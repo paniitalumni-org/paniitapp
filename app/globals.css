@@ -33,6 +33,16 @@
     --ring: 247 65% 23%;
 
     --radius: 0.5rem;
+
+    /* Sidebar palette — brand navy + slate, tuned to match the app shell. */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 246 25% 30%;
+    --sidebar-primary: 247 65% 23%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 248 50% 96%;
+    --sidebar-accent-foreground: 247 65% 23%;
+    --sidebar-border: 248 20% 90%;
+    --sidebar-ring: 247 65% 23%;
   }
 }
 
