@@ -2,15 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
-import { CalendarClock, Check, Loader2, MessageCircle, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { Check, Clock4, Loader2, MessageCircle, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { formatInTimeZone } from "date-fns-tz";
 import { SUMMIT_TZ } from "@/lib/constants";
 import { rangeIST } from "@/lib/date";
-import { classifySlot, type Slot } from "@/lib/slots";
+import {
+  buildAvailabilitySlots,
+  classifySlot,
+  slotHourIST,
+  type Slot,
+} from "@/lib/slots";
+import { createClient } from "@/lib/supabase/client";
 import { cn, initials } from "@/lib/utils";
 
 interface MiniProfile {
@@ -35,40 +48,37 @@ export interface MeetingRow {
   invitee: MiniProfile | null;
 }
 
-type Tab = "inbox" | "sent" | "calendar";
+type Tab = "by-me" | "by-others";
+type AvailStatus = "available" | "booked" | "blocked";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "inbox", label: "Inbox" },
-  { id: "sent", label: "Sent" },
-  { id: "calendar", label: "Calendar" },
-];
+interface AvailabilityRow {
+  slot_start: string;
+  slot_end: string;
+  status: AvailStatus;
+}
 
-export function MeetingsTabs({
+export function MeetingsView({
   userId,
   meetings,
   bookmarks,
-  initialTab = "inbox",
 }: {
   userId: string | null;
   meetings: MeetingRow[];
   bookmarks: { id: string; title: string; start_at: string; end_at: string }[];
-  initialTab?: Tab;
 }) {
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const [tab, setTab] = useState<Tab>("by-me");
+  const [availOpen, setAvailOpen] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  const inbox = useMemo(
-    () =>
-      meetings.filter(
-        (m) => m.invitee_id === userId && m.status === "pending"
-      ),
+  const byMe = useMemo(
+    () => meetings.filter((m) => m.requester_id === userId),
     [meetings, userId]
   );
-  const sent = useMemo(
-    () => meetings.filter((m) => m.requester_id === userId),
+  const byOthers = useMemo(
+    () => meetings.filter((m) => m.invitee_id === userId),
     [meetings, userId]
   );
   const accepted = useMemo(
@@ -76,14 +86,22 @@ export function MeetingsTabs({
     [meetings]
   );
 
-  const myAcceptedWindows: Slot[] = accepted.flatMap((m) => {
-    const s = asSlot(m.accepted_slot);
-    return s ? [s] : [];
-  });
+  const myAcceptedWindows: Slot[] = useMemo(
+    () =>
+      accepted.flatMap((m) => {
+        const s = asSlot(m.accepted_slot);
+        return s ? [s] : [];
+      }),
+    [accepted]
+  );
 
-  const myBookmarkWindows = bookmarks
-    .filter((b) => typeof b.start_at === "string" && typeof b.end_at === "string")
-    .map((b) => ({ start: b.start_at, end: b.end_at }));
+  const myBookmarkWindows = useMemo(
+    () =>
+      bookmarks
+        .filter((b) => typeof b.start_at === "string" && typeof b.end_at === "string")
+        .map((b) => ({ start: b.start_at, end: b.end_at })),
+    [bookmarks]
+  );
 
   async function accept(meetingId: string, slot: Slot) {
     setPendingId(meetingId);
@@ -99,7 +117,7 @@ export function MeetingsTabs({
         if (data.error === "conflict") {
           toast({
             title: "That slot is no longer free",
-            description: "Try one of the other proposed slots, or counter-propose.",
+            description: "Try a different proposed slot.",
             variant: "destructive",
           });
         } else {
@@ -134,185 +152,354 @@ export function MeetingsTabs({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="inline-flex w-full rounded-md border border-slate-300 bg-white p-1">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors",
-              tab === t.id ? "bg-brand-800 text-white" : "text-slate-700 hover:bg-slate-50"
-            )}
-            aria-pressed={tab === t.id}
-          >
-            {t.label}
-          </button>
-        ))}
+    <>
+      <MeetingsGraph meetings={accepted} />
+
+      {/* Availability button */}
+      <button
+        type="button"
+        onClick={() => setAvailOpen(true)}
+        className="flex w-full items-center justify-between rounded-2xl border border-brand-100 bg-white px-5 py-4 text-left transition-colors hover:border-brand-200 hover:bg-brand-50/40"
+      >
+        <div className="flex items-center gap-3">
+          <span className="inline-grid size-10 place-items-center rounded-full bg-brand-50 text-brand-800">
+            <Clock4 className="size-[18px]" strokeWidth={1.8} />
+          </span>
+          <div>
+            <div className="text-sm font-semibold text-brand-950">
+              My availability
+            </div>
+            <div className="text-[12px] text-brand-900/70">
+              Pick 30-min blocks on 16 May 2026
+            </div>
+          </div>
+        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-800/75">
+          Open
+        </span>
+      </button>
+
+      {/* Sub-tabs */}
+      <div className="inline-flex w-full rounded-full border border-brand-100 bg-white p-1 text-[13px] font-medium">
+        <SubTabButton active={tab === "by-me"} onClick={() => setTab("by-me")}>
+          Scheduled by me
+        </SubTabButton>
+        <SubTabButton active={tab === "by-others"} onClick={() => setTab("by-others")}>
+          Scheduled by others
+        </SubTabButton>
       </div>
 
-      {tab === "inbox" ? (
-        inbox.length === 0 ? (
+      {/* List */}
+      {tab === "by-me" ? (
+        byMe.length === 0 ? (
           <EmptyMsg
-            title="No new requests"
+            title="No meetings yet"
+            body="Open an attendee profile and tap Schedule Meeting to send a request."
+          />
+        ) : (
+          <ul className="space-y-3">
+            {byMe.map((m) => (
+              <SentRow key={m.id} m={m} />
+            ))}
+          </ul>
+        )
+      ) : null}
+
+      {tab === "by-others" ? (
+        byOthers.length === 0 ? (
+          <EmptyMsg
+            title="No requests yet"
             body="When someone asks to meet, it'll show up here."
           />
         ) : (
           <ul className="space-y-3">
-            {inbox.map((m) => (
-              <li key={m.id} className="rounded-lg border border-slate-200 bg-white p-4">
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-10 w-10 shrink-0">
-                    {m.requester?.photo_url ? (
-                      <AvatarImage src={m.requester.photo_url} alt="" />
-                    ) : null}
-                    <AvatarFallback className="bg-brand-50 text-brand-800">
-                      {initials(m.requester?.full_name ?? "?")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/attendees/${m.requester?.id}`}
-                      className="text-sm font-semibold text-brand-900 hover:underline"
-                    >
-                      {m.requester?.full_name ?? "Attendee"}
-                    </Link>
-                    <div className="text-xs text-slate-500">
-                      {[m.requester?.designation, m.requester?.company].filter(Boolean).join(" · ")}
-                    </div>
+            {byOthers.map((m) => (
+              <InboxRow
+                key={m.id}
+                m={m}
+                pendingId={pendingId}
+                myBookmarkWindows={myBookmarkWindows}
+                myAcceptedWindows={myAcceptedWindows}
+                onAccept={accept}
+                onDecline={decline}
+              />
+            ))}
+          </ul>
+        )
+      ) : null}
+
+      {userId ? (
+        <AvailabilitySheet
+          open={availOpen}
+          onOpenChange={setAvailOpen}
+          userId={userId}
+          acceptedWindows={myAcceptedWindows}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function SubTabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "flex-1 rounded-full px-4 py-1.5 transition-colors",
+        active
+          ? "bg-brand-800 text-white"
+          : "text-brand-800/70 hover:text-brand-900"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function MeetingsGraph({ meetings }: { meetings: MeetingRow[] }) {
+  // 2-hour buckets, 8am to 10pm = 7 buckets.
+  const buckets = [
+    { label: "8a", lo: 8, hi: 10 },
+    { label: "10a", lo: 10, hi: 12 },
+    { label: "12p", lo: 12, hi: 14 },
+    { label: "2p", lo: 14, hi: 16 },
+    { label: "4p", lo: 16, hi: 18 },
+    { label: "6p", lo: 18, hi: 20 },
+    { label: "8p", lo: 20, hi: 22 },
+  ];
+  const counts = buckets.map(() => 0);
+  for (const m of meetings) {
+    const s = asSlot(m.accepted_slot);
+    if (!s) continue;
+    const h = slotHourIST(s.start);
+    const idx = buckets.findIndex((b) => h >= b.lo && h < b.hi);
+    if (idx >= 0) counts[idx] += 1;
+  }
+  const max = Math.max(1, ...counts);
+  const total = counts.reduce((a, b) => a + b, 0);
+
+  return (
+    <div className="rounded-2xl border border-brand-100 bg-white p-5">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          Day at a glance
+        </h2>
+        <span className="text-[11px] font-medium text-brand-900/70">
+          {total} confirmed
+        </span>
+      </div>
+      <div className="mt-3 flex items-end gap-1.5">
+        {buckets.map((b, i) => (
+          <div key={b.label} className="flex flex-1 flex-col items-center gap-1">
+            <div
+              className={cn(
+                "w-full rounded-md transition-all",
+                counts[i] > 0 ? "bg-brand-800" : "bg-brand-100"
+              )}
+              style={{
+                height: `${counts[i] > 0 ? 8 + (counts[i] / max) * 44 : 6}px`,
+              }}
+              aria-hidden
+            />
+            <span className="text-[10px] font-medium tabular-nums text-brand-800/70">
+              {b.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InboxRow({
+  m,
+  pendingId,
+  myBookmarkWindows,
+  myAcceptedWindows,
+  onAccept,
+  onDecline,
+}: {
+  m: MeetingRow;
+  pendingId: string | null;
+  myBookmarkWindows: { start: string; end: string }[];
+  myAcceptedWindows: Slot[];
+  onAccept: (id: string, slot: Slot) => void;
+  onDecline: (id: string) => void;
+}) {
+  return (
+    <li className="rounded-2xl border border-brand-100 bg-white p-4">
+      <div className="flex items-start gap-3">
+        <Avatar className="size-10 shrink-0 ring-1 ring-brand-100">
+          {m.requester?.photo_url ? (
+            <AvatarImage src={m.requester.photo_url} alt="" />
+          ) : null}
+          <AvatarFallback className="bg-brand-50 text-brand-800">
+            {initials(m.requester?.full_name ?? "?")}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/attendees/${m.requester?.id}`}
+            className="text-sm font-semibold text-brand-950 hover:text-brand-800"
+          >
+            {m.requester?.full_name ?? "Attendee"}
+          </Link>
+          <div className="text-xs text-brand-900/70">
+            {[m.requester?.designation, m.requester?.company].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+        <StatusPill status={m.status} />
+      </div>
+
+      {m.message ? (
+        <p className="mt-3 whitespace-pre-line text-sm leading-6 text-brand-900">
+          {m.message}
+        </p>
+      ) : null}
+      {m.location ? (
+        <p className="mt-1 text-xs text-brand-800/75">Location: {m.location}</p>
+      ) : null}
+
+      {m.status === "pending" ? (
+        <>
+          <div className="mt-3 space-y-1.5">
+            {asSlotArray(m.proposed_slots).map((s) => {
+              const c = classifySlot(s, myBookmarkWindows, myAcceptedWindows);
+              return (
+                <div
+                  key={s.start}
+                  className="flex items-center justify-between gap-2 rounded-lg border border-brand-100 bg-white px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <SlotState state={c} />
+                    <span className="text-sm tabular-nums text-brand-900">
+                      {formatInTimeZone(new Date(s.start), SUMMIT_TZ, "h:mm a")} –{" "}
+                      {formatInTimeZone(new Date(s.end), SUMMIT_TZ, "h:mm a")}
+                    </span>
                   </div>
-                </div>
-                {m.message ? (
-                  <p className="mt-3 text-sm leading-6 text-slate-700">{m.message}</p>
-                ) : null}
-                {m.location ? (
-                  <p className="mt-1 text-xs text-slate-500">Location: {m.location}</p>
-                ) : null}
-
-                <div className="mt-3 space-y-1.5">
-                  {asSlotArray(m.proposed_slots).map((s) => {
-                    const c = classifySlot(s, myBookmarkWindows, myAcceptedWindows);
-                    return (
-                      <div key={s.start} className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <SlotState state={c} />
-                          <span className="text-sm tabular-nums text-brand-900">
-                            {formatInTimeZone(new Date(s.start), SUMMIT_TZ, "h:mm a")} –{" "}
-                            {formatInTimeZone(new Date(s.end), SUMMIT_TZ, "h:mm a")}
-                          </span>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => accept(m.id, s)}
-                          disabled={pendingId === m.id || c === "hard"}
-                        >
-                          {pendingId === m.id ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Check className="h-3.5 w-3.5" />
-                          )}
-                          Accept
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-3 flex items-center justify-end gap-2">
                   <Button
-                    variant="outline"
                     size="sm"
-                    onClick={() => decline(m.id)}
-                    disabled={pendingId === m.id}
+                    onClick={() => onAccept(m.id, s)}
+                    disabled={pendingId === m.id || c === "hard"}
+                    className="h-8 rounded-full px-3"
                   >
-                    <X className="h-3.5 w-3.5" />
-                    Decline
+                    {pendingId === m.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5" />
+                    )}
+                    Accept
                   </Button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )
-      ) : null}
+              );
+            })}
+          </div>
 
-      {tab === "sent" ? (
-        sent.length === 0 ? (
-          <EmptyMsg title="No sent requests" body="Pick an attendee and request a meeting." />
-        ) : (
-          <ul className="space-y-3">
-            {sent.map((m) => (
-              <li key={m.id} className="rounded-lg border border-slate-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Avatar className="h-10 w-10 shrink-0">
-                      {m.invitee?.photo_url ? (
-                        <AvatarImage src={m.invitee.photo_url} alt="" />
-                      ) : null}
-                      <AvatarFallback className="bg-brand-50 text-brand-800">
-                        {initials(m.invitee?.full_name ?? "?")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/attendees/${m.invitee?.id}`}
-                        className="text-sm font-semibold text-brand-900 hover:underline"
-                      >
-                        {m.invitee?.full_name ?? "Attendee"}
-                      </Link>
-                      <div className="text-xs text-slate-500">
-                        {[m.invitee?.designation, m.invitee?.company].filter(Boolean).join(" · ")}
-                      </div>
-                    </div>
-                  </div>
-                  <StatusPill status={m.status} />
-                </div>
-                {(() => {
-                  const s = asSlot(m.accepted_slot);
-                  return s ? (
-                    <div className="mt-3 text-sm tabular-nums text-slate-700">
-                      {rangeIST(s.start, s.end)}
-                    </div>
-                  ) : null;
-                })()}
-                {m.status === "accepted" ? (
-                  <div className="mt-3">
-                    <Link
-                      href={`/meetings/${m.id}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-800 hover:text-brand-900"
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" />
-                      Open chat
-                    </Link>
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )
-      ) : null}
+          <div className="mt-3 flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDecline(m.id)}
+              disabled={pendingId === m.id}
+              className="h-8 rounded-full px-3"
+            >
+              <X className="h-3.5 w-3.5" />
+              Decline
+            </Button>
+          </div>
+        </>
+      ) : (
+        (() => {
+          const s = asSlot(m.accepted_slot);
+          return s ? (
+            <p className="mt-3 text-sm font-medium tabular-nums text-brand-900">
+              {rangeIST(s.start, s.end)}
+            </p>
+          ) : null;
+        })()
+      )}
+    </li>
+  );
+}
 
-      {tab === "calendar" ? (
-        <CalendarView accepted={accepted} bookmarks={bookmarks} userId={userId} />
+function SentRow({ m }: { m: MeetingRow }) {
+  const s = asSlot(m.accepted_slot);
+  return (
+    <li className="rounded-2xl border border-brand-100 bg-white p-4">
+      <div className="flex items-start gap-3">
+        <Avatar className="size-10 shrink-0 ring-1 ring-brand-100">
+          {m.invitee?.photo_url ? (
+            <AvatarImage src={m.invitee.photo_url} alt="" />
+          ) : null}
+          <AvatarFallback className="bg-brand-50 text-brand-800">
+            {initials(m.invitee?.full_name ?? "?")}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <Link
+            href={`/attendees/${m.invitee?.id}`}
+            className="text-sm font-semibold text-brand-950 hover:text-brand-800"
+          >
+            {m.invitee?.full_name ?? "Attendee"}
+          </Link>
+          <div className="text-xs text-brand-900/70">
+            {[m.invitee?.designation, m.invitee?.company].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+        <StatusPill status={m.status} />
+      </div>
+      {s ? (
+        <p className="mt-3 text-sm font-medium tabular-nums text-brand-900">
+          {rangeIST(s.start, s.end)}
+        </p>
       ) : null}
-    </div>
+      {m.status === "accepted" ? (
+        <div className="mt-3">
+          <Link
+            href={`/meetings/${m.id}`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-800 hover:text-brand-900"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            Open chat
+          </Link>
+        </div>
+      ) : null}
+    </li>
   );
 }
 
 function EmptyMsg({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
-      <CalendarClock className="mx-auto h-8 w-8 text-slate-300" strokeWidth={1.5} />
-      <h3 className="mt-3 text-sm font-semibold text-brand-900">{title}</h3>
-      <p className="mt-1 text-xs text-slate-500">{body}</p>
+    <div className="rounded-2xl border border-dashed border-brand-100 bg-white p-8 text-center">
+      <h3 className="text-sm font-semibold text-brand-900">{title}</h3>
+      <p className="mt-1 text-xs text-brand-900/70">{body}</p>
     </div>
   );
 }
 
 function SlotState({ state }: { state: "free" | "soft" | "hard" }) {
-  if (state === "free") return <span className="text-emerald-600 text-xs">✓ free</span>;
-  if (state === "soft") return <span className="text-amber-600 text-xs">⚠ soft</span>;
-  return <span className="text-iit-500 text-xs">✕ busy</span>;
+  const map = {
+    free: { dot: "bg-brand-800", label: "Free" },
+    soft: { dot: "bg-amber-500", label: "Soft conflict" },
+    hard: { dot: "bg-iit-500", label: "Booked" },
+  };
+  const m = map[state];
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-900/75">
+      <span className={cn("size-1.5 rounded-full", m.dot)} />
+      {m.label}
+    </span>
+  );
 }
 
 function StatusPill({ status }: { status: MeetingRow["status"] }) {
@@ -321,12 +508,12 @@ function StatusPill({ status }: { status: MeetingRow["status"] }) {
     accepted: "bg-emerald-50 text-emerald-700",
     declined: "bg-iit-50 text-iit-700",
     rescheduled: "bg-brand-50 text-brand-800",
-    cancelled: "bg-slate-100 text-slate-600",
+    cancelled: "bg-brand-50 text-brand-800/70",
   };
   return (
     <span
       className={cn(
-        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium capitalize",
+        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
         style[status]
       )}
     >
@@ -335,67 +522,188 @@ function StatusPill({ status }: { status: MeetingRow["status"] }) {
   );
 }
 
-function CalendarView({
-  accepted,
-  bookmarks,
+function AvailabilitySheet({
+  open,
+  onOpenChange,
   userId,
+  acceptedWindows,
 }: {
-  accepted: MeetingRow[];
-  bookmarks: { id: string; title: string; start_at: string; end_at: string }[];
-  userId: string | null;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  userId: string;
+  acceptedWindows: Slot[];
 }) {
-  const events: { kind: "meeting" | "session"; start: string; end: string; title: string }[] = [
-    ...accepted.flatMap((m) => {
-      const s = asSlot(m.accepted_slot);
-      if (!s) return [];
-      return [
-        {
-          kind: "meeting" as const,
-          start: s.start,
-          end: s.end,
-          title:
-            (m.requester_id === userId ? m.invitee?.full_name : m.requester?.full_name) ??
-            "Meeting",
-        },
-      ];
-    }),
-    ...bookmarks.map((b) => ({
-      kind: "session" as const,
-      start: b.start_at,
-      end: b.end_at,
-      title: b.title,
-    })),
-  ].sort((a, b) => a.start.localeCompare(b.start));
+  const supabase = useMemo(() => createClient(), []);
+  const grid = useMemo(() => buildAvailabilitySlots(), []);
+  const [rows, setRows] = useState<AvailabilityRow[] | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
 
-  if (events.length === 0) {
-    return <EmptyMsg title="Your day is open" body="Accepted meetings and bookmarked sessions show up here." />;
+  // Status lookup: my-declared status overrides system "booked" inferred from
+  // accepted meetings. Default = unset (treat as not available).
+  const lookup = useMemo(() => {
+    const m = new Map<string, AvailStatus>();
+    for (const r of rows ?? []) m.set(r.slot_start, r.status);
+    return m;
+  }, [rows]);
+
+  const acceptedStarts = useMemo(() => {
+    const s = new Set<string>();
+    for (const a of acceptedWindows) s.add(a.start);
+    return s;
+  }, [acceptedWindows]);
+
+  const fetchAvail = useCallback(async () => {
+    const { data } = await supabase
+      .from("availability_slots")
+      .select("slot_start, slot_end, status")
+      .eq("user_id", userId);
+    setRows((data as AvailabilityRow[] | null) ?? []);
+  }, [supabase, userId]);
+
+  useEffect(() => {
+    if (!open) return;
+    setRows(null);
+    void fetchAvail();
+  }, [open, fetchAvail]);
+
+  async function setStatus(slot: Slot, next: AvailStatus | null) {
+    setPending(slot.start);
+    try {
+      if (next === null) {
+        await supabase
+          .from("availability_slots")
+          .delete()
+          .eq("user_id", userId)
+          .eq("slot_start", slot.start);
+      } else {
+        await supabase.from("availability_slots").upsert(
+          {
+            user_id: userId,
+            slot_start: slot.start,
+            slot_end: slot.end,
+            status: next,
+          },
+          { onConflict: "user_id,slot_start" }
+        );
+      }
+      await fetchAvail();
+    } finally {
+      setPending(null);
+    }
   }
 
+  function effectiveStatus(slot: Slot): AvailStatus | null {
+    if (acceptedStarts.has(slot.start)) return "booked";
+    return lookup.get(slot.start) ?? null;
+  }
+
+  function cycle(slot: Slot) {
+    const cur = effectiveStatus(slot);
+    // booked is system-derived; user cannot override
+    if (cur === "booked") return;
+    const order: (AvailStatus | null)[] = [null, "available", "blocked"];
+    const idx = order.indexOf(cur);
+    const next = order[(idx + 1) % order.length];
+    void setStatus(slot, next);
+  }
+
+  // Group slots into morning (8-12), afternoon (12-17), evening (17-22)
+  const sections = [
+    { label: "Morning", slots: grid.filter((s) => slotHourIST(s.start) < 12) },
+    {
+      label: "Afternoon",
+      slots: grid.filter(
+        (s) => slotHourIST(s.start) >= 12 && slotHourIST(s.start) < 17
+      ),
+    },
+    { label: "Evening", slots: grid.filter((s) => slotHourIST(s.start) >= 17) },
+  ];
+
   return (
-    <ul className="space-y-2">
-      {events.map((e, i) => (
-        <li
-          key={`${i}-${e.start}`}
-          className={cn(
-            "flex items-center gap-3 rounded-lg border bg-white p-3",
-            e.kind === "meeting" ? "border-brand-200" : "border-slate-200"
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>My availability</SheetTitle>
+          <SheetDescription>
+            Tap a slot to cycle: unset → available → blocked. Confirmed meetings are auto-booked.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="px-6 pb-6 pt-3">
+          <Legend />
+          {rows === null ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="size-5 animate-spin text-brand-800/60" />
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {sections.map((sec) => (
+                <div key={sec.label}>
+                  <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+                    {sec.label}
+                  </h3>
+                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
+                    {sec.slots.map((s) => {
+                      const st = effectiveStatus(s);
+                      const isPending = pending === s.start;
+                      return (
+                        <button
+                          key={s.start}
+                          type="button"
+                          onClick={() => cycle(s)}
+                          disabled={st === "booked" || isPending}
+                          aria-label={`${formatInTimeZone(
+                            new Date(s.start),
+                            SUMMIT_TZ,
+                            "h:mm a"
+                          )} ${st ?? "unset"}`}
+                          className={cn(
+                            "relative rounded-lg border px-2 py-2 text-[12px] font-semibold tabular-nums transition-all",
+                            st === "available" &&
+                              "border-brand-800 bg-brand-800 text-white",
+                            st === "booked" &&
+                              "cursor-not-allowed border-emerald-500 bg-emerald-500 text-white",
+                            st === "blocked" &&
+                              "border-iit-500 bg-iit-500 text-white",
+                            !st &&
+                              "border-brand-100 bg-white text-brand-900/65 hover:border-brand-200 hover:bg-brand-50/50",
+                            isPending && "opacity-60"
+                          )}
+                        >
+                          {formatInTimeZone(new Date(s.start), SUMMIT_TZ, "h:mm a")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        >
-          <div className="w-20 shrink-0 text-xs tabular-nums text-slate-500">
-            {formatInTimeZone(new Date(e.start), SUMMIT_TZ, "h:mm a")}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-brand-900 truncate">{e.title}</div>
-            <div className="text-[11px] capitalize text-slate-500">{e.kind}</div>
-          </div>
-        </li>
-      ))}
-    </ul>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
-// jsonb columns come back as `unknown`-shaped objects. These guards keep us
-// from crashing the page if a stored slot ever drifts from {start, end}.
+function Legend() {
+  return (
+    <div className="mb-4 flex flex-wrap gap-3 text-[11px] font-medium text-brand-900/75">
+      <Swatch className="bg-brand-800" label="Available" />
+      <Swatch className="bg-emerald-500" label="Booked" />
+      <Swatch className="bg-iit-500" label="Blocked" />
+      <Swatch className="border border-brand-100 bg-white" label="Unset" />
+    </div>
+  );
+}
+
+function Swatch({ className, label }: { className: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={cn("size-2.5 rounded-sm", className)} />
+      {label}
+    </span>
+  );
+}
+
 function asSlot(v: unknown): Slot | null {
   if (
     v &&

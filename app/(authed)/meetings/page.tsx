@@ -1,16 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { MeetingsTabs, type MeetingRow } from "./meetings-tabs";
+import { rethrowIfRedirect } from "@/lib/redirect";
+import { MeetingsView, type MeetingRow } from "./meetings-tabs";
 
 export const dynamic = "force-dynamic";
 
-export default async function MeetingsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ tab?: string }>;
-}) {
-  const sp = (await searchParams) ?? {};
-  const tab = (sp.tab as "inbox" | "sent" | "calendar") ?? "inbox";
-
+export default async function MeetingsPage() {
   let userId: string | null = null;
   let meetings: MeetingRow[] = [];
   let bookmarks: { id: string; title: string; start_at: string; end_at: string }[] = [];
@@ -40,24 +34,21 @@ export default async function MeetingsPage({
         .map((r) => r.sessions)
         .filter((s): s is { id: string; title: string; start_at: string; end_at: string } => !!s);
     }
-  } catch {
-    /* env not configured */
+  } catch (err) {
+    rethrowIfRedirect(err);
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-5 pb-12 pt-5 lg:max-w-4xl lg:pt-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">Meetings</h1>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          Schedule, accept, and chat with attendees during the summit.
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900 lg:text-3xl">
+          Meetings
+        </h1>
+        <p className="mt-1 text-sm leading-6 text-brand-900/70">
+          Schedule one-on-ones on 16 May 2026. Tap My availability to set when you&apos;re free.
         </p>
       </header>
-      <MeetingsTabs
-        userId={userId}
-        meetings={meetings}
-        bookmarks={bookmarks}
-        initialTab={tab}
-      />
+      <MeetingsView userId={userId} meetings={meetings} bookmarks={bookmarks} />
     </div>
   );
 }

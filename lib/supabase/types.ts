@@ -38,8 +38,82 @@ export interface Profile {
   push_subscription: Json | null;
   onboarded: boolean | null;
   email: string | null; // added by 0005_oauth_allowlist.sql
+  social_links: Json | null; // added by 0006
   created_at: string;
   updated_at: string;
+}
+
+// The tables below come from migrations/0006_exhibitors_availability_partners.sql.
+export interface Exhibitor {
+  id: string;
+  name: string;
+  tagline: string | null;
+  about: string | null;
+  logo_url: string | null;
+  cover_url: string | null;
+  website: string | null;
+  booth_number: string | null;
+  booth_venue_id: string | null;
+  location_floor: string | null;
+  category: string | null;
+  social_links: Json | null;
+  display_order: number | null;
+  is_published: boolean | null;
+  created_at: string;
+}
+
+export interface ExhibitorTeamMember {
+  id: string;
+  exhibitor_id: string;
+  profile_id: string | null;
+  full_name: string;
+  designation: string | null;
+  photo_url: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  display_order: number | null;
+  created_at: string;
+}
+
+export interface AvailabilitySlot {
+  id: string;
+  user_id: string;
+  slot_start: string;
+  slot_end: string;
+  status: "available" | "booked" | "blocked";
+  meeting_id: string | null;
+  created_at: string;
+}
+
+export interface PartnerType {
+  id: string;
+  name: string;
+  description: string | null;
+  display_order: number | null;
+  created_at: string;
+}
+
+export interface Partner {
+  id: string;
+  partner_type_id: string | null;
+  name: string;
+  logo_url: string | null;
+  website: string | null;
+  display_order: number | null;
+  is_published: boolean | null;
+  created_at: string;
+}
+
+export interface KeyParticipant {
+  id: string;
+  full_name: string;
+  designation: string | null;
+  company: string | null;
+  photo_url: string | null;
+  profile_id: string | null;
+  display_order: number | null;
+  is_published: boolean | null;
+  created_at: string;
 }
 
 export interface Session {
