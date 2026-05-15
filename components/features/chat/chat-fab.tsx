@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { ChatBubbleGlyph } from "./chat-icon";
+import { playMessagePing } from "./notify-sound";
 
 // Floating chat entry-point. Lives in the (authed) layout so every page
 // gets it. Hides on /chat routes since we're already there.
@@ -37,7 +38,10 @@ export function ChatFab() {
     };
   }, [supabase]);
 
-  // Realtime: any message insert/update may shift the unread count.
+  // Realtime: any message insert/update may shift the unread count;
+  // an INSERT from another sender also triggers a short ping.
+  const pathnameRef = useRef(pathname);
+  pathnameRef.current = pathname;
   useEffect(() => {
     if (!userId) return;
     const recount = async () => {
@@ -52,7 +56,20 @@ export function ChatFab() {
       .channel(`chat-fab-${userId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const m = payload.new as { sender_id: string; conversation_id: string };
+          void recount();
+          // Ping only on inbound messages, and skip if we're already viewing
+          // that conversation (the chat thread plays its own behaviour).
+          if (m.sender_id === userId) return;
+          if (pathnameRef.current.startsWith("/chat/")) return;
+          playMessagePing();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
         () => {
           void recount();
         }
