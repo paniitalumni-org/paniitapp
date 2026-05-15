@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Check,
   ChevronUp,
+  Hand,
   Loader2,
   MoreHorizontal,
   Pin,
@@ -653,8 +654,9 @@ function AskBar({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-12 w-full items-center justify-center rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
         >
+          <Hand className="h-[18px] w-[18px]" strokeWidth={1.6} />
           Ask a question
         </button>
       </div>
