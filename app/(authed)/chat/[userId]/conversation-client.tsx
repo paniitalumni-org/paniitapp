@@ -300,7 +300,7 @@ export function ConversationView({
                         </p>
                         <div
                           className={cn(
-                            "mt-1 flex items-center justify-end gap-1 text-[10px]",
+                            "mt-1 flex items-center justify-end gap-1 pr-0.5 text-[10px]",
                             m.sender_id === me
                               ? "text-white/65"
                               : "text-brand-800/55"
@@ -312,11 +312,14 @@ export function ConversationView({
                           {m.sender_id === me ? (
                             m.read_at ? (
                               <CheckCheck
-                                className="size-3 text-emerald-300"
-                                strokeWidth={2.2}
+                                className="size-[14px] shrink-0 text-emerald-300"
+                                strokeWidth={2}
                               />
                             ) : (
-                              <Check className="size-3" strokeWidth={2.2} />
+                              <Check
+                                className="size-[14px] shrink-0"
+                                strokeWidth={2}
+                              />
                             )
                           ) : null}
                         </div>
