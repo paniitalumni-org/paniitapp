@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Linkedin, Mail, MapPin, Sparkles } from "lucide-react";
+import { Clock, Linkedin, Mail, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookmarkButton } from "@/components/features/bookmark-button";
@@ -178,8 +178,7 @@ export default async function SessionDetailPage({
             </span>
           ) : null}
           {matches.length > 0 ? (
-            <span className="inline-flex items-center gap-1 rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-              <Sparkles className="size-3" strokeWidth={1.8} />
+            <span className="rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
               Recommended
             </span>
           ) : null}

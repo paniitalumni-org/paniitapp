@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  Building2,
+  Store,
   ExternalLink,
   Linkedin,
   Mail,
@@ -99,7 +99,7 @@ export default async function ExhibitorDetailPage({
                 className="size-full object-contain p-2"
               />
             ) : (
-              <Building2 className="size-7 text-brand-800/65" />
+              <Store className="size-7 text-brand-800/65" />
             )}
           </div>
           <h1 className="mt-3 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">

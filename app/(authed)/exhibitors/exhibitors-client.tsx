@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Search, Building2, MapPin } from "lucide-react";
+import { Search, Store, MapPin } from "lucide-react";
 import {
   Empty,
   EmptyHeader,
@@ -60,7 +60,7 @@ export function ExhibitorsClient({
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              {initialRows.length === 0 ? <Building2 /> : <Search />}
+              {initialRows.length === 0 ? <Store /> : <Search />}
             </EmptyMedia>
             <EmptyTitle>
               {initialRows.length === 0 ? "No exhibitors yet" : "No matches"}
@@ -90,7 +90,7 @@ export function ExhibitorsClient({
                       className="size-full object-contain p-1"
                     />
                   ) : (
-                    <Building2 className="size-5 text-brand-800/65" />
+                    <Store className="size-5 text-brand-800/65" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">

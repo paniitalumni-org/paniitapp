@@ -10,7 +10,6 @@ import {
 import { AgendaFilters } from "./agenda-filters";
 import { AgendaRealtime } from "@/components/features/agenda-realtime";
 import { SUMMIT_TZ, TRACK_TO_INTERESTS } from "@/lib/constants";
-import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -122,9 +121,8 @@ export default async function AgendaPage({
       }
     >
       {userInterests.length === 0 ? (
-        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-brand-50/40 p-3">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-800" strokeWidth={1.7} />
-          <div className="text-[12px] leading-5 text-brand-900">
+        <div className="mb-4 rounded-lg border border-brand-100 bg-brand-50/40 p-3">
+          <p className="text-[12px] leading-5 text-brand-900">
             Pick your areas of interest in{" "}
             <Link
               href="/me/edit"
@@ -133,16 +131,14 @@ export default async function AgendaPage({
               your profile
             </Link>{" "}
             to highlight matching sessions and people across the summit.
-          </div>
+          </p>
         </div>
       ) : matchCount > 0 ? (
-        <div className="mb-4 flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3">
-          <Sparkles className="mt-0.5 size-4 shrink-0 text-emerald-600" strokeWidth={1.7} />
+        <div className="mb-4 rounded-lg border border-brand-100 bg-white p-3">
           <p className="text-[12px] leading-5 text-brand-900">
             <span className="font-semibold text-brand-950">{matchCount} session{matchCount === 1 ? "" : "s"}</span>{" "}
             line up with your interests. Look for the{" "}
-            <span className="inline-flex items-center gap-1 rounded-[3px] border border-emerald-300 bg-white px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-              <Sparkles className="size-2.5" strokeWidth={2} />
+            <span className="rounded-[3px] border border-emerald-300 bg-white px-1 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
               Recommended
             </span>{" "}
             tag below.

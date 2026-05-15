@@ -22,6 +22,7 @@ interface CalendarItem {
   start: string;
   end: string;
   title: string;
+  presenter: string | null;
   href: string;
 }
 
@@ -77,7 +78,9 @@ export default async function HomePage() {
       user
         ? supabase
             .from("session_bookmarks")
-            .select("sessions(id, title, start_at, end_at)")
+            .select(
+              "sessions(id, title, start_at, end_at, session_speakers(profiles:speaker_id(full_name)))"
+            )
             .eq("user_id", user.id)
         : Promise.resolve({ data: [] as unknown[] }),
       supabase
@@ -103,14 +106,34 @@ export default async function HomePage() {
       invitee: { id: string; full_name: string | null } | null;
     }>;
 
+    type BookmarkedSession = {
+      id: string;
+      title: string;
+      start_at: string;
+      end_at: string;
+      session_speakers:
+        | Array<{ profiles: { full_name: string | null } | { full_name: string | null }[] | null }>
+        | null;
+    };
     const bookmarks = ((bookmarkRes.data ?? []) as Array<{
-      sessions: { id: string; title: string; start_at: string; end_at: string } | null;
+      sessions: BookmarkedSession | null;
     }>)
       .map((r) => r.sessions)
-      .filter(
-        (s): s is { id: string; title: string; start_at: string; end_at: string } =>
-          !!s
-      );
+      .filter((s): s is BookmarkedSession => !!s);
+
+    function speakerNames(b: BookmarkedSession): string | null {
+      if (!b.session_speakers || b.session_speakers.length === 0) return null;
+      const names: string[] = [];
+      for (const ss of b.session_speakers) {
+        const p = Array.isArray(ss.profiles) ? ss.profiles[0] : ss.profiles;
+        const name = p?.full_name?.trim();
+        if (name) names.push(name);
+      }
+      if (names.length === 0) return null;
+      if (names.length === 1) return names[0];
+      if (names.length === 2) return `${names[0]} · ${names[1]}`;
+      return `${names[0]} +${names.length - 1}`;
+    }
 
     calendar = [
       ...acceptedMeetings.flatMap((m) => {
@@ -121,7 +144,8 @@ export default async function HomePage() {
             kind: "meeting" as const,
             start: m.accepted_slot.start,
             end: m.accepted_slot.end,
-            title: `Meeting · ${other?.full_name ?? "Attendee"}`,
+            title: "1:1 Meeting",
+            presenter: other?.full_name ?? null,
             href: `/meetings/${m.id}`,
           },
         ];
@@ -131,6 +155,7 @@ export default async function HomePage() {
         start: b.start_at,
         end: b.end_at,
         title: b.title,
+        presenter: speakerNames(b),
         href: `/agenda/${b.id}`,
       })),
     ].sort((a, b) => a.start.localeCompare(b.start));
@@ -229,20 +254,27 @@ export default async function HomePage() {
               <li key={`${i}-${e.start}`}>
                 <Link
                   href={e.href}
-                  className="flex items-center gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
+                  className="flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
                 >
-                  <div className="w-14 shrink-0 text-[12px] font-semibold tabular-nums text-brand-800/85">
+                  <div className="w-14 shrink-0 pt-[2px] text-[12px] font-semibold tabular-nums text-brand-800/85">
                     {formatInTimeZone(new Date(e.start), SUMMIT_TZ, "h:mm a")}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold text-brand-950">
+                    <p className="text-sm font-semibold leading-tight text-brand-950">
                       {e.title}
-                    </div>
-                    <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
-                      {e.kind}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
+                        {e.kind}
+                      </span>
+                      {e.presenter ? (
+                        <span className="rounded-[4px] bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-900">
+                          {e.presenter}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
-                  <ChevronRight className="size-4 text-brand-800/65" />
+                  <ChevronRight className="mt-1 size-4 shrink-0 text-brand-800/65" />
                 </Link>
               </li>
             ))}

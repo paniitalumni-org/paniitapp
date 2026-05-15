@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Sparkles } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
 import { TRACK_LABELS, TRACK_TO_INTERESTS } from "@/lib/constants";
 import { rangeIST } from "@/lib/date";
@@ -85,8 +85,7 @@ export function SessionCard({
               </span>
             ) : null}
             {matches.length > 0 ? (
-              <span className="inline-flex items-center gap-1 rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-                <Sparkles className="size-3" strokeWidth={1.8} />
+              <span className="rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
                 Recommended
               </span>
             ) : null}

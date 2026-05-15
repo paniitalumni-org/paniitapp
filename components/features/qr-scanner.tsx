@@ -68,17 +68,18 @@ export function QrScanner() {
       try {
         const { Html5Qrcode } = await import("html5-qrcode");
         if (cancelled) return;
-        const scanner = new Html5Qrcode(elId);
+        // verbose=false silences the library's own info chrome.
+        const scanner = new Html5Qrcode(elId, /* verbose */ false);
         scannerRef.current = scanner;
         await scanner.start(
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-              const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-              const size = Math.floor(Math.min(Math.max(minEdge * 0.72, 220), 280));
-              return { width: size, height: size };
-            },
+            // Omit qrbox so the library doesn't paint its own framing
+            // rectangle on top of the outer card. The outer rounded
+            // container is our only viewfinder; the scanner decodes the
+            // full camera frame.
+            aspectRatio: 1,
           },
           (decoded) => {
             void handleDecoded(decoded);

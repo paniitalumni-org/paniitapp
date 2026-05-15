@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams, usePathname } from "next/navigation";
-import { Bookmark, BookmarkCheck, Sparkles } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TRACKS = [
@@ -72,13 +72,12 @@ export function AgendaFilters() {
           scroll={false}
           aria-pressed={recommendedOnly}
           className={cn(
-            "flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[13px] font-semibold transition-colors",
+            "flex items-center justify-center rounded-md border px-3 py-2.5 text-[13px] font-semibold transition-colors",
             recommendedOnly
               ? "border-emerald-600 bg-emerald-600 text-white"
               : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
           )}
         >
-          <Sparkles className="size-4" strokeWidth={1.7} />
           Recommended
         </Link>
       </div>
