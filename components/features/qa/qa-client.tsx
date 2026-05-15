@@ -198,18 +198,18 @@ export function QaClient({
   }, [questions, sort, userId]);
 
   return (
-    <section className="px-4 pt-2 pb-28">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+    <section className="pt-3 pb-28">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
         {SORTS.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => setSort(s.id)}
             className={cn(
-              "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+              "shrink-0 rounded-md border px-3 py-1.5 text-[12px] font-semibold transition-colors",
               sort === s.id
                 ? "border-brand-800 bg-brand-800 text-white"
-                : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
             )}
           >
             {s.label}
@@ -218,16 +218,16 @@ export function QaClient({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center px-4 py-12 text-center">
-          <MessageSquarePlus className="h-10 w-10 text-slate-300" strokeWidth={1.5} />
-          <h3 className="mt-4 text-base font-semibold text-brand-900">
+        <div className="mt-6 flex flex-col items-center rounded-lg border border-dashed border-brand-100 bg-white px-4 py-12 text-center">
+          <MessageSquarePlus className="h-9 w-9 text-brand-800/35" strokeWidth={1.5} />
+          <h3 className="mt-3 text-[15px] font-semibold text-brand-950">
             {sort === "mine"
               ? "You haven't asked yet"
               : sort === "answered"
               ? "Nothing answered yet"
               : "Be the first to ask"}
           </h3>
-          <p className="mt-1.5 max-w-xs text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-xs text-[12px] leading-5 text-brand-900/70">
             Your question goes straight to the speakers.
           </p>
         </div>
@@ -420,7 +420,7 @@ function QuestionCard({
   const showAvatar = !q.is_anonymous && q.profiles?.photo_url;
 
   return (
-    <li className="rounded-lg border border-slate-200 bg-white p-4">
+    <li className="rounded-lg border border-brand-100 bg-white p-4">
       <div className="flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
           {showAvatar ? <AvatarImage src={q.profiles!.photo_url!} alt={author} /> : null}
@@ -430,8 +430,8 @@ function QuestionCard({
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-xs">
-            <span className="font-medium text-brand-900">{author}</span>
-            <span className="text-slate-400">{timeAgo(q.created_at)} ago</span>
+            <span className="font-semibold text-brand-950">{author}</span>
+            <span className="text-brand-800/55">{timeAgo(q.created_at)} ago</span>
             {q.is_pinned ? (
               <span className="inline-flex items-center gap-0.5 text-brand-800">
                 <Pin className="h-3 w-3" />
@@ -445,36 +445,36 @@ function QuestionCard({
               </span>
             ) : null}
             {mine ? (
-              <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
+              <span className="rounded-[3px] bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-800">
                 You
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-[15px] font-medium leading-snug text-brand-900 whitespace-pre-line">
+          <p className="mt-1 text-[14px] font-medium leading-snug text-brand-950 whitespace-pre-line">
             {q.question}
           </p>
 
-          <div className="mt-2 flex items-center gap-1.5">
+          <div className="mt-2.5 flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => onUpvoteQ(q.id, !upvoted)}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors",
+                "inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors",
                 upvoted
-                  ? "border-brand-800 bg-brand-50 text-brand-800"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-brand-800 bg-brand-800 text-white"
+                  : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
               )}
               aria-pressed={upvoted}
             >
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="h-3.5 w-3.5" strokeWidth={1.8} />
               <span className="tabular-nums">{q.upvotes}</span>
             </button>
             <button
               type="button"
               onClick={onToggleExpand}
-              className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-md border border-brand-100 bg-white px-2 py-1 text-[11px] font-semibold text-brand-900 transition-colors hover:bg-brand-50/40"
             >
-              <Reply className="h-3.5 w-3.5" />
+              <Reply className="h-3.5 w-3.5" strokeWidth={1.8} />
               {replies.length} {replies.length === 1 ? "reply" : "replies"}
             </button>
             {canModerate ? (
@@ -482,7 +482,7 @@ function QuestionCard({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="ml-auto inline-grid h-7 w-7 place-items-center rounded-md text-slate-500 hover:bg-slate-100"
+                    className="ml-auto inline-grid h-7 w-7 place-items-center rounded-md text-brand-800/65 hover:bg-brand-50"
                     aria-label="Moderator menu"
                   >
                     <MoreHorizontal className="h-4 w-4" />
@@ -516,7 +516,7 @@ function QuestionCard({
       </div>
 
       {expanded ? (
-        <div className="mt-3 border-l border-slate-200 pl-4">
+        <div className="mt-3 border-l-2 border-brand-100 pl-4">
           <ul className="space-y-3">
             {replies.map((r) => (
               <li key={r.id} className="flex items-start gap-2.5">
@@ -524,31 +524,31 @@ function QuestionCard({
                   {r.profiles?.photo_url ? (
                     <AvatarImage src={r.profiles.photo_url} alt={r.profiles.full_name ?? ""} />
                   ) : null}
-                  <AvatarFallback className="bg-slate-100 text-slate-700 text-[10px]">
+                  <AvatarFallback className="bg-brand-50 text-brand-800 text-[10px]">
                     {initials(r.profiles?.full_name ?? "?")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 text-xs">
-                    <span className="font-medium text-brand-900">
+                    <span className="font-semibold text-brand-950">
                       {r.profiles?.full_name ?? "Attendee"}
                     </span>
                     {r.is_official ? (
                       <BadgeCheck className="h-3.5 w-3.5 text-brand-800" aria-label="Verified" />
                     ) : null}
-                    <span className="text-slate-400">{timeAgo(r.created_at)} ago</span>
+                    <span className="text-brand-800/55">{timeAgo(r.created_at)} ago</span>
                   </div>
-                  <p className="mt-0.5 text-sm leading-6 text-slate-800 whitespace-pre-line">
+                  <p className="mt-0.5 text-[13px] leading-6 text-brand-900 whitespace-pre-line">
                     {r.body}
                   </p>
                   <button
                     type="button"
                     onClick={() => onUpvoteR(r.id, !myRVotes.has(r.id))}
                     className={cn(
-                      "mt-1 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-medium transition-colors",
+                      "mt-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold transition-colors",
                       myRVotes.has(r.id)
                         ? "bg-brand-50 text-brand-800"
-                        : "text-slate-500 hover:bg-slate-100"
+                        : "text-brand-800/65 hover:bg-brand-50"
                     )}
                   >
                     <ChevronUp className="h-3 w-3" />
@@ -592,11 +592,16 @@ function ReplyForm({ questionId }: { questionId: string }) {
         onChange={(e) => setBody(e.target.value.slice(0, 500))}
         placeholder="Reply..."
         rows={2}
-        className="text-sm"
+        className="rounded-md border-brand-100 text-sm"
       />
-      <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-1.5 flex items-center justify-between text-[11px] text-brand-800/55">
         <span className="tabular-nums">{body.length} / 500</span>
-        <Button size="sm" onClick={submit} disabled={pending || !body.trim()}>
+        <Button
+          size="sm"
+          onClick={submit}
+          disabled={pending || !body.trim()}
+          className="rounded-md"
+        >
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Post reply"}
         </Button>
       </div>
@@ -648,29 +653,31 @@ function AskBar({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-800 text-sm font-medium text-white shadow-lg hover:bg-brand-900"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white shadow-[0_8px_24px_-12px_rgba(13,9,48,0.5)] transition-colors hover:bg-brand-900"
         >
-          <MessageSquarePlus className="h-4 w-4" />
+          <MessageSquarePlus className="h-4 w-4" strokeWidth={1.7} />
           Ask a question
         </button>
       </div>
 
       {open ? (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-brand-950/50"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-brand-950/55"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-2xl rounded-t-xl bg-white p-5 shadow-2xl"
+            className="w-full max-w-2xl rounded-t-lg border-x border-t border-brand-100 bg-white p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-brand-900">Ask a question</h3>
+              <h3 className="text-base font-semibold tracking-tight text-brand-950">
+                Ask a question
+              </h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                className="inline-grid h-8 w-8 place-items-center rounded-md text-slate-500 hover:bg-slate-100"
+                className="inline-grid h-8 w-8 place-items-center rounded-md text-brand-800/65 hover:bg-brand-50"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -681,9 +688,10 @@ function AskBar({
               placeholder="Type your question — speakers reply during the session."
               rows={4}
               autoFocus
+              className="rounded-md border-brand-100"
             />
             <div className="mt-2 flex items-center justify-between text-xs">
-              <label className="inline-flex items-center gap-1.5 text-slate-700">
+              <label className="inline-flex items-center gap-1.5 text-brand-900">
                 <input
                   type="checkbox"
                   checked={anon}
@@ -692,13 +700,17 @@ function AskBar({
                 />
                 Post anonymously
               </label>
-              <span className="tabular-nums text-slate-400">{body.length} / 280</span>
+              <span className="tabular-nums text-brand-800/55">{body.length} / 280</span>
             </div>
             <div className="mt-3 flex items-center justify-end gap-2">
-              <Button variant="ghost" onClick={() => setOpen(false)}>
+              <Button variant="ghost" onClick={() => setOpen(false)} className="rounded-md">
                 Cancel
               </Button>
-              <Button onClick={submit} disabled={pending || !body.trim() || !userId}>
+              <Button
+                onClick={submit}
+                disabled={pending || !body.trim() || !userId}
+                className="rounded-md"
+              >
                 {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post question"}
               </Button>
             </div>

@@ -68,10 +68,14 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <Button className="gap-1.5" onClick={() => setOpen(true)}>
-        <CalendarClock className="h-4 w-4" />
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-brand-800 text-[13px] font-semibold tracking-tight text-white transition-colors hover:bg-brand-900"
+      >
+        <CalendarClock className="h-4 w-4" strokeWidth={1.7} />
         Schedule meeting
-      </Button>
+      </button>
       <SheetContent side="bottom">
         <SheetHeader>
           <SheetTitle>Request a 15-min meeting</SheetTitle>
@@ -80,7 +84,10 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
           <SlotPicker selected={slots} onChange={setSlots} max={3} />
 
           <div>
-            <Label htmlFor="meeting-message" className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <Label
+              htmlFor="meeting-message"
+              className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800/75"
+            >
               Short message
             </Label>
             <Textarea
@@ -89,22 +96,25 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
               onChange={(e) => setMessage(e.target.value.slice(0, 280))}
               placeholder="What do you want to talk about?"
               rows={3}
-              className="mt-1.5"
+              className="mt-1.5 rounded-md border-brand-100"
             />
-            <div className="mt-1 text-right text-[11px] tabular-nums text-slate-400">
+            <div className="mt-1 text-right text-[11px] tabular-nums text-brand-800/55">
               {message.length} / 280
             </div>
           </div>
 
           <div>
-            <Label htmlFor="meeting-location" className="text-xs font-medium uppercase tracking-wider text-slate-500">
+            <Label
+              htmlFor="meeting-location"
+              className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800/75"
+            >
               Location
             </Label>
             <select
               id="meeting-location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1.5 h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
+              className="mt-1.5 h-10 w-full rounded-md border border-brand-100 bg-white px-3 text-sm text-brand-950 outline-none focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
             >
               {LOCATIONS.map((l) => (
                 <option key={l}>{l}</option>
@@ -113,10 +123,10 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
           </div>
 
           <div className="flex items-center justify-end gap-2">
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+            <Button variant="ghost" onClick={() => setOpen(false)} className="rounded-md">
               Cancel
             </Button>
-            <Button onClick={submit} disabled={pending}>
+            <Button onClick={submit} disabled={pending} className="rounded-md">
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send request"}
             </Button>
           </div>

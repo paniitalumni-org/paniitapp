@@ -150,16 +150,16 @@ export default async function AttendeeProfilePage({
         ) : null}
 
         {profile.linkedin_url || profile.twitter_url || profile.email ? (
-          <div className="mt-4 flex justify-center gap-2">
+          <div className="mt-4 flex justify-center gap-5">
             {profile.linkedin_url ? (
               <a
                 href={profile.linkedin_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+                className="text-brand-950 transition-opacity hover:opacity-65"
               >
-                <Linkedin className="size-4" strokeWidth={1.8} />
+                <Linkedin className="size-[18px]" strokeWidth={1.5} />
               </a>
             ) : null}
             {profile.twitter_url ? (
@@ -168,28 +168,26 @@ export default async function AttendeeProfilePage({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="X / Twitter"
-                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+                className="text-brand-950 transition-opacity hover:opacity-65"
               >
-                <XIcon className="size-[14px]" />
+                <XIcon className="size-[16px]" />
               </a>
             ) : null}
             {profile.email ? (
               <a
                 href={`mailto:${profile.email}`}
                 aria-label="Email"
-                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+                className="text-brand-950 transition-opacity hover:opacity-65"
               >
-                <Mail className="size-4" strokeWidth={1.8} />
+                <Mail className="size-[18px]" strokeWidth={1.5} />
               </a>
             ) : null}
           </div>
         ) : null}
       </section>
 
-      {/* Schedule meeting */}
-      <div className="rounded-lg border border-brand-100 bg-white p-4">
-        <ScheduleMeetingButton inviteeId={profile.id} />
-      </div>
+      {/* Schedule meeting — full width, no surrounding card */}
+      <ScheduleMeetingButton inviteeId={profile.id} />
 
       {/* About */}
       {profile.bio ? (

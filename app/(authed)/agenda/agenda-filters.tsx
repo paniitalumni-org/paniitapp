@@ -6,7 +6,7 @@ import { Bookmark, BookmarkCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TRACKS = [
-  { id: "all", label: "All sessions" },
+  { id: "all", label: "All" },
   { id: "keynote", label: "Keynote" },
   { id: "ai", label: "AI" },
   { id: "deeptech", label: "Deep Tech" },
@@ -38,95 +38,60 @@ export function AgendaFilters() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Mobile + tablet: horizontal scroll */}
-      <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 no-scrollbar lg:hidden">
-        <Link
-          href={buildHref({ mine: mineOnly ? "0" : "1" })}
-          scroll={false}
-          aria-pressed={mineOnly}
-          className={cn(
-            "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-            mineOnly
-              ? "border-brand-800 bg-brand-800 text-white"
-              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-          )}
-        >
-          {mineOnly ? <BookmarkCheck className="size-3.5" /> : <Bookmark className="size-3.5" />}
-          My Agenda
-        </Link>
-        <div className="h-5 w-px shrink-0 bg-slate-200" aria-hidden />
-        {TRACKS.map((t) => {
-          const active = activeTrack === t.id;
-          return (
-            <Link
-              key={t.id}
-              href={buildHref({ track: t.id })}
-              scroll={false}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                active
-                  ? "border-brand-800 bg-brand-800 text-white"
-                  : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-              )}
-            >
-              {t.label === "All sessions" ? "All" : t.label}
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Desktop: vertical list */}
-      <div className="hidden lg:flex lg:flex-col lg:gap-5">
-        <Link
-          href={buildHref({ mine: mineOnly ? "0" : "1" })}
-          scroll={false}
-          aria-pressed={mineOnly}
-          className={cn(
-            "inline-flex items-center justify-between rounded-md border px-3 py-2.5 text-sm font-medium transition-colors",
-            mineOnly
-              ? "border-brand-800 bg-brand-50 text-brand-800"
-              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
-          )}
-        >
-          <span className="inline-flex items-center gap-2">
-            {mineOnly ? <BookmarkCheck className="size-4" /> : <Bookmark className="size-4" />}
-            My Agenda
-          </span>
+    <div className="space-y-3">
+      <Link
+        href={buildHref({ mine: mineOnly ? "0" : "1" })}
+        scroll={false}
+        aria-pressed={mineOnly}
+        className={cn(
+          "flex items-center justify-between rounded-md border px-3.5 py-2.5 text-[13px] font-semibold transition-colors",
+          mineOnly
+            ? "border-brand-800 bg-brand-800 text-white"
+            : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
+        )}
+      >
+        <span className="inline-flex items-center gap-2">
           {mineOnly ? (
-            <span className="text-[10px] uppercase tracking-wider text-brand-800">On</span>
-          ) : null}
-        </Link>
+            <BookmarkCheck className="size-4" strokeWidth={1.7} />
+          ) : (
+            <Bookmark className="size-4" strokeWidth={1.7} />
+          )}
+          My Agenda
+        </span>
+        <span
+          className={cn(
+            "text-[10px] uppercase tracking-wider",
+            mineOnly ? "text-white/85" : "text-brand-800/65"
+          )}
+        >
+          {mineOnly ? "On" : "Off"}
+        </span>
+      </Link>
 
-        <div>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Track
-          </div>
-          <div className="flex flex-col gap-1">
-            {TRACKS.map((t) => {
-              const active = activeTrack === t.id;
-              return (
-                <Link
-                  key={t.id}
-                  href={buildHref({ track: t.id })}
-                  scroll={false}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors",
-                    active
-                      ? "bg-brand-50 font-medium text-brand-800"
-                      : "text-slate-700 hover:bg-slate-50"
-                  )}
-                >
-                  <span>{t.label}</span>
-                  {active ? (
-                    <span className="size-1.5 rounded-full bg-brand-800" aria-hidden />
-                  ) : null}
-                </Link>
-              );
-            })}
-          </div>
+      <div>
+        <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          Track
+        </p>
+        <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 no-scrollbar lg:mx-0 lg:flex-wrap lg:px-0 lg:pb-0">
+          {TRACKS.map((t) => {
+            const active = activeTrack === t.id;
+            return (
+              <Link
+                key={t.id}
+                href={buildHref({ track: t.id })}
+                scroll={false}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "shrink-0 rounded-md border px-3 py-1.5 text-[12px] font-semibold transition-colors",
+                  active
+                    ? "border-brand-800 bg-brand-800 text-white"
+                    : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
+                )}
+              >
+                {t.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
