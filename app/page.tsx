@@ -19,9 +19,9 @@ export default async function SignInPage() {
   }
 
   return (
-    <main className="flex min-h-[100svh] flex-col lg:grid lg:min-h-screen lg:grid-cols-2">
+    <main className="grid h-[100svh] grid-rows-[minmax(178px,31svh)_1fr] overflow-hidden lg:grid-cols-2 lg:grid-rows-none">
       {/* HERO PANEL */}
-      <section className="relative isolate overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] pb-24 pt-8 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12 lg:pb-12 xl:p-16">
+      <section className="relative isolate flex items-center overflow-hidden bg-[radial-gradient(circle_at_top_left,#3b329e_0%,#1B1464_45%,#0d0930_100%)] px-5 py-4 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12 xl:p-16">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -36,17 +36,17 @@ export default async function SignInPage() {
           aria-hidden
         />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col items-center px-6 lg:max-w-md lg:px-0">
-          <div className="w-full rounded-2xl border border-white/10 bg-white px-7 py-5 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/5">
+        <div className="relative z-10 mx-auto flex w-full max-w-sm flex-col items-center lg:max-w-md">
+          <div className="w-full rounded-2xl border border-white/10 bg-white px-5 py-3 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.45)] ring-1 ring-black/5 lg:px-7 lg:py-5">
             <Image
               src="/logo/paniit.png"
               alt="PAN IIT Alumni India"
               width={512}
               height={220}
               priority
-              className="mx-auto h-11 w-auto"
+              className="mx-auto h-9 w-auto lg:h-11"
             />
-            <div className="mt-3 border-t border-brand-100 pt-2.5 text-center">
+            <div className="mt-2 border-t border-brand-100 pt-2 text-center lg:mt-3 lg:pt-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800">
                 Bangalore Summit
               </p>
@@ -76,21 +76,21 @@ export default async function SignInPage() {
       </section>
 
       {/* FORM PANEL */}
-      <section className="relative z-10 -mt-20 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
-        <div className="mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-4 pt-6 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
+      <section className="relative z-10 flex min-h-0 flex-col bg-white lg:min-h-screen">
+        <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-3 pt-5 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:h-auto lg:min-h-[32rem] lg:max-w-sm lg:rounded-2xl lg:p-9 lg:shadow-none">
           <div>
             <div className="flex flex-col items-center text-center">
               <GreetingRotator />
-              <p className="mt-3 text-sm leading-6 text-brand-900">
+              <p className="mt-2 text-sm leading-6 text-brand-900">
                 Sign in with the email registered
               </p>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-5">
               <SignInForm />
             </div>
 
-            <p className="mt-4 text-center text-xs leading-5 text-brand-800">
+            <p className="mt-3 text-center text-xs leading-5 text-brand-800">
               Trouble?{" "}
               <a
                 href="mailto:summit@paniit.org"
@@ -105,7 +105,7 @@ export default async function SignInPage() {
             href="https://neuralai.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex items-center justify-center gap-2.5 pt-5 text-center transition-opacity hover:opacity-80"
+            className="mt-auto flex items-center justify-center gap-2.5 pt-3 text-center transition-opacity hover:opacity-80"
           >
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800/70">
               Built by
