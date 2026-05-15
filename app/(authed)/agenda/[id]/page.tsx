@@ -77,23 +77,25 @@ export default async function SessionDetailPage({
     } = await supabase.auth.getUser();
 
     // `interests` may not exist until migration 0007 is applied — degrade gracefully.
-    let { data, error } = await supabase
+    const withInterests = await supabase
       .from("sessions")
       .select(
         "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name, floor), interests"
       )
       .eq("id", id)
       .maybeSingle();
-    if (error) {
-      ({ data } = await supabase
+    let raw: unknown = withInterests.data;
+    if (withInterests.error) {
+      const fallback = await supabase
         .from("sessions")
         .select(
           "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name, floor)"
         )
         .eq("id", id)
-        .maybeSingle());
+        .maybeSingle();
+      raw = fallback.data;
     }
-    session = (data as unknown as SessionRow | null) ?? null;
+    session = (raw as SessionRow | null) ?? null;
     if (!session) notFound();
 
     const { data: sp } = await supabase

@@ -280,32 +280,6 @@ function FilterButton({
   );
 }
 
-function SubTabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "flex-1 rounded-full px-4 py-1.5 transition-colors",
-        active
-          ? "bg-brand-800 text-white"
-          : "text-brand-800/70 hover:text-brand-900"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 function MeetingsGraph({ meetings }: { meetings: MeetingRow[] }) {
   // Hourly buckets 8am→10pm, 14 columns. Cleaner column density reads more
   // like a real chart than 7 wide bars and surfaces the busy/quiet hours.
