@@ -77,48 +77,48 @@ export default async function SignInPage() {
 
       {/* FORM PANEL */}
       <section className="relative z-10 -mt-24 flex flex-1 flex-col bg-transparent lg:mt-0 lg:min-h-screen lg:bg-white">
-        <div className="mx-auto w-full max-w-md rounded-t-3xl bg-white px-6 pb-6 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
-          <div className="flex flex-col items-center text-center">
-            <GreetingRotator />
-            <p className="mt-3 text-sm leading-6 text-brand-900">
-              Sign in with the email registered
+        <div className="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-md flex-col rounded-t-3xl bg-white px-6 pb-6 pt-9 shadow-[0_-20px_50px_-25px_rgba(13,9,48,0.35)] sm:px-8 lg:my-auto lg:min-h-[34rem] lg:max-w-sm lg:rounded-2xl lg:p-10 lg:shadow-none">
+          <div>
+            <div className="flex flex-col items-center text-center">
+              <GreetingRotator />
+              <p className="mt-3 text-sm leading-6 text-brand-900">
+                Sign in with the email registered
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <SignInForm />
+            </div>
+
+            <p className="mt-5 text-center text-xs leading-5 text-brand-800">
+              Trouble?{" "}
+              <a
+                href="mailto:summit@paniit.org"
+                className="font-medium text-brand-800 hover:text-brand-900"
+              >
+                summit@paniit.org
+              </a>
             </p>
           </div>
-
-          <div className="mt-6">
-            <SignInForm />
-          </div>
-
-          <p className="mt-5 text-center text-xs leading-5 text-brand-800">
-            Trouble?{" "}
-            <a
-              href="mailto:summit@paniit.org"
-              className="font-medium text-brand-800 hover:text-brand-900"
-            >
-              summit@paniit.org
-            </a>
-          </p>
 
           <a
             href="https://neuralai.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 flex flex-col items-center gap-1.5 text-center transition-opacity hover:opacity-80"
+            className="mt-auto flex items-center justify-center gap-2.5 pt-8 text-center transition-opacity hover:opacity-80"
           >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-brand-800/70">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-800/70">
               Built by
             </span>
-            <span className="inline-flex items-center justify-center gap-2">
-              <Image
-                src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
-                alt="Neural AI"
-                width={120}
-                height={32}
-                className="h-7 w-auto object-contain"
-              />
-              <span className="font-sans text-[15px] font-semibold tracking-[0.04em] text-brand-900">
-                Neural AI
-              </span>
+            <Image
+              src="https://res.cloudinary.com/dkywjijpv/image/upload/v1774203864/useneuralai_logo-Photoroom_1_crpglq.png"
+              alt="Neural AI"
+              width={120}
+              height={32}
+              className="h-6 w-auto object-contain"
+            />
+            <span className="font-sans text-[15px] font-semibold tracking-[0.04em] text-brand-900">
+              Neural AI
             </span>
           </a>
         </div>
