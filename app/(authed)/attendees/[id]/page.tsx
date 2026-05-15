@@ -90,8 +90,8 @@ export default async function AttendeeProfilePage({
       : null;
 
   return (
-    <div className="pb-10">
-      <div className="px-4 pt-4">
+    <div className="mx-auto w-full max-w-3xl pb-10 lg:max-w-4xl">
+      <div className="pt-4">
         <Link
           href="/attendees"
           className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
@@ -103,7 +103,7 @@ export default async function AttendeeProfilePage({
 
       <div className="relative mt-3">
         <div className="h-32 w-full bg-brand-800" aria-hidden />
-        <div className="-mt-12 px-4">
+        <div className="-mt-12">
           <Avatar className="h-24 w-24 ring-4 ring-white">
             {profile.photo_url ? (
               <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
@@ -130,7 +130,7 @@ export default async function AttendeeProfilePage({
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2 px-4">
+      <div className="mt-5 flex flex-wrap items-center gap-2">
         <ScheduleMeetingButton inviteeId={profile.id} />
         <Button variant="outline" className="gap-1.5" disabled>
           <MessageCircle className="h-4 w-4" />
@@ -139,13 +139,13 @@ export default async function AttendeeProfilePage({
       </div>
 
       {profile.bio ? (
-        <section className="mt-6 px-4">
+        <section className="mt-6">
           <p className="text-sm leading-7 text-slate-700 whitespace-pre-line">{profile.bio}</p>
         </section>
       ) : null}
 
       {yearLine ? (
-        <section className="mt-6 px-4">
+        <section className="mt-6">
           <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Education
           </h2>
@@ -181,7 +181,7 @@ export default async function AttendeeProfilePage({
       ) : null}
 
       {profile.linkedin_url || profile.twitter_url ? (
-        <section className="mt-6 flex flex-wrap items-center gap-2 px-4">
+        <section className="mt-6 flex flex-wrap items-center gap-2">
           {profile.linkedin_url ? (
             <a
               href={profile.linkedin_url}
@@ -208,7 +208,7 @@ export default async function AttendeeProfilePage({
       ) : null}
 
       {speakingAt.length > 0 ? (
-        <section className="mt-8 px-4">
+        <section className="mt-8">
           <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Speaking at
           </h2>
@@ -227,7 +227,7 @@ export default async function AttendeeProfilePage({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-6 px-4">
+    <section className="mt-6">
       <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
       <div className="mt-2">{children}</div>
     </section>

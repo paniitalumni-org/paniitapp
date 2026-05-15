@@ -20,9 +20,11 @@ export default async function AttendeesPage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">Network</h1>
+    <div className="pt-5 lg:pt-8">
+      <header className="mb-5 lg:mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900 lg:text-3xl">
+          Network
+        </h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">
           Search 2,000+ attendees by IIT campus, role, company, and interests.
         </p>

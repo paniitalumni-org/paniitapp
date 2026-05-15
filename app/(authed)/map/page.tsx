@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { EmptyState } from "@/components/features/empty-state";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { FloorMap, type VenueRow, type SessionAtVenue } from "./floor-map";
 
 export const dynamic = "force-dynamic";
@@ -30,20 +30,28 @@ export default async function MapPage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">Map</h1>
+    <div className="pt-5 lg:pt-8">
+      <header className="mb-5 lg:mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-brand-900 lg:text-3xl">
+          Venue map
+        </h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">
-          Taj Yeshwantpur, Bengaluru · Ground &amp; first floors
+          Taj Yeshwantpur, Bengaluru · interactive floor plan
         </p>
       </header>
 
       {errored || venues.length === 0 ? (
-        <EmptyState
-          icon={MapPin}
-          title="No venues yet"
-          description="The interactive floor plan appears here once venues are seeded."
-        />
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <MapPin />
+            </EmptyMedia>
+            <EmptyTitle>No venues yet</EmptyTitle>
+            <EmptyDescription>
+              The interactive floor plan appears here once venues are seeded.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <FloorMap venues={venues} sessions={sessions} />
       )}

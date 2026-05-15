@@ -50,7 +50,7 @@ export default async function MePage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-6">
+    <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
       <header className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-brand-900">

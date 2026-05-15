@@ -98,8 +98,8 @@ export default async function SessionDetailPage({
   if (!session) notFound();
 
   return (
-    <div className="pb-10">
-      <div className="px-4 pt-4">
+    <div className="mx-auto w-full max-w-3xl pb-10 lg:max-w-4xl">
+      <div className="pt-4">
         <Link
           href="/agenda"
           className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
@@ -109,7 +109,7 @@ export default async function SessionDetailPage({
         </Link>
       </div>
 
-      <header className="px-4 pt-3">
+      <header className="pt-3">
         <div className="flex items-center gap-2">
           <span
             className="inline-block h-2 w-2 rounded-full"
@@ -147,7 +147,7 @@ export default async function SessionDetailPage({
         </div>
       </header>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 px-4">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <BookmarkButton sessionId={session.id} initial={bookmarked} withLabel size="md" />
         <CheckInButton
           sessionId={session.id}
@@ -158,7 +158,7 @@ export default async function SessionDetailPage({
       </div>
 
       {session.description ? (
-        <section className="mt-6 px-4">
+        <section className="mt-6">
           <p className="text-sm leading-7 text-slate-700 whitespace-pre-line">
             {session.description}
           </p>
@@ -166,7 +166,7 @@ export default async function SessionDetailPage({
       ) : null}
 
       {speakers.length > 0 ? (
-        <section className="mt-8 px-4">
+        <section className="mt-8">
           <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
             Speakers
           </h2>

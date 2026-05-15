@@ -1,8 +1,12 @@
 import { CalendarOff } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import { createClient } from "@/lib/supabase/server";
-import { EmptyState } from "@/components/features/empty-state";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 import { SessionCard, type SessionCardData } from "@/components/features/session-card";
+import {
+  PageWithFilters,
+  FiltersCard,
+} from "@/components/features/page-with-filters";
 import { AgendaFilters } from "./agenda-filters";
 import { AgendaRealtime } from "@/components/features/agenda-realtime";
 import { SUMMIT_TZ } from "@/lib/constants";
@@ -40,14 +44,12 @@ export default async function AgendaPage({
       data: { user },
     } = await supabase.auth.getUser();
 
-    const query = supabase
+    const { data, error } = await supabase
       .from("sessions")
       .select(
         "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name)"
       )
       .order("start_at", { ascending: true });
-
-    const { data, error } = await query;
     if (error) errored = true;
     sessions = (data as unknown as SessionCardData[] | null) ?? [];
 
@@ -77,40 +79,53 @@ export default async function AgendaPage({
   const hourKeys = Array.from(grouped.keys()).sort();
 
   return (
-    <div className="pb-10">
-      <header className="px-4 pt-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-brand-900">Agenda</h1>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          May 16, 2026 · Taj Yeshwantpur, Bengaluru · all times IST
-        </p>
-      </header>
-
-      <div className="sticky top-14 z-20 mt-4 border-y border-slate-200 bg-white px-4 py-2.5">
-        <AgendaFilters />
-      </div>
-
+    <PageWithFilters
+      header={
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-brand-900 lg:text-3xl">
+            Agenda
+          </h1>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            May 16, 2026 · Taj Yeshwantpur, Bengaluru · all times IST
+          </p>
+        </div>
+      }
+      filters={
+        <FiltersCard>
+          <AgendaFilters />
+        </FiltersCard>
+      }
+    >
       {hourKeys.length === 0 ? (
-        <div className="px-4 pt-8">
-          <EmptyState
-            icon={CalendarOff}
-            title={mineOnly ? "Nothing bookmarked yet" : errored ? "Can't load schedule" : "No sessions"}
-            description={
-              mineOnly
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CalendarOff />
+            </EmptyMedia>
+            <EmptyTitle>
+              {mineOnly
+                ? "Nothing bookmarked yet"
+                : errored
+                ? "Can't load schedule"
+                : "No sessions"}
+            </EmptyTitle>
+            <EmptyDescription>
+              {mineOnly
                 ? "Bookmark sessions to build your personal agenda."
                 : errored
                 ? "We can't reach the schedule right now."
-                : "Sessions will appear here once organizers publish them."
-            }
-          />
-        </div>
+                : "Sessions will appear here once organizers publish them."}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
-        <div className="px-4 pt-4">
+        <div className="flex flex-col gap-6">
           {hourKeys.map((k) => (
-            <section key={k} id={`h-${k.replace(":", "")}`} className="mb-6">
+            <section key={k} id={`h-${k.replace(":", "")}`}>
               <div className="mb-2 text-[11px] font-medium uppercase tracking-wider tabular-nums text-slate-500">
                 {hourLabel(k)}
               </div>
-              <ul className="space-y-3">
+              <ul className="flex flex-col gap-3">
                 {grouped.get(k)!.map((s) => (
                   <li key={s.id}>
                     <SessionCard session={s} bookmarked={bookmarkSet.has(s.id)} />
@@ -123,6 +138,6 @@ export default async function AgendaPage({
       )}
 
       <AgendaRealtime />
-    </div>
+    </PageWithFilters>
   );
 }

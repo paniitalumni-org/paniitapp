@@ -70,7 +70,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-6">
+    <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-brand-900">Admin</h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">

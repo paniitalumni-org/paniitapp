@@ -33,7 +33,7 @@ export default async function OfficeHoursPage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-6">
+    <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
       <div>
         <Link
           href="/attendees"

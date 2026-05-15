@@ -28,7 +28,7 @@ export default async function QrPage() {
   }
 
   return (
-    <div className="px-4 pb-10 pt-6 space-y-8">
+    <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:pt-8 space-y-8">
       <div>
         <Link
           href="/me"
