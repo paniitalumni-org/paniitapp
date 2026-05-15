@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Linkedin, MessageCircle, Twitter } from "lucide-react";
+import { ArrowLeft, Linkedin, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { SessionCard, type SessionCardData } from "@/components/features/session-card";
+import {
+  SessionCard,
+  type SessionCardData,
+} from "@/components/features/session-card";
 import { ScheduleMeetingButton } from "@/components/features/schedule-meeting-button";
 import { initials } from "@/lib/utils";
 
@@ -24,9 +26,29 @@ interface ProfileRow {
   asks: string[] | null;
   offers: string[] | null;
   photo_url: string | null;
+  email: string | null;
 }
 
 export const dynamic = "force-dynamic";
+
+function roleLabel(role: string | null | undefined): string | null {
+  if (!role) return null;
+  return role.charAt(0).toUpperCase() + role.slice(1).replace(/_/g, " ");
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2z" />
+    </svg>
+  );
+}
 
 export default async function AttendeeProfilePage({
   params,
@@ -48,7 +70,7 @@ export default async function AttendeeProfilePage({
     const { data } = await supabase
       .from("profiles")
       .select(
-        "id, full_name, designation, company, role, bio, iit_campus, graduation_year, branch, linkedin_url, twitter_url, interests, asks, offers, photo_url"
+        "id, full_name, designation, company, role, bio, iit_campus, graduation_year, branch, linkedin_url, twitter_url, interests, asks, offers, photo_url, email"
       )
       .eq("id", id)
       .maybeSingle();
@@ -62,7 +84,8 @@ export default async function AttendeeProfilePage({
       )
       .eq("speaker_id", id);
 
-    const rows = (sp as unknown as { sessions: SessionCardData | null }[] | null) ?? [];
+    const rows =
+      (sp as unknown as { sessions: SessionCardData | null }[] | null) ?? [];
     speakingAt = rows.map((r) => r.sessions).filter((s): s is SessionCardData => !!s);
 
     if (user && speakingAt.length > 0) {
@@ -82,134 +105,177 @@ export default async function AttendeeProfilePage({
 
   if (!profile) notFound();
 
-  const yearLine =
-    profile.iit_campus || profile.graduation_year
-      ? [profile.iit_campus, profile.graduation_year, profile.branch]
-          .filter(Boolean)
-          .join(" · ")
-      : null;
+  const eduLine = [
+    profile.iit_campus,
+    profile.graduation_year,
+    profile.branch,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <div className="mx-auto w-full max-w-3xl pb-10 lg:max-w-4xl">
+    <div className="mx-auto w-full max-w-2xl space-y-4 pb-12">
       <div className="pt-4">
         <Link
           href="/attendees"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+          className="inline-flex items-center gap-1 text-xs font-medium text-brand-800/75 transition-colors hover:text-brand-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Network
+          Networking
         </Link>
       </div>
 
-      <div className="relative mt-3">
-        <div className="h-32 w-full bg-brand-800" aria-hidden />
-        <div className="-mt-12">
-          <Avatar className="h-24 w-24 ring-4 ring-white">
-            {profile.photo_url ? (
-              <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
+      {/* Identity block */}
+      <section className="rounded-2xl border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
+        <Avatar className="mx-auto size-24 ring-4 ring-brand-50">
+          {profile.photo_url ? (
+            <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
+          ) : null}
+          <AvatarFallback className="bg-brand-50 text-xl font-semibold text-brand-800">
+            {initials(profile.full_name ?? "?")}
+          </AvatarFallback>
+        </Avatar>
+        <h1 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">
+          {profile.full_name ?? "Attendee"}
+        </h1>
+        {profile.designation || profile.company ? (
+          <p className="mt-1 text-sm font-medium text-brand-900/85">
+            {[profile.designation, profile.company].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
+        {profile.role ? (
+          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+            {roleLabel(profile.role)}
+          </p>
+        ) : null}
+
+        {profile.linkedin_url || profile.twitter_url || profile.email ? (
+          <div className="mt-4 flex justify-center gap-2">
+            {profile.linkedin_url ? (
+              <a
+                href={profile.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+              >
+                <Linkedin className="size-4" strokeWidth={1.8} />
+              </a>
             ) : null}
-            <AvatarFallback className="bg-brand-50 text-2xl text-brand-800">
-              {initials(profile.full_name ?? "?")}
-            </AvatarFallback>
-          </Avatar>
-          <div className="mt-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-brand-900">
-              {profile.full_name ?? "Attendee"}
-            </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
-              {profile.designation || profile.company ? (
-                <span>{[profile.designation, profile.company].filter(Boolean).join(" · ")}</span>
-              ) : null}
-              {profile.role ? (
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium capitalize text-slate-700">
-                  {profile.role}
-                </span>
-              ) : null}
-            </div>
+            {profile.twitter_url ? (
+              <a
+                href={profile.twitter_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X / Twitter"
+                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+              >
+                <XIcon className="size-[14px]" />
+              </a>
+            ) : null}
+            {profile.email ? (
+              <a
+                href={`mailto:${profile.email}`}
+                aria-label="Email"
+                className="inline-grid size-9 place-items-center rounded-full border border-brand-100 text-brand-800 transition-colors hover:bg-brand-50"
+              >
+                <Mail className="size-4" strokeWidth={1.8} />
+              </a>
+            ) : null}
           </div>
-        </div>
-      </div>
+        ) : null}
+      </section>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+      {/* Schedule meeting */}
+      <div className="rounded-2xl border border-brand-100 bg-white p-4">
         <ScheduleMeetingButton inviteeId={profile.id} />
-        <Button variant="outline" className="gap-1.5" disabled>
-          <MessageCircle className="h-4 w-4" />
-          Message
-        </Button>
       </div>
 
+      {/* About */}
       {profile.bio ? (
-        <section className="mt-6">
-          <p className="text-sm leading-7 text-slate-700 whitespace-pre-line">{profile.bio}</p>
-        </section>
-      ) : null}
-
-      {yearLine ? (
-        <section className="mt-6">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Education
+        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+            About
           </h2>
-          <p className="mt-2 text-sm text-slate-700">{yearLine}</p>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-brand-900">
+            {profile.bio}
+          </p>
         </section>
       ) : null}
 
-      {profile.asks?.length ? (
-        <Section title="Looking for">
-          <ChipList items={profile.asks} />
-        </Section>
-      ) : null}
-
-      {profile.offers?.length ? (
-        <Section title="Can offer">
-          <ChipList items={profile.offers} />
-        </Section>
-      ) : null}
-
+      {/* Areas of interest */}
       {profile.interests?.length ? (
-        <Section title="Interests">
-          <div className="flex flex-wrap gap-1.5">
+        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+            Areas of interest
+          </h2>
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {profile.interests.map((i) => (
               <span
                 key={i}
-                className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
               >
                 {i}
               </span>
             ))}
           </div>
-        </Section>
+        </section>
       ) : null}
 
-      {profile.linkedin_url || profile.twitter_url ? (
-        <section className="mt-6 flex flex-wrap items-center gap-2">
-          {profile.linkedin_url ? (
-            <a
-              href={profile.linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-            >
-              <Linkedin className="h-4 w-4" />
-              LinkedIn
-            </a>
+      {/* Asks / Offers */}
+      {(profile.asks?.length ?? 0) + (profile.offers?.length ?? 0) > 0 ? (
+        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+          {profile.asks?.length ? (
+            <div>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+                Looking for
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.asks.map((i) => (
+                  <span
+                    key={i}
+                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
+                  >
+                    {i}
+                  </span>
+                ))}
+              </div>
+            </div>
           ) : null}
-          {profile.twitter_url ? (
-            <a
-              href={profile.twitter_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-            >
-              <Twitter className="h-4 w-4" />
-              Twitter / X
-            </a>
+          {profile.offers?.length ? (
+            <div className={profile.asks?.length ? "mt-4" : ""}>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+                Can offer
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.offers.map((i) => (
+                  <span
+                    key={i}
+                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
+                  >
+                    {i}
+                  </span>
+                ))}
+              </div>
+            </div>
           ) : null}
         </section>
       ) : null}
 
+      {/* Education */}
+      {eduLine ? (
+        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+            Education
+          </h2>
+          <p className="mt-2 text-sm font-medium text-brand-900">{eduLine}</p>
+        </section>
+      ) : null}
+
+      {/* Speaking at */}
       {speakingAt.length > 0 ? (
-        <section className="mt-8">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">
+        <section className="rounded-2xl border border-brand-100 bg-white p-5">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
             Speaking at
           </h2>
           <ul className="mt-3 space-y-3">
@@ -221,27 +287,6 @@ export default async function AttendeeProfilePage({
           </ul>
         </section>
       ) : null}
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h2 className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</h2>
-      <div className="mt-2">{children}</div>
-    </section>
-  );
-}
-
-function ChipList({ items }: { items: string[] }) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {items.map((i) => (
-        <span key={i} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-          {i}
-        </span>
-      ))}
     </div>
   );
 }

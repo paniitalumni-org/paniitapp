@@ -25,7 +25,7 @@ interface AllowlistRow {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") || "/agenda";
+  const next = url.searchParams.get("next") || "/home";
   const errorParam = url.searchParams.get("error");
 
   if (errorParam) {
@@ -113,6 +113,6 @@ export async function GET(req: Request) {
     console.warn("[auth/callback] profile upsert failed for", email);
   }
 
-  const safeNext = next.startsWith("/") ? next : "/agenda";
+  const safeNext = next.startsWith("/") ? next : "/home";
   return NextResponse.redirect(new URL(safeNext, url.origin));
 }

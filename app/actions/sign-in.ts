@@ -61,7 +61,7 @@ export async function signIn(_prev: unknown, formData: FormData): Promise<SignIn
     return { error: "session_failed", message: verifyErr?.message ?? "Could not start session." };
   }
 
-  // Upsert profile so signed-in user has a row before they land on /agenda.
+  // Upsert profile so signed-in user has a row before they land on /home.
   // Mirror the OAuth callback merge semantics.
   const { data: allowRow } = await admin
     .from("attendee_allowlist")
@@ -97,5 +97,5 @@ export async function signIn(_prev: unknown, formData: FormData): Promise<SignIn
     { onConflict: "id" }
   );
 
-  redirect("/agenda");
+  redirect("/home");
 }

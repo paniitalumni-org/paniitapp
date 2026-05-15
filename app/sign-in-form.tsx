@@ -55,7 +55,7 @@ export function SignInForm() {
     setOauthError(null);
     startGoogle(async () => {
       const supabase = createClient();
-      const redirectTo = `${window.location.origin}/auth/callback?next=/agenda`;
+      const redirectTo = `${window.location.origin}/auth/callback?next=/home`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo },

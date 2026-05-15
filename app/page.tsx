@@ -12,7 +12,7 @@ export default async function SignInPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (user) redirect("/agenda");
+    if (user) redirect("/home");
   } catch (err) {
     rethrowIfRedirect(err);
   }
