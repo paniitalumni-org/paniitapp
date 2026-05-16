@@ -245,7 +245,7 @@ export default async function SessionDetailPage({
     : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-10 pt-5 sm:px-5 lg:max-w-4xl lg:px-0 lg:pt-7">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-2.5 pb-10 pt-4 sm:px-4 lg:max-w-4xl lg:px-0 lg:pt-7">
       <Card className="border-brand-100">
         <CardContent className="flex flex-col gap-3 p-3.5">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -394,12 +394,12 @@ export default async function SessionDetailPage({
       ) : null}
 
       <Card className="border-brand-100">
-        <CardHeader className="px-5 pb-2 pt-5">
+        <CardHeader className="px-3.5 pb-2 pt-3.5">
           <CardTitle className="text-[16px] font-bold text-brand-950">
             Q&amp;A discussion
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-5 pb-5 pt-0">
+        <CardContent className="px-3.5 pb-3.5 pt-0">
           <QaSection sessionId={session.id} />
         </CardContent>
       </Card>
