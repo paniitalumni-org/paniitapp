@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Search, SlidersHorizontal, Loader2, X, Linkedin } from "lucide-react";
+import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -503,14 +504,30 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
     items.push({
       href: p.linkedin_url,
       label: "LinkedIn",
-      icon: <Linkedin className="size-[14px]" strokeWidth={1.5} />,
+      icon: (
+        <Image
+          src="/icons/linkedin.png"
+          alt=""
+          width={32}
+          height={32}
+          className="size-[16px]"
+        />
+      ),
     });
   }
   if (p.twitter_url) {
     items.push({
       href: p.twitter_url,
       label: "Twitter / X",
-      icon: <XIcon className="size-[12px]" />,
+      icon: (
+        <Image
+          src="/icons/x.png"
+          alt=""
+          width={32}
+          height={32}
+          className="size-[15px]"
+        />
+      ),
     });
   }
   if (items.length === 0) return null;
@@ -524,26 +541,12 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
           rel="noopener noreferrer"
           aria-label={it.label}
           onClick={(e) => e.stopPropagation()}
-          className="text-brand-950 transition-opacity hover:opacity-65"
+          className="inline-flex transition-opacity hover:opacity-75"
         >
           {it.icon}
         </a>
       ))}
     </div>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2zm-1.2 18h1.94L7.045 4H5.04l12.004 16z" />
-    </svg>
   );
 }
 

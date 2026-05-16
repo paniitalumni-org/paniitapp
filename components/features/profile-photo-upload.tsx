@@ -132,7 +132,7 @@ export function ProfilePhotoUpload({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <input
           ref={inputRef}
           type="file"
@@ -143,26 +143,28 @@ export function ProfilePhotoUpload({
             if (f) void upload(f);
           }}
         />
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={busy}
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-brand-100 bg-white px-3 text-[12px] font-semibold text-brand-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
-        >
-          <Camera className="size-3.5" strokeWidth={1.7} />
-          {photoUrl ? "Change photo" : "Upload photo"}
-        </button>
-        {photoUrl ? (
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={removePhoto}
+            onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="inline-flex h-8 items-center gap-1.5 text-[11px] font-medium text-iit-600 hover:text-iit-700 disabled:opacity-60"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-brand-800 px-4 text-[13px] font-semibold tracking-tight text-white shadow-[0_6px_18px_-8px_rgba(13,9,48,0.45)] transition-all hover:bg-brand-900 hover:shadow-[0_10px_24px_-10px_rgba(13,9,48,0.55)] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Trash2 className="size-3.5" strokeWidth={1.7} />
-            Remove
+            <Camera className="size-4" strokeWidth={1.7} />
+            {photoUrl ? "Change photo" : "Upload photo"}
           </button>
-        ) : null}
+          {photoUrl ? (
+            <button
+              type="button"
+              onClick={removePhoto}
+              disabled={busy}
+              className="inline-flex h-10 items-center gap-1.5 rounded-md border border-brand-100 bg-white px-3 text-[12px] font-semibold text-brand-900 transition-colors hover:bg-brand-50 disabled:opacity-60"
+            >
+              <Trash2 className="size-3.5" strokeWidth={1.7} />
+              Remove
+            </button>
+          ) : null}
+        </div>
         <p className="text-[11px] leading-4 text-brand-800/70">
           JPG, PNG, WebP or AVIF · up to 3&nbsp;MB
         </p>
