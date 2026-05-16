@@ -8,7 +8,7 @@ export interface SessionCardData {
   id: string;
   title: string;
   description: string | null;
-  track: string;
+  track: string | null;
   venue_id?: string | null;
   start_at: string;
   end_at: string;
@@ -16,8 +16,8 @@ export interface SessionCardData {
   capacity: number | null;
   current_checkins: number | null;
   venues:
-    | { id?: string | null; name: string | null }
-    | { id?: string | null; name: string | null }[]
+    | { id?: string | null; name: string | null; floor?: string | number | null }
+    | { id?: string | null; name: string | null; floor?: string | number | null }[]
     | null;
   // Optional per-session topic tags (column added in migration 0007).
   // When present they drive the Recommended match directly; otherwise we
@@ -30,6 +30,16 @@ export function sessionVenueName(
 ): string | null {
   const venue = Array.isArray(venues) ? venues[0] : venues;
   return venue?.name ?? null;
+}
+
+export function sessionVenueFloor(
+  venues: SessionCardData["venues"]
+): string | null {
+  const venue = Array.isArray(venues) ? venues[0] : venues;
+  const floor = venue?.floor;
+  if (floor == null) return null;
+  if (typeof floor === "number") return `Floor ${floor}`;
+  return floor.trim() || null;
 }
 
 const TRACK_COLORS: Record<string, string> = {
@@ -45,7 +55,8 @@ const TRACK_COLORS: Record<string, string> = {
   general: "#64748B",
 };
 
-export function trackColor(track: string): string {
+export function trackColor(track: string | null | undefined): string {
+  if (!track) return "#64748B";
   return TRACK_COLORS[track] ?? "#64748B";
 }
 
@@ -60,7 +71,8 @@ export function sessionInterestPool(
   session: Pick<SessionCardData, "track" | "interests">
 ): string[] {
   if (session.interests && session.interests.length > 0) return session.interests;
-  return [...(TRACK_TO_INTERESTS[session.track] ?? [])];
+  const track = session.track ?? "general";
+  return [...(TRACK_TO_INTERESTS[track] ?? [])];
 }
 
 export function matchedInterestsForSession(
@@ -90,6 +102,8 @@ export function SessionCard({
   const pct = showCapacity ? Math.min(100, Math.round((used / capacity) * 100)) : 0;
   const matches = matchedInterestsForSession(session, userInterests);
   const venueName = sessionVenueName(session.venues);
+  const venueFloor = sessionVenueFloor(session.venues);
+  const track = session.track ?? "general";
 
   return (
     <Link
@@ -130,10 +144,11 @@ export function SessionCard({
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3 w-3 text-brand-800/65" />
             {venueName}
+            {venueFloor ? <span className="text-brand-900/55">({venueFloor})</span> : null}
           </span>
         ) : null}
         <span className="rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-800">
-          {TRACK_LABELS[session.track] ?? session.track}
+          {TRACK_LABELS[track] ?? track}
         </span>
         {matches.length > 0 ? (
           <span className="flex flex-wrap gap-1">

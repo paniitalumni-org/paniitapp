@@ -20,7 +20,9 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 function hourKey(iso: string): string {
-  return formatInTimeZone(new Date(iso), SUMMIT_TZ, "HH:00");
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "00:00";
+  return formatInTimeZone(date, SUMMIT_TZ, "HH:00");
 }
 
 function hourLabel(key: string): string {
@@ -55,7 +57,7 @@ export default async function AgendaPage({
     const withInterests = await supabase
       .from("sessions")
       .select(
-        "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name), interests"
+        "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name, floor), interests"
       )
       .order("start_at", { ascending: true });
     if (withInterests.error) {
@@ -63,7 +65,7 @@ export default async function AgendaPage({
       const fallback = await supabase
         .from("sessions")
         .select(
-          "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name)"
+          "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name, floor)"
         )
         .order("start_at", { ascending: true });
       if (fallback.error) errored = true;

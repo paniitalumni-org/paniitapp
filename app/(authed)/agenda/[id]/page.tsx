@@ -11,12 +11,12 @@ import { rangeIST } from "@/lib/date";
 import { initials } from "@/lib/utils";
 import { trackColor } from "@/components/features/session-card";
 
-type VenueShape = { name: string | null; floor: number | null };
+type VenueShape = { name: string | null; floor: string | number | null };
 interface SessionRow {
   id: string;
   title: string;
   description: string | null;
-  track: string;
+  track: string | null;
   start_at: string;
   end_at: string;
   is_featured: boolean | null;
@@ -32,6 +32,12 @@ function venueOf(v: VenueShape | VenueShape[] | null): VenueShape | null {
   return v;
 }
 
+function venueFloorLabel(floor: VenueShape["floor"]): string | null {
+  if (floor == null) return null;
+  if (typeof floor === "number") return `Floor ${floor}`;
+  return floor.trim() || null;
+}
+
 interface SpeakerProfile {
   id: string;
   full_name: string | null;
@@ -45,6 +51,7 @@ interface SpeakerProfile {
 
 interface SpeakerRow {
   speaker_id: string;
+  role: "speaker" | "moderator" | "panelist" | "host" | null;
   // Supabase joins can come back as either object or array depending on the
   // relation kind it infers. Accept both so render-time code never crashes.
   profiles: SpeakerProfile | SpeakerProfile[] | null;
@@ -54,6 +61,13 @@ function speakerOf(row: SpeakerRow): SpeakerProfile | null {
   if (!row.profiles) return null;
   if (Array.isArray(row.profiles)) return row.profiles[0] ?? null;
   return row.profiles;
+}
+
+function speakerRoleLabel(role: SpeakerRow["role"]): string {
+  if (role === "moderator") return "Moderator";
+  if (role === "panelist") return "Panelist";
+  if (role === "host") return "Host";
+  return "Speaker";
 }
 
 export const dynamic = "force-dynamic";
@@ -116,7 +130,7 @@ export default async function SessionDetailPage({
     const { data: sp } = await supabase
       .from("session_speakers")
       .select(
-        "speaker_id, profiles:speaker_id(id, full_name, designation, company, photo_url, linkedin_url, twitter_url, email)"
+        "speaker_id, role, profiles:speaker_id(id, full_name, designation, company, photo_url, linkedin_url, twitter_url, email)"
       )
       .eq("session_id", id);
     speakers = (sp as unknown as SpeakerRow[] | null) ?? [];
@@ -152,10 +166,11 @@ export default async function SessionDetailPage({
 
   if (!session) notFound();
 
+  const track = session.track ?? "general";
   const sessionInterests =
     session.interests && session.interests.length > 0
       ? session.interests
-      : (TRACK_TO_INTERESTS[session.track] ?? []);
+      : (TRACK_TO_INTERESTS[track] ?? []);
   const matches = userInterests.length
     ? sessionInterests.filter((i) => userInterests.includes(i))
     : [];
@@ -167,10 +182,10 @@ export default async function SessionDetailPage({
           <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
             <span
               className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: trackColor(session.track) }}
+              style={{ backgroundColor: trackColor(track) }}
               aria-hidden
             />
-            {TRACK_LABELS[session.track] ?? session.track}
+            {TRACK_LABELS[track] ?? track}
           </span>
           {session.is_featured ? (
             <span className="rounded-[4px] border border-iit-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-iit-600">
@@ -196,13 +211,15 @@ export default async function SessionDetailPage({
           {(() => {
             const v = venueOf(session.venues);
             if (!v?.name) return null;
+            const floor = venueFloorLabel(v.floor);
             return (
               <span className="inline-flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 text-brand-800/65" strokeWidth={1.7} />
                 {v.name}
-                {v.floor != null ? (
+                {floor ? (
                   <span className="text-[11px] text-brand-800/55">
-                    · Floor {v.floor}
+                    {" - "}
+                    {floor}
                   </span>
                 ) : null}
               </span>
@@ -259,10 +276,16 @@ export default async function SessionDetailPage({
           </h2>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {speakers
-              .map((s) => ({ id: s.speaker_id, p: speakerOf(s) }))
-              .filter((s): s is { id: string; p: SpeakerProfile } => !!s.p)
+              .map((s) => ({ id: s.speaker_id, role: s.role, p: speakerOf(s) }))
+              .filter(
+                (s): s is {
+                  id: string;
+                  role: SpeakerRow["role"];
+                  p: SpeakerProfile;
+                } => !!s.p
+              )
               .map((s) => (
-                <SpeakerCard key={s.id} p={s.p} />
+                <SpeakerCard key={s.id} p={s.p} role={s.role} />
               ))}
           </ul>
         </section>
@@ -278,11 +301,17 @@ export default async function SessionDetailPage({
   );
 }
 
-function SpeakerCard({ p }: { p: SpeakerProfile }) {
+function SpeakerCard({
+  p,
+  role,
+}: {
+  p: SpeakerProfile;
+  role: SpeakerRow["role"];
+}) {
   return (
     <li className="relative rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
       <span className="absolute right-3 top-3 rounded-[3px] border border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-800">
-        Speaker
+        {speakerRoleLabel(role)}
       </span>
       <Link href={`/attendees/${p.id}`} className="flex items-start gap-3">
         <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
