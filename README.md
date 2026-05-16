@@ -36,7 +36,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_URL=https://app.blr.paniit.space
 GOOGLE_CLIENT_ID=1076635361002-gtk11i99pcdc97j5uectb3ov1hgv7ifi.apps.googleusercontent.com
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=1076635361002-gtk11i99pcdc97j5uectb3ov1hgv7ifi.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=
 GOOGLE_OAUTH_REDIRECT_URI=https://app.blr.paniit.space/auth/google/callback
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
@@ -50,7 +49,7 @@ For direct app-domain Google sign-in, configure the OAuth client in Google Cloud
 - Authorized JavaScript origin: `https://app.blr.paniit.space`
 - Authorized redirect URI: `https://app.blr.paniit.space/auth/google/callback`
 
-If `GOOGLE_CLIENT_SECRET` is left only inside Supabase Auth provider settings, the app falls back to Supabase's configured Google provider. In that mode, keep Google Cloud Console pointed at `https://fncnndrexzmqqengbkvi.supabase.co/auth/v1/callback` and allow `https://app.blr.paniit.space/auth/callback` in Supabase Auth redirect URLs.
+The Google redirect stays on the app domain. Supabase Auth is only used after the app receives the Google ID token, so the existing Supabase Google provider can keep storing the provider login configuration.
 
 ## Migrations
 
@@ -73,15 +72,15 @@ After importing, run migration `0002_email_unique.sql` if it hasn't been run yet
 
 ## Auth: app-domain Google sign-in
 
-Current sign-in supports two Google flows:
+Current sign-in uses a custom-domain Google ID-token flow:
 
 1. User opens the app → lands on `/` (the sign-in page).
 2. User clicks **Continue with Google** → app redirects to Google from `/auth/google/start`.
-3. If `GOOGLE_CLIENT_SECRET` is configured on the app, Google redirects back to `https://app.blr.paniit.space/auth/google/callback`.
-4. If the secret is only configured in Supabase, `/auth/google/start` uses Supabase's Google provider and returns through `/auth/callback`.
-5. The callback creates the existing Supabase SSR session, syncs the profile row by `auth.uid()`, and redirects to onboarding or `/home`.
+3. Google redirects back to `https://app.blr.paniit.space/auth/google/callback`.
+4. The app posts the Google ID token to `/api/auth/google/id-token`.
+5. The API creates the existing Supabase SSR session, syncs the profile row by `auth.uid()`, and redirects to onboarding or `/home`.
 
-Supabase still stores the session and powers RLS in both modes.
+Supabase still stores the session and powers RLS, but it is not used as the OAuth redirect callback.
 
 See `DECISIONS.md` for the design choice.
 

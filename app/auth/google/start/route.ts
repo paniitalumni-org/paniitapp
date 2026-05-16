@@ -7,45 +7,21 @@ import {
   googleClientId,
   googleOAuthCookieOptions,
   googleRedirectUri,
-  redirectWithGoogleAuthError,
   safeNext,
 } from "@/lib/auth/google-oauth";
-import { createClient } from "@/lib/supabase/server";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const next = safeNext(url.searchParams.get("next") || "/home");
-
-  if (!process.env.GOOGLE_CLIENT_SECRET) {
-    const supabase = await createClient();
-    const redirectTo = new URL(
-      `/auth/callback?next=${encodeURIComponent(next)}`,
-      url.origin
-    ).toString();
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo },
-    });
-
-    if (error || !data.url) {
-      return redirectWithGoogleAuthError(
-        req,
-        error?.message || "google_oauth_start_failed"
-      );
-    }
-
-    return NextResponse.redirect(data.url);
-  }
-
   const redirectUri = googleRedirectUri(req);
   const { hashedNonce, nonce, state } = createGoogleOAuthRequest();
 
   const authUrl = new URL(GOOGLE_AUTH_URL);
   authUrl.searchParams.set("client_id", googleClientId());
   authUrl.searchParams.set("redirect_uri", redirectUri);
-  authUrl.searchParams.set("response_type", "code");
+  authUrl.searchParams.set("response_type", "id_token token");
   authUrl.searchParams.set("scope", "openid email profile");
   authUrl.searchParams.set("state", state);
   authUrl.searchParams.set("nonce", hashedNonce);
