@@ -1,12 +1,11 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function AgendaDetailLoading() {
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-3 pb-10 lg:max-w-4xl">
-      <div className="pt-4">
-        <div className="h-3 w-20 animate-pulse rounded bg-brand-50" />
-      </div>
-      <div className="h-44 animate-pulse rounded-lg border border-brand-100 bg-brand-50" />
-      <div className="h-32 animate-pulse rounded-lg border border-brand-100 bg-brand-50" />
-      <div className="h-40 animate-pulse rounded-lg border border-brand-100 bg-brand-50" />
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-10 pt-5 sm:px-5 lg:max-w-4xl lg:px-0 lg:pt-7">
+      <Skeleton className="h-44 rounded-lg" />
+      <Skeleton className="h-32 rounded-lg" />
+      <Skeleton className="h-40 rounded-lg" />
     </div>
   );
 }

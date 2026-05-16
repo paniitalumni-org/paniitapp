@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Clock, Linkedin, Mail, MapPin } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookmarkButton } from "@/components/features/bookmark-button";
 import { QaSection } from "@/components/features/qa/qa-section";
 import { CheckInButton } from "./check-in-button";
@@ -77,12 +79,46 @@ function XGlyph({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="#0F1419"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       className={className}
     >
       <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2z" />
+    </svg>
+  );
+}
+
+function LinkedInGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <rect width="24" height="24" rx="4" fill="#0A66C2" />
+      <path
+        fill="#fff"
+        d="M7.5 9.5h2.4v8.1H7.5V9.5zm1.2-3.6a1.4 1.4 0 110 2.8 1.4 1.4 0 010-2.8zm3 3.6h2.3v1.1h.03c.32-.6 1.1-1.24 2.27-1.24 2.43 0 2.88 1.6 2.88 3.68v4.55h-2.4v-4.04c0-.96-.02-2.2-1.34-2.2-1.34 0-1.54 1.05-1.54 2.13v4.11h-2.4V9.5z"
+      />
+    </svg>
+  );
+}
+
+function MailGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <rect width="24" height="24" rx="4" fill="#EA4335" />
+      <path
+        fill="#fff"
+        d="M6 8.5a1.5 1.5 0 011.5-1.5h9A1.5 1.5 0 0118 8.5v7a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 15.5v-7zm1.7-.1l4.3 3.6 4.3-3.6H7.7zm8.8.96l-4.13 3.46a.6.6 0 01-.74 0L7.5 9.36V15.5h9V9.36z"
+      />
     </svg>
   );
 }
@@ -211,127 +247,161 @@ export default async function SessionDetailPage({
     : [];
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-4 pb-10 lg:max-w-4xl">
-      <header className="rounded-lg border border-brand-100 bg-white p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand-800">
-            <span
-              className="inline-block h-1.5 w-1.5 rounded-full"
-              style={{ backgroundColor: trackColor(track) }}
-              aria-hidden
-            />
-            {TRACK_LABELS[track] ?? track}
-          </span>
-          {session.is_featured ? (
-            <span className="rounded-[4px] border border-iit-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-iit-600">
-              Featured
-            </span>
-          ) : null}
-          {matches.length > 0 ? (
-            <span className="rounded-[4px] border border-emerald-300 bg-white px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
-              Recommended
-            </span>
-          ) : null}
-        </div>
-        <h1 className="mt-2 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">
-          {session.title}
-        </h1>
-        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-brand-900/85">
-          <span className="inline-flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-brand-800/65" strokeWidth={1.7} />
-            <span className="tabular-nums">
-              {rangeIST(session.start_at, session.end_at)}
-            </span>
-          </span>
-          {(() => {
-            const v = venueOf(session.venues);
-            if (!v?.name) return null;
-            const floor = venueFloorLabel(v.floor);
-            return (
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-brand-800/65" strokeWidth={1.7} />
-                {v.name}
-                {floor ? (
-                  <span className="text-[11px] text-brand-800/55">
-                    {" - "}
-                    {floor}
-                  </span>
-                ) : null}
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-10 pt-5 sm:px-5 lg:max-w-4xl lg:px-0 lg:pt-7">
+      <Card className="border-brand-100">
+        <CardContent className="flex flex-col gap-4 p-5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge
+              variant="outline"
+              className="gap-1.5 border-brand-100 bg-brand-50 text-brand-800"
+            >
+              <span
+                className="inline-block size-1.5 rounded-full"
+                style={{ backgroundColor: trackColor(track) }}
+                aria-hidden
+              />
+              {TRACK_LABELS[track] ?? track}
+            </Badge>
+            {session.is_featured ? (
+              <Badge variant="outline" className="border-iit-200 bg-white text-iit-600">
+                Featured
+              </Badge>
+            ) : null}
+            {matches.length > 0 ? (
+              <Badge
+                variant="outline"
+                className="border-emerald-300 bg-white text-emerald-700"
+              >
+                Recommended
+              </Badge>
+            ) : null}
+          </div>
+
+          <h1 className="text-[22px] font-bold leading-tight tracking-tight text-brand-950">
+            {session.title}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-brand-900/85">
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3.5 text-brand-800/65" strokeWidth={1.7} />
+              <span className="tabular-nums">
+                {rangeIST(session.start_at, session.end_at)}
               </span>
-            );
-          })()}
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <BookmarkButton sessionId={session.id} initial={bookmarked} withLabel size="md" />
-          <CheckInButton
-            sessionId={session.id}
-            startsAtIso={session.start_at}
-            endsAtIso={session.end_at}
-            initialCheckedIn={checkedIn}
-          />
-        </div>
-
-        {sessionInterests.length > 0 ? (
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {sessionInterests.map((i) => {
-              const matched = userInterests.includes(i);
+            </span>
+            {(() => {
+              const v = venueOf(session.venues);
+              if (!v?.name) return null;
+              const floor = venueFloorLabel(v.floor);
               return (
-                <span
-                  key={i}
-                  className={
-                    matched
-                      ? "rounded-[3px] bg-brand-800 px-2 py-0.5 text-[10px] font-semibold text-white"
-                      : "rounded-[3px] border border-brand-100 bg-white px-2 py-0.5 text-[10px] font-semibold text-brand-800"
-                  }
-                >
-                  {i}
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin
+                    className="size-3.5 text-brand-800/65"
+                    strokeWidth={1.7}
+                  />
+                  {v.name}
+                  {floor ? (
+                    <span className="text-[11px] text-brand-800/55">
+                      {" - "}
+                      {floor}
+                    </span>
+                  ) : null}
                 </span>
               );
-            })}
+            })()}
           </div>
-        ) : null}
-      </header>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <BookmarkButton
+              sessionId={session.id}
+              initial={bookmarked}
+              withLabel
+              size="md"
+            />
+            <CheckInButton
+              sessionId={session.id}
+              startsAtIso={session.start_at}
+              endsAtIso={session.end_at}
+              initialCheckedIn={checkedIn}
+            />
+          </div>
+
+          {sessionInterests.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {sessionInterests.map((i) => {
+                const matched = userInterests.includes(i);
+                return matched ? (
+                  <Badge
+                    key={i}
+                    className="rounded-[3px] bg-brand-800 text-white hover:bg-brand-800"
+                  >
+                    {i}
+                  </Badge>
+                ) : (
+                  <Badge
+                    key={i}
+                    variant="outline"
+                    className="rounded-[3px] border-brand-100 bg-white text-brand-800"
+                  >
+                    {i}
+                  </Badge>
+                );
+              })}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       {session.description ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            About this session
-          </h2>
-          <p className="mt-2 whitespace-pre-line text-[14px] leading-7 text-brand-900">
-            {session.description}
-          </p>
-        </section>
+        <Card className="border-brand-100">
+          <CardHeader className="px-5 pb-2 pt-5">
+            <CardTitle className="text-[16px] font-bold text-brand-950">
+              About this session
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-5 pb-5 pt-0">
+            <p className="whitespace-pre-line text-[14px] leading-7 text-brand-900">
+              {session.description}
+            </p>
+          </CardContent>
+        </Card>
       ) : null}
 
       {speakers.length > 0 ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-            Speakers
-          </h2>
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {speakers
-              .map((s) => ({ id: s.speaker_id, role: s.role, p: speakerOf(s) }))
-              .filter(
-                (s): s is {
-                  id: string;
-                  role: SpeakerRow["role"];
-                  p: SpeakerProfile;
-                } => !!s.p && !!s.p.id
-              )
-              .map((s) => (
-                <SpeakerCard key={s.id} p={s.p} role={s.role} />
-              ))}
-          </ul>
-        </section>
+        <Card className="border-brand-100">
+          <CardHeader className="px-5 pb-3 pt-5">
+            <CardTitle className="text-[16px] font-bold text-brand-950">
+              Speakers
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-5 pb-5 pt-0">
+            <ul className="grid gap-2.5 sm:grid-cols-2">
+              {speakers
+                .map((s) => ({ id: s.speaker_id, role: s.role, p: speakerOf(s) }))
+                .filter(
+                  (s): s is {
+                    id: string;
+                    role: SpeakerRow["role"];
+                    p: SpeakerProfile;
+                  } => !!s.p && !!s.p.id
+                )
+                .map((s) => (
+                  <SpeakerCard key={s.id} p={s.p} role={s.role} />
+                ))}
+            </ul>
+          </CardContent>
+        </Card>
       ) : null}
 
-      <section className="rounded-lg border border-brand-100 bg-white p-5">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-          Q&amp;A discussion
-        </h2>
-        <QaSection sessionId={session.id} />
-      </section>
+      <Card className="border-brand-100">
+        <CardHeader className="px-5 pb-2 pt-5">
+          <CardTitle className="text-[16px] font-bold text-brand-950">
+            Q&amp;A discussion
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-5 pt-0">
+          <QaSection sessionId={session.id} />
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -343,12 +413,10 @@ function SpeakerCard({
   p: SpeakerProfile;
   role: SpeakerRow["role"];
 }) {
+  const hasSocial = !!(p.linkedin_url || p.twitter_url || p.email);
   return (
-    <li className="relative rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
-      <span className="absolute right-3 top-3 rounded-[3px] border border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-800">
-        {speakerRoleLabel(role)}
-      </span>
-      <Link href={`/attendees/${p.id}`} className="flex items-start gap-3">
+    <li className="rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
+      <div className="flex items-start gap-3">
         <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
           {p.photo_url ? (
             <AvatarImage src={p.photo_url} alt={p.full_name ?? ""} />
@@ -357,52 +425,65 @@ function SpeakerCard({
             {initials(p.full_name ?? "?")}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1 pr-12">
-          <div className="truncate text-[14px] font-semibold text-brand-950">
-            {p.full_name ?? "Speaker"}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <Link
+              href={`/attendees/${p.id}`}
+              className="min-w-0 flex-1 hover:underline"
+            >
+              <div className="truncate text-[14px] font-semibold text-brand-950">
+                {p.full_name ?? "Speaker"}
+              </div>
+              {p.designation || p.company ? (
+                <div className="mt-0.5 truncate text-[12px] font-normal text-brand-900/75">
+                  {[p.designation, p.company].filter(Boolean).join(" · ")}
+                </div>
+              ) : null}
+            </Link>
+            <Badge
+              variant="outline"
+              className="shrink-0 border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-brand-800"
+            >
+              {speakerRoleLabel(role)}
+            </Badge>
           </div>
-          {p.designation || p.company ? (
-            <div className="mt-0.5 truncate text-[12px] text-brand-900/75">
-              {[p.designation, p.company].filter(Boolean).join(" · ")}
+          {hasSocial ? (
+            <div className="mt-2 flex items-center gap-2">
+              {p.linkedin_url ? (
+                <a
+                  href={p.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className="inline-flex transition-opacity hover:opacity-80"
+                >
+                  <LinkedInGlyph className="size-[18px] rounded" />
+                </a>
+              ) : null}
+              {p.twitter_url ? (
+                <a
+                  href={p.twitter_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  className="inline-flex transition-opacity hover:opacity-80"
+                >
+                  <XGlyph className="size-[16px]" />
+                </a>
+              ) : null}
+              {p.email ? (
+                <a
+                  href={`mailto:${p.email}`}
+                  aria-label="Email"
+                  className="inline-flex transition-opacity hover:opacity-80"
+                >
+                  <MailGlyph className="size-[18px] rounded" />
+                </a>
+              ) : null}
             </div>
           ) : null}
         </div>
-      </Link>
-      {p.linkedin_url || p.twitter_url || p.email ? (
-        <div className="mt-3 flex items-center gap-3 border-t border-brand-100 pt-2.5 pl-[60px]">
-          {p.linkedin_url ? (
-            <a
-              href={p.linkedin_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="text-brand-950/85 transition-colors hover:text-brand-950"
-            >
-              <Linkedin className="size-[15px]" strokeWidth={1.6} />
-            </a>
-          ) : null}
-          {p.twitter_url ? (
-            <a
-              href={p.twitter_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="X"
-              className="text-brand-950/85 transition-colors hover:text-brand-950"
-            >
-              <XGlyph className="size-[13px]" />
-            </a>
-          ) : null}
-          {p.email ? (
-            <a
-              href={`mailto:${p.email}`}
-              aria-label="Email"
-              className="text-brand-950/85 transition-colors hover:text-brand-950"
-            >
-              <Mail className="size-[15px]" strokeWidth={1.6} />
-            </a>
-          ) : null}
-        </div>
-      ) : null}
+      </div>
     </li>
   );
 }
