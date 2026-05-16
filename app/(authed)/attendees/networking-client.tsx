@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search, SlidersHorizontal, Loader2, X } from "lucide-react";
+import { LinkedInIcon, XIcon } from "@/components/features/social-icons";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -504,30 +504,14 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
     items.push({
       href: p.linkedin_url,
       label: "LinkedIn",
-      icon: (
-        <Image
-          src="/icons/linkedin.png"
-          alt=""
-          width={32}
-          height={32}
-          className="size-[16px]"
-        />
-      ),
+      icon: <LinkedInIcon className="size-[16px]" />,
     });
   }
   if (p.twitter_url) {
     items.push({
       href: p.twitter_url,
       label: "Twitter / X",
-      icon: (
-        <Image
-          src="/icons/x.png"
-          alt=""
-          width={32}
-          height={32}
-          className="size-[15px]"
-        />
-      ),
+      icon: <XIcon className="size-[15px]" />,
     });
   }
   if (items.length === 0) return null;

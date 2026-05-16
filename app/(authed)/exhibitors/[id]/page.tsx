@@ -1,16 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Store,
-  ExternalLink,
-  Linkedin,
-  Mail,
-  MapPin,
-} from "lucide-react";
+import { Store, ExternalLink, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScheduleMeetingButton } from "@/components/features/schedule-meeting-button";
+import { GmailIcon, LinkedInIcon } from "@/components/features/social-icons";
 import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -197,25 +192,25 @@ function TeamRow({ t }: { t: TeamRow }) {
   );
 
   const socials = (
-    <div className="ml-1 flex shrink-0 items-center gap-1">
+    <div className="ml-1 flex shrink-0 items-center gap-2">
       {t.linkedin_url ? (
         <a
           href={t.linkedin_url}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="LinkedIn"
-          className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
+          className="inline-flex transition-opacity hover:opacity-75"
         >
-          <Linkedin className="size-[14px]" strokeWidth={1.8} />
+          <LinkedInIcon className="size-[18px]" />
         </a>
       ) : null}
       {t.email ? (
         <a
           href={`mailto:${t.email}`}
           aria-label="Email"
-          className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
+          className="inline-flex transition-opacity hover:opacity-75"
         >
-          <Mail className="size-[14px]" strokeWidth={1.8} />
+          <GmailIcon className="h-[18px] w-auto" />
         </a>
       ) : null}
     </div>

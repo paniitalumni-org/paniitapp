@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Linkedin, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatBubbleGlyph } from "@/components/features/chat/chat-icon";
+import {
+  GmailIcon,
+  LinkedInIcon,
+  XIcon,
+} from "@/components/features/social-icons";
 import {
   SessionCard,
   type SessionCardData,
@@ -35,20 +39,6 @@ export const dynamic = "force-dynamic";
 function roleLabel(role: string | null | undefined): string | null {
   if (!role) return null;
   return role.charAt(0).toUpperCase() + role.slice(1).replace(/_/g, " ");
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2z" />
-    </svg>
-  );
 }
 
 export default async function AttendeeProfilePage({
@@ -141,16 +131,16 @@ export default async function AttendeeProfilePage({
         ) : null}
 
         {profile.linkedin_url || profile.twitter_url || profile.email ? (
-          <div className="mt-4 flex justify-center gap-5">
+          <div className="mt-4 flex items-center justify-center gap-4">
             {profile.linkedin_url ? (
               <a
                 href={profile.linkedin_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
-                className="text-brand-950 transition-opacity hover:opacity-65"
+                className="inline-flex transition-opacity hover:opacity-75"
               >
-                <Linkedin className="size-[18px]" strokeWidth={1.5} />
+                <LinkedInIcon className="size-[22px]" />
               </a>
             ) : null}
             {profile.twitter_url ? (
@@ -159,18 +149,18 @@ export default async function AttendeeProfilePage({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="X / Twitter"
-                className="text-brand-950 transition-opacity hover:opacity-65"
+                className="inline-flex transition-opacity hover:opacity-75"
               >
-                <XIcon className="size-[16px]" />
+                <XIcon className="size-[20px]" />
               </a>
             ) : null}
             {profile.email ? (
               <a
                 href={`mailto:${profile.email}`}
                 aria-label="Email"
-                className="text-brand-950 transition-opacity hover:opacity-65"
+                className="inline-flex transition-opacity hover:opacity-75"
               >
-                <Mail className="size-[18px]" strokeWidth={1.5} />
+                <GmailIcon className="h-[20px] w-auto" />
               </a>
             ) : null}
           </div>

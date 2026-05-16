@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, MapPin } from "lucide-react";
+import { LinkedInIcon, XIcon } from "@/components/features/social-icons";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -74,37 +75,6 @@ function speakerRoleLabel(role: SpeakerRow["role"]): string {
 }
 
 export const dynamic = "force-dynamic";
-
-function XGlyph({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="#0F1419"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.844l-5.357-7.014L4.34 22H1.082l8.063-9.214L1.5 2h7l4.84 6.404L18.244 2z" />
-    </svg>
-  );
-}
-
-function LinkedInGlyph({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <rect width="24" height="24" rx="4" fill="#0A66C2" />
-      <path
-        fill="#fff"
-        d="M7.5 9.5h2.4v8.1H7.5V9.5zm1.2-3.6a1.4 1.4 0 110 2.8 1.4 1.4 0 010-2.8zm3 3.6h2.3v1.1h.03c.32-.6 1.1-1.24 2.27-1.24 2.43 0 2.88 1.6 2.88 3.68v4.55h-2.4v-4.04c0-.96-.02-2.2-1.34-2.2-1.34 0-1.54 1.05-1.54 2.13v4.11h-2.4V9.5z"
-      />
-    </svg>
-  );
-}
 
 export default async function SessionDetailPage({
   params,
@@ -445,7 +415,7 @@ function SpeakerCard({
                   aria-label="LinkedIn"
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
-                  <LinkedInGlyph className="size-[18px] rounded" />
+                  <LinkedInIcon className="size-[18px]" />
                 </a>
               ) : null}
               {p.twitter_url ? (
@@ -456,7 +426,7 @@ function SpeakerCard({
                   aria-label="X"
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
-                  <XGlyph className="size-[16px]" />
+                  <XIcon className="size-[16px]" />
                 </a>
               ) : null}
             </div>
