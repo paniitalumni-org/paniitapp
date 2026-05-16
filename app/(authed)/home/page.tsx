@@ -306,12 +306,11 @@ export default async function HomePage() {
 
       {/* Live Stream */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="Live Stream" />
         <div className="overflow-hidden rounded-lg border border-brand-100 bg-black">
           <div className="relative aspect-video w-full">
             <iframe
-              src="https://www.youtube.com/embed/6cdwG2RUTJ4?autoplay=1&mute=1&playsinline=1&rel=0"
-              title="PAN IIT Bangalore Summit 2026 Live"
+              src="https://www.youtube.com/embed/6CdwG2RUTJ4?autoplay=1&mute=1&playsinline=1&rel=0&si=Nu9IZOYr7ksqYe-L"
+              title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
