@@ -4,26 +4,22 @@ import {
   GOOGLE_OAUTH_NONCE_COOKIE,
   GOOGLE_OAUTH_STATE_COOKIE,
   createGoogleOAuthRequest,
+  googleClientId,
   googleOAuthCookieOptions,
   googleRedirectUri,
-  redirectWithGoogleAuthError,
   safeNext,
 } from "@/lib/auth/google-oauth";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 
 export async function GET(req: Request) {
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    return redirectWithGoogleAuthError(req, "google_client_id_missing");
-  }
-
   const url = new URL(req.url);
   const next = safeNext(url.searchParams.get("next") || "/home");
   const redirectUri = googleRedirectUri(req);
   const { hashedNonce, nonce, state } = createGoogleOAuthRequest();
 
   const authUrl = new URL(GOOGLE_AUTH_URL);
-  authUrl.searchParams.set("client_id", process.env.GOOGLE_CLIENT_ID);
+  authUrl.searchParams.set("client_id", googleClientId());
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set("scope", "openid email profile");

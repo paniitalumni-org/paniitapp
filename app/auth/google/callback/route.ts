@@ -5,6 +5,7 @@ import {
   GOOGLE_OAUTH_NONCE_COOKIE,
   GOOGLE_OAUTH_STATE_COOKIE,
   clearGoogleOAuthCookies,
+  googleClientId,
   googleRedirectUri,
   redirectWithGoogleAuthError,
   safeNext,
@@ -46,8 +47,8 @@ export async function GET(req: Request) {
     return redirectWithGoogleAuthError(req, "missing_google_nonce", true);
   }
 
-  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return redirectWithGoogleAuthError(req, "google_oauth_config_missing", true);
+  if (!process.env.GOOGLE_CLIENT_SECRET) {
+    return redirectWithGoogleAuthError(req, "google_client_secret_missing", true);
   }
 
   const tokenResponse = await exchangeCodeForTokens(req, code);
@@ -92,7 +93,7 @@ async function exchangeCodeForTokens(
 ): Promise<GoogleTokenResponse> {
   const body = new URLSearchParams({
     code,
-    client_id: process.env.GOOGLE_CLIENT_ID!,
+    client_id: googleClientId(),
     client_secret: process.env.GOOGLE_CLIENT_SECRET!,
     redirect_uri: googleRedirectUri(req),
     grant_type: "authorization_code",
