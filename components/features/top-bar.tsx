@@ -8,7 +8,7 @@ import { initials } from "@/lib/utils";
 import { NotificationsBell } from "./notifications-bell";
 import { DesktopNavTabs } from "./desktop-nav-tabs";
 
-const SUMMIT_WHATSAPP_URL = "https://wa.me/919999999999";
+const SUMMIT_WHATSAPP_URL = "https://chat.whatsapp.com/DFwlo56dAu83SW6fKX4I7H";
 
 const SOCIAL_LINKS = [
   {
