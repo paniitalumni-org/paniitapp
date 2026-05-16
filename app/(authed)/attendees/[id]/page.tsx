@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatBubbleGlyph } from "@/components/features/chat/chat-icon";
+import { ProfileAvatar } from "@/components/features/default-avatar";
 import {
   GmailIcon,
   LinkedInIcon,
@@ -13,7 +13,6 @@ import {
   type SessionCardData,
 } from "@/components/features/session-card";
 import { ScheduleMeetingButton } from "@/components/features/schedule-meeting-button";
-import { initials } from "@/lib/utils";
 
 interface ProfileRow {
   id: string;
@@ -105,17 +104,15 @@ export default async function AttendeeProfilePage({
     .join(" · ");
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4 pb-12">
+    <div className="mx-auto w-full max-w-2xl space-y-4 pb-12 pt-5 sm:pt-6 lg:pt-8">
       {/* Identity block */}
       <section className="rounded-lg border border-brand-100 bg-white px-6 pb-6 pt-8 text-center">
-        <Avatar className="mx-auto size-24 ring-4 ring-brand-50">
-          {profile.photo_url ? (
-            <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
-          ) : null}
-          <AvatarFallback className="bg-brand-50 text-xl font-semibold text-brand-800">
-            {initials(profile.full_name ?? "?")}
-          </AvatarFallback>
-        </Avatar>
+        <ProfileAvatar
+          photoUrl={profile.photo_url}
+          name={profile.full_name}
+          className="mx-auto size-24"
+          ringClassName="ring-4 ring-brand-50"
+        />
         <h1 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">
           {profile.full_name ?? "Attendee"}
         </h1>
@@ -182,7 +179,7 @@ export default async function AttendeeProfilePage({
       {/* About */}
       {profile.bio ? (
         <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
             About
           </h2>
           <p className="mt-2 whitespace-pre-line text-sm leading-6 text-brand-900">
@@ -194,7 +191,7 @@ export default async function AttendeeProfilePage({
       {/* Areas of interest */}
       {profile.interests?.length ? (
         <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
             Areas of interest
           </h2>
           <div className="mt-3 flex flex-wrap gap-1.5">
@@ -215,7 +212,7 @@ export default async function AttendeeProfilePage({
         <section className="rounded-lg border border-brand-100 bg-white p-5">
           {profile.asks?.length ? (
             <div>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+              <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
                 Looking for
               </h2>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -232,7 +229,7 @@ export default async function AttendeeProfilePage({
           ) : null}
           {profile.offers?.length ? (
             <div className={profile.asks?.length ? "mt-4" : ""}>
-              <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+              <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
                 Can offer
               </h2>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -253,7 +250,7 @@ export default async function AttendeeProfilePage({
       {/* Education */}
       {eduLine ? (
         <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
             Education
           </h2>
           <p className="mt-2 text-sm font-medium text-brand-900">{eduLine}</p>
@@ -263,7 +260,7 @@ export default async function AttendeeProfilePage({
       {/* Speaking at */}
       {speakingAt.length > 0 ? (
         <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
+          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
             Speaking at
           </h2>
           <ul className="mt-3 space-y-3">

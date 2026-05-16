@@ -2,13 +2,12 @@ import Link from "next/link";
 import { ChevronRight, LogOut, Pencil, QrCode, Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OfficeHoursToggle } from "@/components/features/office-hours-toggle";
+import { ProfileAvatar } from "@/components/features/default-avatar";
 import {
   ConnectionsGlyph,
   ShieldChime,
 } from "@/components/features/nav-icons";
-import { initials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -82,19 +81,17 @@ export default async function MePage() {
     profile?.role === "vc" || profile?.role === "alumni";
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-2.5 pb-12 pt-5 lg:pt-8">
+    <div className="mx-auto w-full max-w-2xl space-y-2.5 pb-12 pt-6 sm:pt-7 lg:pt-9">
       {/* Photo + name + card */}
       <section className="rounded-lg border border-brand-100 bg-white px-5 pb-5 pt-6">
         <div className="flex flex-col items-center text-center">
           <div className="relative">
-            <Avatar className="size-24 ring-4 ring-brand-50">
-              {profile?.photo_url ? (
-                <AvatarImage src={profile.photo_url} alt={profile.full_name ?? ""} />
-              ) : null}
-              <AvatarFallback className="bg-brand-50 text-xl font-semibold text-brand-800">
-                {initials(profile?.full_name ?? "You")}
-              </AvatarFallback>
-            </Avatar>
+            <ProfileAvatar
+              photoUrl={profile?.photo_url}
+              name={profile?.full_name ?? "You"}
+              className="size-24"
+              ringClassName="ring-4 ring-brand-50"
+            />
             <Link
               href="/me/edit"
               aria-label="Change profile photo"
@@ -178,7 +175,7 @@ export default async function MePage() {
 
       {showOfficeHours ? (
         <section className="rounded-lg border border-brand-100 bg-white p-4">
-          <h2 className="text-[12px] font-medium text-brand-900/55">
+          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
             Availability
           </h2>
           <div className="mt-2">
