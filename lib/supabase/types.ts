@@ -167,7 +167,7 @@ export interface Venue {
 export interface Sponsor {
   id: string;
   name: string;
-  tier: "title" | "platinum" | "gold" | "silver" | "partner" | string;
+  tier: "title" | "platinum" | "gold" | "silver" | "bronze" | "partner" | string;
   logo_url: string | null;
   description: string | null;
   website: string | null;

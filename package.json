@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "sync-sponsors": "node scripts/sync-sponsors-from-bucket.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

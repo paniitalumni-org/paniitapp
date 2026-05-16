@@ -76,6 +76,31 @@
   to { transform: translateX(-50%); }
 }
 
+@keyframes sponsor-road-rtl {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-33.333%, 0, 0); }
+}
+
+@keyframes sponsor-road-lift {
+  0% {
+    transform: translateY(12px);
+    opacity: 0.72;
+  }
+  18% {
+    transform: translateY(-9px);
+    opacity: 1;
+  }
+  43% {
+    transform: translateY(-9px);
+    opacity: 1;
+  }
+  68%,
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 @keyframes participant-bounce {
   0%   { transform: translateX(110%) translateY(0)   scale(0.92); opacity: 0; }
   18%  { transform: translateX(0%)   translateY(-8px) scale(1.02); opacity: 1; }
@@ -110,6 +135,13 @@
   }
   .animate-marquee-rtl {
     animation: marquee-rtl 35s linear infinite;
+  }
+  .animate-sponsor-road-rtl {
+    animation: sponsor-road-rtl 42s linear infinite;
+  }
+  .animate-sponsor-road-lift {
+    animation: sponsor-road-lift 4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    animation-delay: var(--sponsor-lift-delay, 0s);
   }
   .animate-login-greeting {
     animation: login-greeting 2s cubic-bezier(0.22, 1, 0.36, 1) both;

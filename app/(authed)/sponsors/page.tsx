@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Building } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/features/empty-state";
@@ -11,6 +12,7 @@ interface SponsorRow {
   offer_title: string | null;
   offer_description: string | null;
   booth_number: string | null;
+  logo_url: string | null;
 }
 
 const tierOrder: Record<string, number> = {
@@ -18,7 +20,8 @@ const tierOrder: Record<string, number> = {
   platinum: 1,
   gold: 2,
   silver: 3,
-  partner: 4,
+  bronze: 4,
+  partner: 5,
 };
 
 const tierLabel: Record<string, string> = {
@@ -26,6 +29,7 @@ const tierLabel: Record<string, string> = {
   platinum: "Platinum",
   gold: "Gold",
   silver: "Silver",
+  bronze: "Bronze",
   partner: "Partner",
 };
 
@@ -34,6 +38,7 @@ const tierCard: Record<string, string> = {
   platinum: "border border-slate-300 bg-slate-50",
   gold: "border border-slate-200 bg-white",
   silver: "border border-slate-200 bg-white",
+  bronze: "border border-slate-200 bg-white",
   partner: "border border-slate-100 bg-white",
 };
 
@@ -46,7 +51,7 @@ export default async function SponsorsPage() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("sponsors")
-      .select("id, name, tier, description, offer_title, offer_description, booth_number");
+      .select("id, name, tier, description, offer_title, offer_description, booth_number, logo_url");
     if (error) errored = true;
     sponsors = (data as SponsorRow[] | null) ?? [];
   } catch {
@@ -89,8 +94,21 @@ export default async function SponsorsPage() {
                       href={`/sponsors/${s.id}`}
                       className={`block rounded-lg p-4 transition-colors hover:border-slate-300 ${tierCard[tier] ?? tierCard.partner}`}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
+                      <div className="flex items-start gap-3">
+                        <div className="grid size-14 shrink-0 place-items-center rounded-lg bg-white p-2 ring-1 ring-slate-200">
+                          {s.logo_url ? (
+                            <Image
+                              src={s.logo_url}
+                              alt={s.name}
+                              width={56}
+                              height={56}
+                              className="size-full object-contain"
+                            />
+                          ) : (
+                            <Building className="size-5 text-slate-400" strokeWidth={1.5} />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
                           <div className="text-base font-semibold text-brand-900">{s.name}</div>
                           {s.description ? (
                             <p className="mt-1 text-xs leading-5 text-slate-600 line-clamp-2">{s.description}</p>

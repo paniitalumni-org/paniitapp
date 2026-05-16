@@ -93,6 +93,7 @@ See `DECISIONS.md` for the design choice.
 | `npm run start` | Run the production build |
 | `npm run lint` | Run `next lint` |
 | `npm run generate-icons` | Regenerate `public/icons/*.png` |
+| `npm run sync-sponsors -- --dry-run` | Preview sponsor rows from the `logos` storage bucket folders |
 
 ## File structure (Phase 1)
 

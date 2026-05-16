@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ExternalLink, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +23,7 @@ const tierLabel: Record<string, string> = {
   platinum: "Platinum sponsor",
   gold: "Gold sponsor",
   silver: "Silver sponsor",
+  bronze: "Bronze sponsor",
   partner: "Partner",
 };
 
@@ -52,6 +54,17 @@ export default async function SponsorDetailPage({
   return (
     <div className="mx-auto w-full max-w-3xl pt-5 pb-10 lg:max-w-4xl lg:pt-8 space-y-6">
       <header className="space-y-1">
+        {sponsor.logo_url ? (
+          <div className="mb-4 grid size-24 place-items-center rounded-lg bg-white p-3 ring-1 ring-slate-200">
+            <Image
+              src={sponsor.logo_url}
+              alt={sponsor.name}
+              width={96}
+              height={96}
+              className="size-full object-contain"
+            />
+          </div>
+        ) : null}
         <div className="text-xs font-medium uppercase tracking-wider text-slate-500">
           {tierLabel[sponsor.tier] ?? sponsor.tier}
         </div>

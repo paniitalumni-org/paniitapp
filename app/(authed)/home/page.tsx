@@ -11,8 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { SUMMIT_TZ } from "@/lib/constants";
 import { HeroCarousel } from "./hero-carousel";
-import { KeyParticipantsStrip } from "./key-participants-strip";
-import { PartnersGroups } from "./partners-groups";
+import { SponsorsLink, SponsorsMarquee } from "./sponsors-marquee";
 import { QuickActions } from "./quick-actions";
 
 export const dynamic = "force-dynamic";
@@ -26,25 +25,34 @@ interface CalendarItem {
   href: string;
 }
 
-interface KeyParticipantRow {
-  id: string;
-  full_name: string;
-  designation: string | null;
-  company: string | null;
-  photo_url: string | null;
-}
-
-interface PartnerTypeRow {
+interface SponsorGroupRow {
   id: string;
   name: string;
-  description: string | null;
-  partners: { id: string; name: string; logo_url: string | null; website: string | null }[];
+  sponsors: { id: string; name: string; logo_url: string | null; website: string | null }[];
 }
 
 const SUMMIT_VENUE = "Taj Yeshwantpur, Bengaluru";
 const SUMMIT_DATE_LABEL = "16 May 2026 · 9:00 AM IST";
 const SUMMIT_MAPS_URL =
   "https://www.google.com/maps/dir/?api=1&destination=Taj+Yeshwantpur+Bengaluru";
+
+const sponsorTierOrder: Record<string, number> = {
+  title: 0,
+  platinum: 1,
+  gold: 2,
+  silver: 3,
+  bronze: 4,
+  partner: 5,
+};
+
+const sponsorTierLabel: Record<string, string> = {
+  title: "Title Sponsor",
+  platinum: "Platinum Sponsors",
+  gold: "Gold Sponsors",
+  silver: "Silver Sponsors",
+  bronze: "Bronze Sponsors",
+  partner: "Partners",
+};
 
 const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <LinkedInLogo /> },
@@ -56,8 +64,7 @@ const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
 
 export default async function HomePage() {
   let calendar: CalendarItem[] = [];
-  let participants: KeyParticipantRow[] = [];
-  let partnerGroups: PartnerTypeRow[] = [];
+  let sponsorGroups: SponsorGroupRow[] = [];
 
   try {
     const supabase = await createClient();
@@ -65,7 +72,7 @@ export default async function HomePage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const [meetingsRes, bookmarkRes, kpRes, ptRes] = await Promise.all([
+    const [meetingsRes, bookmarkRes, sponsorsRes] = await Promise.all([
       user
         ? supabase
             .from("meetings")
@@ -83,18 +90,7 @@ export default async function HomePage() {
             )
             .eq("user_id", user.id)
         : Promise.resolve({ data: [] as unknown[] }),
-      supabase
-        .from("key_participants")
-        .select("id, full_name, designation, company, photo_url")
-        .eq("is_published", true)
-        .order("display_order", { ascending: true })
-        .limit(20),
-      supabase
-        .from("partner_types")
-        .select(
-          "id, name, description, display_order, partners(id, name, logo_url, website, display_order, is_published)"
-        )
-        .order("display_order", { ascending: true }),
+      supabase.from("sponsors").select("id, name, tier, logo_url, website"),
     ]);
 
     const acceptedMeetings = (meetingsRes.data ?? []) as Array<{
@@ -160,38 +156,39 @@ export default async function HomePage() {
       })),
     ].sort((a, b) => a.start.localeCompare(b.start));
 
-    participants = (kpRes.data as KeyParticipantRow[] | null) ?? [];
-    partnerGroups = (
-      (ptRes.data as Array<{
+    const sponsors =
+      (sponsorsRes.data as Array<{
         id: string;
         name: string;
-        description: string | null;
-        partners:
-          | Array<{
-              id: string;
-              name: string;
-              logo_url: string | null;
-              website: string | null;
-              display_order: number | null;
-              is_published: boolean | null;
-            }>
-          | null;
-      }> | null) ?? []
-    )
-      .map((t) => ({
-        id: t.id,
-        name: t.name,
-        description: t.description,
-        partners: (t.partners ?? [])
-          .filter((p) => p.is_published !== false)
-          .sort(
-            (a, b) =>
-              (a.display_order ?? 0) - (b.display_order ?? 0) ||
-              a.name.localeCompare(b.name)
-          )
-          .map(({ id, name, logo_url, website }) => ({ id, name, logo_url, website })),
-      }))
-      .filter((g) => g.partners.length > 0);
+        tier: string | null;
+        logo_url: string | null;
+        website: string | null;
+      }> | null) ?? [];
+
+    const byTier = sponsors
+      .sort(
+        (a, b) =>
+          (sponsorTierOrder[a.tier ?? "partner"] ?? 99) -
+            (sponsorTierOrder[b.tier ?? "partner"] ?? 99) ||
+          a.name.localeCompare(b.name)
+      )
+      .reduce<Map<string, typeof sponsors>>((acc, sponsor) => {
+        const tier = sponsor.tier ?? "partner";
+        if (!acc.has(tier)) acc.set(tier, []);
+        acc.get(tier)!.push(sponsor);
+        return acc;
+      }, new Map());
+
+    sponsorGroups = Array.from(byTier.entries()).map(([tier, items]) => ({
+      id: tier,
+      name: sponsorTierLabel[tier] ?? tier,
+      sponsors: items.map(({ id, name, logo_url, website }) => ({
+        id,
+        name,
+        logo_url,
+        website,
+      })),
+    }));
   } catch (err) {
     rethrowIfRedirect(err);
   }
@@ -304,6 +301,19 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Sponsors */}
+      {sponsorGroups.length > 0 ? (
+        <section className="px-4 sm:px-6 lg:px-8">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+              Sponsors
+            </h2>
+            <SponsorsLink />
+          </div>
+          <SponsorsMarquee groups={sponsorGroups} />
+        </section>
+      ) : null}
+
       {/* Live Stream */}
       <section className="px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-lg border border-brand-100 bg-black">
@@ -320,14 +330,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Partners */}
-      {partnerGroups.length > 0 ? (
-        <section className="px-4 sm:px-6 lg:px-8">
-          <SectionHeader title="Our partners" />
-          <PartnersGroups groups={partnerGroups} />
-        </section>
-      ) : null}
 
       {/* Connect with us */}
       <section className="px-4 sm:px-6 lg:px-8">
