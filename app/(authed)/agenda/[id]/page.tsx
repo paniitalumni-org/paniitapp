@@ -376,7 +376,6 @@ function SpeakerCard({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
-              onClick={(e) => e.stopPropagation()}
               className="text-brand-950/85 transition-colors hover:text-brand-950"
             >
               <Linkedin className="size-[15px]" strokeWidth={1.6} />
@@ -388,7 +387,6 @@ function SpeakerCard({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X"
-              onClick={(e) => e.stopPropagation()}
               className="text-brand-950/85 transition-colors hover:text-brand-950"
             >
               <XGlyph className="size-[13px]" />
@@ -398,7 +396,6 @@ function SpeakerCard({
             <a
               href={`mailto:${p.email}`}
               aria-label="Email"
-              onClick={(e) => e.stopPropagation()}
               className="text-brand-950/85 transition-colors hover:text-brand-950"
             >
               <Mail className="size-[15px]" strokeWidth={1.6} />
