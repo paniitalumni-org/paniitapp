@@ -128,13 +128,41 @@ export default async function SessionDetailPage({
     session = (raw as SessionRow | null) ?? null;
     if (!session) notFound();
 
-    const { data: sp } = await supabase
+    // Speakers join — request the full profile shape, but if any of those
+    // columns (email/social) isn't yet in the deployed schema, retry with the
+    // safe subset so featured sessions (which actually have speakers) don't
+    // crash when 0005 / 0006 haven't run.
+    const spFull = await supabase
       .from("session_speakers")
       .select(
         "speaker_id, role, profiles:speaker_id(id, full_name, designation, company, photo_url, linkedin_url, twitter_url, email)"
       )
       .eq("session_id", id);
-    speakers = (sp as unknown as SpeakerRow[] | null) ?? [];
+    if (spFull.error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[agenda detail] speakers full select failed for session",
+        id,
+        spFull.error
+      );
+      const spLite = await supabase
+        .from("session_speakers")
+        .select(
+          "speaker_id, role, profiles:speaker_id(id, full_name, designation, company, photo_url)"
+        )
+        .eq("session_id", id);
+      if (spLite.error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          "[agenda detail] speakers lite select failed for session",
+          id,
+          spLite.error
+        );
+      }
+      speakers = (spLite.data as unknown as SpeakerRow[] | null) ?? [];
+    } else {
+      speakers = (spFull.data as unknown as SpeakerRow[] | null) ?? [];
+    }
 
     if (user) {
       const [bm, ci, prof] = await Promise.all([
@@ -167,7 +195,7 @@ export default async function SessionDetailPage({
     // a transient supabase fetch failure would never surface to the user.
     rethrowIfRedirect(err);
     // eslint-disable-next-line no-console
-    console.error("[agenda detail] data fetch failed", err);
+    console.error("[agenda detail] data fetch failed for session", id, err);
     notFound();
   }
 
