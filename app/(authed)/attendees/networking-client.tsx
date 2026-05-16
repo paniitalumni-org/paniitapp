@@ -105,6 +105,9 @@ export function NetworkingClient({
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [searchInput, setSearchInput] = useState("");
   const [sheetOpen, setSheetOpen] = useState(false);
+  // Total matching the current filter — separate from rows.length, which is
+  // only the number paginated into view so far. Null while it's unknown.
+  const [totalCount, setTotalCount] = useState<number | null>(null);
 
   // Debounce search input into filters.q
   useEffect(() => {
@@ -116,11 +119,18 @@ export function NetworkingClient({
   }, [searchInput]);
 
   const fetchPage = useCallback(
-    async (offset: number, f: Filters): Promise<AttendeeRow[]> => {
+    async (
+      offset: number,
+      f: Filters
+    ): Promise<{ rows: AttendeeRow[]; total: number | null }> => {
+      // Ask Postgres for the exact total alongside the rows so the count we
+      // show reflects everyone matching the filter — not just the page that's
+      // been paginated into view.
       let q = supabase
         .from("profiles")
         .select(
-          "id, full_name, designation, company, role, iit_campus, graduation_year, interests, photo_url, linkedin_url, twitter_url, available_for_meetings, office_hours_enabled"
+          "id, full_name, designation, company, role, iit_campus, graduation_year, interests, photo_url, linkedin_url, twitter_url, available_for_meetings, office_hours_enabled",
+          { count: "exact" }
         )
         .order("full_name", { ascending: true, nullsFirst: false })
         .range(offset, offset + PAGE_SIZE - 1);
@@ -139,8 +149,11 @@ export function NetworkingClient({
       if (f.availableOnly)
         q = q.or("available_for_meetings.eq.true,office_hours_enabled.eq.true");
 
-      const { data } = await q;
-      return (data as AttendeeRow[] | null) ?? [];
+      const { data, count } = await q;
+      return {
+        rows: (data as AttendeeRow[] | null) ?? [],
+        total: count ?? null,
+      };
     },
     [supabase]
   );
@@ -154,8 +167,9 @@ export function NetworkingClient({
       setLoading(true);
       const page = await fetchPage(0, filters);
       if (cancelled) return;
-      setRows(page);
-      setDone(page.length < PAGE_SIZE);
+      setRows(page.rows);
+      setTotalCount(page.total);
+      setDone(page.rows.length < PAGE_SIZE);
       setLoading(false);
     })();
     return () => {
@@ -212,8 +226,9 @@ export function NetworkingClient({
         if (!entries[0]?.isIntersecting) return;
         setLoading(true);
         const page = await fetchPage(rows.length, filters);
-        setRows((prev) => [...prev, ...page]);
-        if (page.length < PAGE_SIZE) setDone(true);
+        setRows((prev) => [...prev, ...page.rows]);
+        setTotalCount(page.total);
+        if (page.rows.length < PAGE_SIZE) setDone(true);
         setLoading(false);
       },
       { rootMargin: "400px 0px" }
@@ -318,12 +333,20 @@ export function NetworkingClient({
         </div>
       ) : null}
 
-      {/* Count */}
+      {/* Count — for the People tab we show the full filter total (which can
+          be much larger than visible.length while the user is still scrolling
+          to load more pages). Connections tab loads everyone up front, so
+          visible.length is already the truth. */}
       <div className="mb-2 flex items-baseline justify-between">
         <p className="text-xs font-medium text-brand-800/75">
-          {loading
-            ? "Searching…"
-            : `${visible.length} ${visible.length === 1 ? "person" : "people"}`}
+          {(() => {
+            if (loading && visible.length === 0) return "Searching…";
+            const count =
+              tab === "people"
+                ? totalCount ?? visible.length
+                : visible.length;
+            return `${count.toLocaleString()} ${count === 1 ? "person" : "people"}`;
+          })()}
         </p>
         {tab === "people" && (filters.role || extraCount > 0 || filters.q) ? (
           <button
