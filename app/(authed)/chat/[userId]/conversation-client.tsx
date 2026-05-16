@@ -9,7 +9,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { ArrowLeft, Check, CheckCheck, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { sendMessage } from "@/app/actions/send-message";
@@ -362,15 +362,30 @@ export function ConversationView({
           type="submit"
           disabled={pending || !draft.trim()}
           aria-label="Send"
-          className="inline-grid size-10 shrink-0 place-items-center rounded-full bg-brand-800 text-white transition-colors hover:bg-brand-900 disabled:opacity-50"
+          className="inline-grid size-11 shrink-0 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_6px_18px_-8px_rgba(37,211,102,0.6)] transition-all hover:scale-[1.03] hover:bg-[#1FBA5A] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? (
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-[18px] animate-spin" />
           ) : (
-            <Send className="size-4" strokeWidth={1.8} />
+            <WhatsAppSend className="size-[20px]" />
           )}
         </button>
       </form>
     </div>
+  );
+}
+
+// Filled paper-plane glyph — same shape WhatsApp's send button uses.
+function WhatsAppSend({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <path d="M2.5 21 22 12 2.5 3 2.5 10.5 16 12 2.5 13.5z" />
+    </svg>
   );
 }
