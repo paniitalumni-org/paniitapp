@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, MapPin } from "lucide-react";
@@ -106,23 +107,17 @@ function LinkedInGlyph({ className }: { className?: string }) {
   );
 }
 
-// Official-style Gmail mark: white envelope, red M peak, green left strip,
-// yellow right strip, blue back panel. Reads as the Gmail icon without
-// being a one-to-one trademark trace.
 function GmailGlyph({ className }: { className?: string }) {
+  // Static asset (public/icons/gmail.png) used so the icon matches the
+  // official Gmail mark byte-for-byte.
   return (
-    <svg
-      viewBox="0 0 32 24"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-      className={className}
-    >
-      <rect width="32" height="24" rx="3" fill="#ffffff" />
-      <path d="M0 3 V21 a3 3 0 0 0 3 3 H5 V8 L0 3 Z" fill="#34A853" />
-      <path d="M32 3 V21 a3 3 0 0 1 -3 3 H27 V8 L32 3 Z" fill="#FBBC04" />
-      <path d="M5 8 V21 a3 3 0 0 0 3 3 H24 a3 3 0 0 0 3 -3 V8 L16 16 Z" fill="#4285F4" />
-      <path d="M0 3 L16 14 L32 3 V6 L16 17 L0 6 Z" fill="#EA4335" />
-    </svg>
+    <Image
+      src="/icons/gmail.png"
+      alt=""
+      width={48}
+      height={36}
+      className={className ?? "h-[18px] w-auto"}
+    />
   );
 }
 
@@ -252,7 +247,7 @@ export default async function SessionDetailPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-10 pt-5 sm:px-5 lg:max-w-4xl lg:px-0 lg:pt-7">
       <Card className="border-brand-100">
-        <CardContent className="flex flex-col gap-3.5 p-4">
+        <CardContent className="flex flex-col gap-3 p-3.5">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge
               variant="outline"
@@ -359,12 +354,12 @@ export default async function SessionDetailPage({
 
       {session.description ? (
         <Card className="border-brand-100">
-          <CardHeader className="px-4 pb-2 pt-4">
+          <CardHeader className="px-3.5 pb-1.5 pt-3.5">
             <CardTitle className="text-[16px] font-bold text-brand-950">
               About this session
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
+          <CardContent className="px-3.5 pb-3.5 pt-0">
             <p className="whitespace-pre-line text-[14px] leading-7 text-brand-900">
               {session.description}
             </p>
@@ -374,12 +369,12 @@ export default async function SessionDetailPage({
 
       {speakers.length > 0 ? (
         <Card className="border-brand-100">
-          <CardHeader className="px-4 pb-3 pt-4">
+          <CardHeader className="px-3.5 pb-2.5 pt-3.5">
             <CardTitle className="text-[16px] font-bold text-brand-950">
               Speakers
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
+          <CardContent className="px-3.5 pb-3.5 pt-0">
             <ul className="grid gap-2.5 sm:grid-cols-2">
               {speakers
                 .map((s) => ({ id: s.speaker_id, role: s.role, p: speakerOf(s) }))
@@ -483,7 +478,7 @@ function SpeakerCard({
                   aria-label="Email"
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
-                  <GmailGlyph className="h-[18px] w-[24px]" />
+                  <GmailGlyph className="h-[18px] w-auto" />
                 </a>
               ) : null}
             </div>
