@@ -175,7 +175,7 @@ export default async function ExhibitorDetailPage({
 }
 
 function TeamRow({ t }: { t: TeamRow }) {
-  const body = (
+  const identity = (
     <>
       <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
         {t.photo_url ? <AvatarImage src={t.photo_url} alt={t.full_name} /> : null}
@@ -193,50 +193,55 @@ function TeamRow({ t }: { t: TeamRow }) {
           </div>
         ) : null}
       </div>
-      <div className="ml-1 flex shrink-0 items-center gap-1">
-        {t.linkedin_url ? (
-          <a
-            href={t.linkedin_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
-          >
-            <Linkedin className="size-[14px]" strokeWidth={1.8} />
-          </a>
-        ) : null}
-        {t.email ? (
-          <a
-            href={`mailto:${t.email}`}
-            aria-label="Email"
-            onClick={(e) => e.stopPropagation()}
-            className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
-          >
-            <Mail className="size-[14px]" strokeWidth={1.8} />
-          </a>
-        ) : null}
-      </div>
     </>
   );
 
-  // If the team member is a linked attendee, the whole row becomes a profile link.
-  // Otherwise it's just the visual row with a (disabled) schedule-meeting placeholder.
+  const socials = (
+    <div className="ml-1 flex shrink-0 items-center gap-1">
+      {t.linkedin_url ? (
+        <a
+          href={t.linkedin_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+          className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
+        >
+          <Linkedin className="size-[14px]" strokeWidth={1.8} />
+        </a>
+      ) : null}
+      {t.email ? (
+        <a
+          href={`mailto:${t.email}`}
+          aria-label="Email"
+          className="inline-grid size-8 place-items-center rounded-full border border-brand-100 text-brand-800 hover:bg-brand-50"
+        >
+          <Mail className="size-[14px]" strokeWidth={1.8} />
+        </a>
+      ) : null}
+    </div>
+  );
+
+  // If the team member is a linked attendee, the identity area becomes a
+  // profile link. The social icons stay outside the Link so we never nest
+  // <a> in <a> (and server-component onClick handlers aren't needed to stop
+  // propagation — they'd break the RSC render anyway).
   return t.profile_id ? (
     <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-white p-3">
       <Link
         href={`/attendees/${t.profile_id}`}
-        className="flex flex-1 items-center gap-3 hover:opacity-90"
+        className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-90"
       >
-        {body}
+        {identity}
       </Link>
+      {socials}
       <div className="hidden sm:block">
         <ScheduleMeetingButton inviteeId={t.profile_id} />
       </div>
     </div>
   ) : (
     <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-white p-3">
-      {body}
+      {identity}
+      {socials}
     </div>
   );
 }
