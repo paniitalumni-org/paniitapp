@@ -1,111 +1,85 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import type { CSSProperties } from "react";
-import { Building2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
-interface SponsorCard {
-  id: string;
+export interface SponsorTier {
+  /** Folder name (e.g. "Title Sponsor") used as the visible heading. */
   name: string;
-  logo_url: string | null;
-  website: string | null;
+  /** Public URLs of the tier's logo files. Order = display cycle order. */
+  logos: string[];
 }
 
-interface SponsorGroup {
-  id: string;
-  name: string;
-  sponsors: SponsorCard[];
-}
-
-export function SponsorsMarquee({ groups }: { groups: SponsorGroup[] }) {
+export function SponsorsBoard({ tiers }: { tiers: SponsorTier[] }) {
+  if (tiers.length === 0) return null;
   return (
-    <div className="flex flex-col gap-5">
-      {groups.map((group) => (
-        <div key={group.id} className="flex flex-col gap-2">
-          <h3 className="text-[12px] font-semibold tracking-tight text-brand-900">
-            {group.name}
-          </h3>
-          <SponsorRow sponsors={group.sponsors} />
-        </div>
+    <div className="flex flex-col gap-3">
+      {tiers.map((tier) => (
+        <SponsorTierBlock key={tier.name} tier={tier} />
       ))}
     </div>
   );
 }
 
-function SponsorRow({ sponsors }: { sponsors: SponsorCard[] }) {
-  const stream = [...sponsors, ...sponsors, ...sponsors];
-
+function SponsorTierBlock({ tier }: { tier: SponsorTier }) {
+  if (tier.logos.length === 0) return null;
   return (
-    <div className="overflow-hidden py-1">
-      <div className="flex w-max animate-sponsor-road-rtl gap-3 pr-3">
-        {stream.map((sponsor, index) => (
-          <SponsorTile
-            key={`${sponsor.id}-${index}`}
-            sponsor={sponsor}
-            liftDelay={`${(index % sponsors.length) * 0.18}s`}
-          />
-        ))}
+    <section className="rounded-lg border border-brand-100 bg-white p-4">
+      <div className="flex items-center gap-2.5">
+        <span
+          className="block h-5 w-[3px] rounded-full bg-brand-800"
+          aria-hidden
+        />
+        <h3 className="text-[13px] font-semibold tracking-tight text-brand-950">
+          {tier.name}
+        </h3>
       </div>
-    </div>
+      <div className="mt-3">
+        <StepMarquee logos={tier.logos} />
+      </div>
+    </section>
   );
 }
 
-function SponsorTile({
-  sponsor,
-  liftDelay,
-}: {
-  sponsor: SponsorCard;
-  liftDelay: string;
-}) {
-  const tile = (
+// One logo visible at a time. Holds ~1s rest + ~0.4s crossfade then
+// advances to the next; loops seamlessly because the index wraps with
+// modulo (no DOM remount, just opacity transitions).
+function StepMarquee({ logos }: { logos: string[] }) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (logos.length <= 1) return;
+    const id = window.setInterval(() => {
+      setActive((c) => (c + 1) % logos.length);
+    }, 1400);
+    return () => window.clearInterval(id);
+  }, [logos.length]);
+
+  return (
     <div
-      className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-lg bg-white p-3 shadow-sm ring-1 ring-brand-100 sm:size-28"
-      style={{ "--sponsor-lift-delay": liftDelay } as CSSProperties}
+      className="relative mx-auto h-20 w-full max-w-[220px] sm:h-24 sm:max-w-[260px]"
+      aria-label="Sponsor logo"
     >
-      <div className="grid size-full animate-sponsor-road-lift place-items-center">
-        {sponsor.logo_url ? (
+      {logos.map((url, idx) => (
+        <div
+          key={url}
+          className={cn(
+            "absolute inset-0 flex items-center justify-center transition-opacity duration-500 ease-out",
+            idx === active ? "opacity-100" : "opacity-0"
+          )}
+        >
           <Image
-            src={sponsor.logo_url}
-            alt={sponsor.name}
-            width={112}
-            height={112}
-            className="size-full object-contain"
+            src={url}
+            alt=""
+            width={320}
+            height={160}
+            unoptimized
+            sizes="(max-width: 640px) 220px, 260px"
+            className="max-h-full max-w-full object-contain"
           />
-        ) : (
-          <div className="flex flex-col items-center gap-1 text-center">
-            <Building2 className="size-5 text-brand-800/65" strokeWidth={1.5} />
-            <span className="text-[10px] font-semibold leading-tight text-brand-900/85">
-              {sponsor.name}
-            </span>
-          </div>
-        )}
-      </div>
+        </div>
+      ))}
     </div>
-  );
-
-  if (!sponsor.website) return tile;
-
-  return (
-    <a
-      href={sponsor.website}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={sponsor.name}
-      className="transition-opacity hover:opacity-85"
-    >
-      {tile}
-    </a>
-  );
-}
-
-export function SponsorsLink() {
-  return (
-    <Link
-      href="/sponsors"
-      className="text-[12px] font-semibold text-brand-800 hover:text-brand-900"
-    >
-      View all
-    </Link>
   );
 }

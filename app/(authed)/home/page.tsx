@@ -11,8 +11,17 @@ import { createClient } from "@/lib/supabase/server";
 import { rethrowIfRedirect } from "@/lib/redirect";
 import { SUMMIT_TZ } from "@/lib/constants";
 import { HeroCarousel } from "./hero-carousel";
-import { SponsorsLink, SponsorsMarquee } from "./sponsors-marquee";
+import { SponsorsBoard, type SponsorTier } from "./sponsors-marquee";
 import { QuickActions } from "./quick-actions";
+
+const LOGO_BUCKET = "LOGOS";
+// Folder name in storage = visible tier heading. Order = display order.
+const SPONSOR_TIER_FOLDERS = [
+  "Title Sponsor",
+  "Gold Sponsor",
+  "Silver Sponsor",
+  "Bronze Sponsor",
+] as const;
 
 export const dynamic = "force-dynamic";
 
@@ -25,34 +34,10 @@ interface CalendarItem {
   href: string;
 }
 
-interface SponsorGroupRow {
-  id: string;
-  name: string;
-  sponsors: { id: string; name: string; logo_url: string | null; website: string | null }[];
-}
-
 const SUMMIT_VENUE = "Taj Yeshwantpur, Bengaluru";
 const SUMMIT_DATE_LABEL = "16 May 2026 · 9:00 AM IST";
 const SUMMIT_MAPS_URL =
   "https://www.google.com/maps/dir/?api=1&destination=Taj+Yeshwantpur+Bengaluru";
-
-const sponsorTierOrder: Record<string, number> = {
-  title: 0,
-  platinum: 1,
-  gold: 2,
-  silver: 3,
-  bronze: 4,
-  partner: 5,
-};
-
-const sponsorTierLabel: Record<string, string> = {
-  title: "Title Sponsor",
-  platinum: "Platinum Sponsors",
-  gold: "Gold Sponsors",
-  silver: "Silver Sponsors",
-  bronze: "Bronze Sponsors",
-  partner: "Partners",
-};
 
 const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "https://www.linkedin.com/company/paniit-alumni-india", label: "LinkedIn", icon: <LinkedInLogo /> },
@@ -64,7 +49,7 @@ const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
 
 export default async function HomePage() {
   let calendar: CalendarItem[] = [];
-  let sponsorGroups: SponsorGroupRow[] = [];
+  let sponsorTiers: SponsorTier[] = [];
 
   try {
     const supabase = await createClient();
@@ -72,7 +57,34 @@ export default async function HomePage() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const [meetingsRes, bookmarkRes, sponsorsRes] = await Promise.all([
+    const sponsorListings = await Promise.all(
+      SPONSOR_TIER_FOLDERS.map((folder) =>
+        supabase.storage
+          .from(LOGO_BUCKET)
+          .list(folder, { limit: 100, sortBy: { column: "name", order: "asc" } })
+          .then((res) => ({ folder, data: res.data ?? [] }))
+      )
+    );
+    sponsorTiers = sponsorListings
+      .map(({ folder, data }) => {
+        const logos = data
+          .filter(
+            (item) =>
+              !!item.name &&
+              !item.name.startsWith(".") &&
+              /\.(png|jpe?g|webp|svg|avif|gif)$/i.test(item.name)
+          )
+          .map((item) => {
+            const { data: pub } = supabase.storage
+              .from(LOGO_BUCKET)
+              .getPublicUrl(`${folder}/${item.name}`);
+            return pub.publicUrl;
+          });
+        return { name: folder, logos };
+      })
+      .filter((tier) => tier.logos.length > 0);
+
+    const [meetingsRes, bookmarkRes] = await Promise.all([
       user
         ? supabase
             .from("meetings")
@@ -90,7 +102,6 @@ export default async function HomePage() {
             )
             .eq("user_id", user.id)
         : Promise.resolve({ data: [] as unknown[] }),
-      supabase.from("sponsors").select("id, name, tier, logo_url, website"),
     ]);
 
     const acceptedMeetings = (meetingsRes.data ?? []) as Array<{
@@ -156,39 +167,6 @@ export default async function HomePage() {
       })),
     ].sort((a, b) => a.start.localeCompare(b.start));
 
-    const sponsors =
-      (sponsorsRes.data as Array<{
-        id: string;
-        name: string;
-        tier: string | null;
-        logo_url: string | null;
-        website: string | null;
-      }> | null) ?? [];
-
-    const byTier = sponsors
-      .sort(
-        (a, b) =>
-          (sponsorTierOrder[a.tier ?? "partner"] ?? 99) -
-            (sponsorTierOrder[b.tier ?? "partner"] ?? 99) ||
-          a.name.localeCompare(b.name)
-      )
-      .reduce<Map<string, typeof sponsors>>((acc, sponsor) => {
-        const tier = sponsor.tier ?? "partner";
-        if (!acc.has(tier)) acc.set(tier, []);
-        acc.get(tier)!.push(sponsor);
-        return acc;
-      }, new Map());
-
-    sponsorGroups = Array.from(byTier.entries()).map(([tier, items]) => ({
-      id: tier,
-      name: sponsorTierLabel[tier] ?? tier,
-      sponsors: items.map(({ id, name, logo_url, website }) => ({
-        id,
-        name,
-        logo_url,
-        website,
-      })),
-    }));
   } catch (err) {
     rethrowIfRedirect(err);
   }
@@ -302,15 +280,12 @@ export default async function HomePage() {
       </section>
 
       {/* Sponsors */}
-      {sponsorGroups.length > 0 ? (
+      {sponsorTiers.length > 0 ? (
         <section className="px-4 sm:px-6 lg:px-8">
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
-              Sponsors
-            </h2>
-            <SponsorsLink />
-          </div>
-          <SponsorsMarquee groups={sponsorGroups} />
+          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
+            Sponsors
+          </h2>
+          <SponsorsBoard tiers={sponsorTiers} />
         </section>
       ) : null}
 
