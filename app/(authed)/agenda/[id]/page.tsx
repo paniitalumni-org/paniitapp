@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Linkedin, Mail, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookmarkButton } from "@/components/features/bookmark-button";
 import { QaSection } from "@/components/features/qa/qa-section";
@@ -160,7 +161,13 @@ export default async function SessionDetailPage({
       userInterests =
         ((prof.data as { interests: string[] | null } | null)?.interests) ?? [];
     }
-  } catch {
+  } catch (err) {
+    // Re-throw Next's internal signals (NOT_FOUND/REDIRECT). Otherwise we
+    // would turn an intentional notFound() into a generic server error, and
+    // a transient supabase fetch failure would never surface to the user.
+    rethrowIfRedirect(err);
+    // eslint-disable-next-line no-console
+    console.error("[agenda detail] data fetch failed", err);
     notFound();
   }
 
@@ -282,7 +289,7 @@ export default async function SessionDetailPage({
                   id: string;
                   role: SpeakerRow["role"];
                   p: SpeakerProfile;
-                } => !!s.p
+                } => !!s.p && !!s.p.id
               )
               .map((s) => (
                 <SpeakerCard key={s.id} p={s.p} role={s.role} />

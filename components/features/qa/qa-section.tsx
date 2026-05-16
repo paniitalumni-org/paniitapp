@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { rethrowIfRedirect } from "@/lib/redirect";
 import { QaClient, type QuestionRow, type ReplyRow } from "./qa-client";
 
 export async function QaSection({ sessionId }: { sessionId: string }) {
@@ -77,8 +78,14 @@ export async function QaSection({ sessionId }: { sessionId: string }) {
       const r = (prof.data as { role: string | null } | null)?.role;
       isMod = r === "organizer" || r === "admin";
     }
-  } catch {
-    // Degrade silently — the QA UI will render an empty state rather than
+  } catch (err) {
+    // Re-throw Next's internal NOT_FOUND / REDIRECT signals — silently
+    // swallowing them surfaces as the generic "Server Components render
+    // error" overlay further up the tree.
+    rethrowIfRedirect(err);
+    // eslint-disable-next-line no-console
+    console.error("[qa section] data fetch failed", err);
+    // Otherwise degrade: render the QA UI in its empty state rather than
     // tearing down the whole session detail page.
   }
 
