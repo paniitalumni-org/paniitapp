@@ -106,19 +106,22 @@ function LinkedInGlyph({ className }: { className?: string }) {
   );
 }
 
-function MailGlyph({ className }: { className?: string }) {
+// Official-style Gmail mark: white envelope, red M peak, green left strip,
+// yellow right strip, blue back panel. Reads as the Gmail icon without
+// being a one-to-one trademark trace.
+function GmailGlyph({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="0 0 32 24"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
       className={className}
     >
-      <rect width="24" height="24" rx="4" fill="#EA4335" />
-      <path
-        fill="#fff"
-        d="M6 8.5a1.5 1.5 0 011.5-1.5h9A1.5 1.5 0 0118 8.5v7a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 016 15.5v-7zm1.7-.1l4.3 3.6 4.3-3.6H7.7zm8.8.96l-4.13 3.46a.6.6 0 01-.74 0L7.5 9.36V15.5h9V9.36z"
-      />
+      <rect width="32" height="24" rx="3" fill="#ffffff" />
+      <path d="M0 3 V21 a3 3 0 0 0 3 3 H5 V8 L0 3 Z" fill="#34A853" />
+      <path d="M32 3 V21 a3 3 0 0 1 -3 3 H27 V8 L32 3 Z" fill="#FBBC04" />
+      <path d="M5 8 V21 a3 3 0 0 0 3 3 H24 a3 3 0 0 0 3 -3 V8 L16 16 Z" fill="#4285F4" />
+      <path d="M0 3 L16 14 L32 3 V6 L16 17 L0 6 Z" fill="#EA4335" />
     </svg>
   );
 }
@@ -249,11 +252,11 @@ export default async function SessionDetailPage({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 pb-10 pt-5 sm:px-5 lg:max-w-4xl lg:px-0 lg:pt-7">
       <Card className="border-brand-100">
-        <CardContent className="flex flex-col gap-4 p-5">
+        <CardContent className="flex flex-col gap-3.5 p-4">
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge
               variant="outline"
-              className="gap-1.5 border-brand-100 bg-brand-50 text-brand-800"
+              className="gap-1.5 rounded-[4px] border-brand-100 bg-brand-50 text-brand-800"
             >
               <span
                 className="inline-block size-1.5 rounded-full"
@@ -263,14 +266,17 @@ export default async function SessionDetailPage({
               {TRACK_LABELS[track] ?? track}
             </Badge>
             {session.is_featured ? (
-              <Badge variant="outline" className="border-iit-200 bg-white text-iit-600">
+              <Badge
+                variant="outline"
+                className="rounded-[4px] border-iit-200 bg-white text-iit-600"
+              >
                 Featured
               </Badge>
             ) : null}
             {matches.length > 0 ? (
               <Badge
                 variant="outline"
-                className="border-emerald-300 bg-white text-emerald-700"
+                className="rounded-[4px] border-emerald-300 bg-white text-emerald-700"
               >
                 Recommended
               </Badge>
@@ -353,12 +359,12 @@ export default async function SessionDetailPage({
 
       {session.description ? (
         <Card className="border-brand-100">
-          <CardHeader className="px-5 pb-2 pt-5">
+          <CardHeader className="px-4 pb-2 pt-4">
             <CardTitle className="text-[16px] font-bold text-brand-950">
               About this session
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <p className="whitespace-pre-line text-[14px] leading-7 text-brand-900">
               {session.description}
             </p>
@@ -368,12 +374,12 @@ export default async function SessionDetailPage({
 
       {speakers.length > 0 ? (
         <Card className="border-brand-100">
-          <CardHeader className="px-5 pb-3 pt-5">
+          <CardHeader className="px-4 pb-3 pt-4">
             <CardTitle className="text-[16px] font-bold text-brand-950">
               Speakers
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0">
+          <CardContent className="px-4 pb-4 pt-0">
             <ul className="grid gap-2.5 sm:grid-cols-2">
               {speakers
                 .map((s) => ({ id: s.speaker_id, role: s.role, p: speakerOf(s) }))
@@ -415,9 +421,9 @@ function SpeakerCard({
 }) {
   const hasSocial = !!(p.linkedin_url || p.twitter_url || p.email);
   return (
-    <li className="rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
-      <div className="flex items-start gap-3">
-        <Avatar className="size-12 shrink-0 ring-1 ring-brand-100">
+    <li className="min-w-0 overflow-hidden rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
+      <div className="flex min-w-0 items-start gap-3">
+        <Avatar className="size-11 shrink-0 ring-1 ring-brand-100">
           {p.photo_url ? (
             <AvatarImage src={p.photo_url} alt={p.full_name ?? ""} />
           ) : null}
@@ -442,7 +448,7 @@ function SpeakerCard({
             </Link>
             <Badge
               variant="outline"
-              className="shrink-0 border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-brand-800"
+              className="shrink-0 rounded-[4px] border-brand-100 bg-brand-50 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-brand-800"
             >
               {speakerRoleLabel(role)}
             </Badge>
@@ -477,7 +483,7 @@ function SpeakerCard({
                   aria-label="Email"
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
-                  <MailGlyph className="size-[18px] rounded" />
+                  <GmailGlyph className="h-[18px] w-[24px]" />
                 </a>
               ) : null}
             </div>
