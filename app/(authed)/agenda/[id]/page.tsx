@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, MapPin } from "lucide-react";
@@ -104,20 +103,6 @@ function LinkedInGlyph({ className }: { className?: string }) {
         d="M7.5 9.5h2.4v8.1H7.5V9.5zm1.2-3.6a1.4 1.4 0 110 2.8 1.4 1.4 0 010-2.8zm3 3.6h2.3v1.1h.03c.32-.6 1.1-1.24 2.27-1.24 2.43 0 2.88 1.6 2.88 3.68v4.55h-2.4v-4.04c0-.96-.02-2.2-1.34-2.2-1.34 0-1.54 1.05-1.54 2.13v4.11h-2.4V9.5z"
       />
     </svg>
-  );
-}
-
-function GmailGlyph({ className }: { className?: string }) {
-  // Static asset (public/icons/gmail.png) used so the icon matches the
-  // official Gmail mark byte-for-byte.
-  return (
-    <Image
-      src="/icons/gmail.png"
-      alt=""
-      width={48}
-      height={36}
-      className={className ?? "h-[18px] w-auto"}
-    />
   );
 }
 
@@ -414,7 +399,9 @@ function SpeakerCard({
   p: SpeakerProfile;
   role: SpeakerRow["role"];
 }) {
-  const hasSocial = !!(p.linkedin_url || p.twitter_url || p.email);
+  // Speakers only expose LinkedIn / X here — direct email isn't surfaced
+  // on the agenda detail by request, even if the profile has one.
+  const hasSocial = !!(p.linkedin_url || p.twitter_url);
   return (
     <li className="min-w-0 overflow-hidden rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30">
       <div className="flex min-w-0 items-start gap-3">
@@ -470,15 +457,6 @@ function SpeakerCard({
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
                   <XGlyph className="size-[16px]" />
-                </a>
-              ) : null}
-              {p.email ? (
-                <a
-                  href={`mailto:${p.email}`}
-                  aria-label="Email"
-                  className="inline-flex transition-opacity hover:opacity-80"
-                >
-                  <GmailGlyph className="h-[18px] w-auto" />
                 </a>
               ) : null}
             </div>
