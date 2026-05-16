@@ -2,19 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  CalendarDays,
-  Store,
-  CalendarClock,
-} from "lucide-react";
-import { GlobeRays } from "./nav-icons";
+import { Mic, Store, CalendarClock } from "lucide-react";
+import { NetworkNodes, PremiumHouse } from "./nav-icons";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/attendees", label: "Networking", icon: GlobeRays },
+  { href: "/home", label: "Home", icon: PremiumHouse },
+  { href: "/agenda", label: "Agenda", icon: Mic },
+  { href: "/attendees", label: "Networking", icon: NetworkNodes },
   { href: "/exhibitors", label: "Exhibitors", icon: Store },
   { href: "/meetings", label: "Meetings", icon: CalendarClock },
 ] as const;

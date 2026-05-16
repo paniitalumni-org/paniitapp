@@ -283,13 +283,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Sponsors */}
-      {sponsorTiers.length > 0 ? (
-        <section className="px-4 sm:px-6 lg:px-8">
-          <SponsorsBoard tiers={sponsorTiers} />
-        </section>
-      ) : null}
-
       {/* Live Stream */}
       <section className="px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-lg border border-brand-100 bg-black">
@@ -306,6 +299,13 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Sponsors */}
+      {sponsorTiers.length > 0 ? (
+        <section className="px-4 sm:px-6 lg:px-8">
+          <SponsorsBoard tiers={sponsorTiers} />
+        </section>
+      ) : null}
 
       {/* Connect with us */}
       <section className="px-4 sm:px-6 lg:px-8">

@@ -7,6 +7,55 @@ interface IconProps {
   strokeWidth?: number;
 }
 
+// Pitched roof house with a soft window — used for the Home tab.
+// Same stroke vocabulary as the rest of the custom set.
+export function PremiumHouse({ className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="M3.5 11.3 12 4l8.5 7.3" />
+      <path d="M5.4 10v9.2c0 .5.4.9.9.9h11.4c.5 0 .9-.4.9-.9V10" />
+      <path d="M10 20.1V14h4v6.1" />
+    </svg>
+  );
+}
+
+// Connected nodes radiating from a central hub — used for Networking.
+// Cleaner geometry than the previous "globe + rays" mash so it doesn't
+// read as a generic loading spinner / wifi sign.
+export function NetworkNodes({ className, strokeWidth = 1.6 }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <circle cx="12" cy="12" r="2.4" />
+      <circle cx="4.2" cy="5.2" r="1.7" />
+      <circle cx="19.8" cy="5.2" r="1.7" />
+      <circle cx="4.2" cy="18.8" r="1.7" />
+      <circle cx="19.8" cy="18.8" r="1.7" />
+      <path d="M5.6 6.4 10 10.4" />
+      <path d="M18.4 6.4 14 10.4" />
+      <path d="M5.6 17.6 10 13.6" />
+      <path d="M18.4 17.6 14 13.6" />
+    </svg>
+  );
+}
+
 // Globe with four rays — used for the Networking tab + similar callouts.
 export function GlobeRays({ className, strokeWidth = 1.6 }: IconProps) {
   return (
