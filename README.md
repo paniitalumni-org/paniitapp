@@ -45,12 +45,12 @@ VAPID_SUBJECT=mailto:tech@paniit.org
 
 The service-role key is **server-only** and never reaches the client bundle. It's used by `lib/supabase/server.ts → createServiceRoleClient()` solely inside server actions and route handlers.
 
-For Google sign-in, configure the OAuth client in Google Cloud Console with:
+For direct app-domain Google sign-in, configure the OAuth client in Google Cloud Console with:
 
 - Authorized JavaScript origin: `https://app.blr.paniit.space`
 - Authorized redirect URI: `https://app.blr.paniit.space/auth/google/callback`
 
-The app handles the Google authorization-code callback directly on the site domain, then creates the existing server-side Supabase session so `auth.getUser()` and profile RLS keep working.
+If `GOOGLE_CLIENT_SECRET` is left only inside Supabase Auth provider settings, the app falls back to Supabase's configured Google provider. In that mode, keep Google Cloud Console pointed at `https://fncnndrexzmqqengbkvi.supabase.co/auth/v1/callback` and allow `https://app.blr.paniit.space/auth/callback` in Supabase Auth redirect URLs.
 
 ## Migrations
 
@@ -73,14 +73,15 @@ After importing, run migration `0002_email_unique.sql` if it hasn't been run yet
 
 ## Auth: app-domain Google sign-in
 
-Current sign-in uses a first-party Google authorization-code flow:
+Current sign-in supports two Google flows:
 
 1. User opens the app → lands on `/` (the sign-in page).
 2. User clicks **Continue with Google** → app redirects to Google from `/auth/google/start`.
-3. Google redirects back to `https://app.blr.paniit.space/auth/google/callback`.
-4. The callback exchanges the code server-side, creates the existing Supabase SSR session, syncs the profile row by `auth.uid()`, and redirects to onboarding or `/home`.
+3. If `GOOGLE_CLIENT_SECRET` is configured on the app, Google redirects back to `https://app.blr.paniit.space/auth/google/callback`.
+4. If the secret is only configured in Supabase, `/auth/google/start` uses Supabase's Google provider and returns through `/auth/callback`.
+5. The callback creates the existing Supabase SSR session, syncs the profile row by `auth.uid()`, and redirects to onboarding or `/home`.
 
-Supabase still stores the session and powers RLS, but the OAuth handshake and redirect URI are owned by the app domain.
+Supabase still stores the session and powers RLS in both modes.
 
 See `DECISIONS.md` for the design choice.
 
