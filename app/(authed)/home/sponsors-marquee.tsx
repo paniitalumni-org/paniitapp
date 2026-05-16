@@ -104,14 +104,21 @@ function SponsorSlider({ logos }: { logos: string[] }) {
             key={`${url}-${i}`}
             className="flex h-full w-full shrink-0 items-center justify-center px-6 sm:px-10"
           >
-            <Image
-              src={url}
-              alt=""
-              width={320}
-              height={160}
-              unoptimized
-              className="max-h-10 w-auto max-w-full object-contain sm:max-h-12"
-            />
+            {/* The inner wrapper has a fixed height (the entire slot
+                minus padding) AND object-contain on the image, so
+                logos that are smaller than the slot scale UP to fit
+                and logos that are larger scale DOWN. Aspect ratio is
+                preserved either way — nothing crops, nothing dwarfs. */}
+            <div className="relative h-full w-full max-w-[200px]">
+              <Image
+                src={url}
+                alt=""
+                fill
+                unoptimized
+                sizes="(max-width: 640px) 160px, 200px"
+                className="object-contain"
+              />
+            </div>
           </div>
         ))}
       </div>
