@@ -5,6 +5,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/
 import {
   SessionCard,
   sessionInterestPool,
+  sessionVenueName,
   type SessionCardData,
 } from "@/components/features/session-card";
 import {
@@ -33,10 +34,10 @@ function hourLabel(key: string): string {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ track?: string; mine?: string; recommended?: string }>;
+  searchParams?: Promise<{ venue?: string; mine?: string; recommended?: string }>;
 }) {
   const sp = (await searchParams) ?? {};
-  const track = sp.track ?? "all";
+  const venue = sp.venue ?? "all";
   const mineOnly = sp.mine === "1";
   const recommendedOnly = sp.recommended === "1";
 
@@ -54,7 +55,7 @@ export default async function AgendaPage({
     const withInterests = await supabase
       .from("sessions")
       .select(
-        "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name), interests"
+        "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name), interests"
       )
       .order("start_at", { ascending: true });
     if (withInterests.error) {
@@ -62,7 +63,7 @@ export default async function AgendaPage({
       const fallback = await supabase
         .from("sessions")
         .select(
-          "id, title, description, track, start_at, end_at, is_featured, capacity, current_checkins, venues(name)"
+          "id, title, description, track, venue_id, start_at, end_at, is_featured, capacity, current_checkins, venues(id, name)"
         )
         .order("start_at", { ascending: true });
       if (fallback.error) errored = true;
@@ -101,11 +102,24 @@ export default async function AgendaPage({
   };
 
   const filtered = sessions.filter((s) => {
-    if (track !== "all" && s.track !== track) return false;
+    if (venue !== "all" && s.venue_id !== venue) return false;
     if (mineOnly && !bookmarkSet.has(s.id)) return false;
     if (recommendedOnly && !isRecommended(s)) return false;
     return true;
   });
+
+  const venueOptions = Array.from(
+    sessions.reduce<Map<string, { id: string; label: string }>>(
+      (acc, s) => {
+        if (!s.venue_id) return acc;
+        const label = sessionVenueName(s.venues);
+        if (!label) return acc;
+        acc.set(s.venue_id, { id: s.venue_id, label });
+        return acc;
+      },
+      new Map()
+    ).values()
+  ).sort((a, b) => a.label.localeCompare(b.label));
 
   const grouped = filtered.reduce<Map<string, SessionCardData[]>>((acc, s) => {
     const k = hourKey(s.start_at);
@@ -129,7 +143,7 @@ export default async function AgendaPage({
       }
       filters={
         <FiltersCard>
-          <AgendaFilters />
+          <AgendaFilters venues={venueOptions} />
         </FiltersCard>
       }
     >

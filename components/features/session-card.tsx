@@ -9,16 +9,27 @@ export interface SessionCardData {
   title: string;
   description: string | null;
   track: string;
+  venue_id?: string | null;
   start_at: string;
   end_at: string;
   is_featured: boolean | null;
   capacity: number | null;
   current_checkins: number | null;
-  venues: { name: string | null } | null;
+  venues:
+    | { id?: string | null; name: string | null }
+    | { id?: string | null; name: string | null }[]
+    | null;
   // Optional per-session topic tags (column added in migration 0007).
   // When present they drive the Recommended match directly; otherwise we
   // fall back to TRACK_TO_INTERESTS so the older sessions still light up.
   interests?: string[] | null;
+}
+
+export function sessionVenueName(
+  venues: SessionCardData["venues"]
+): string | null {
+  const venue = Array.isArray(venues) ? venues[0] : venues;
+  return venue?.name ?? null;
 }
 
 const TRACK_COLORS: Record<string, string> = {
@@ -78,6 +89,7 @@ export function SessionCard({
   const cap = showCapacity ? capacityState(used, capacity) : null;
   const pct = showCapacity ? Math.min(100, Math.round((used / capacity) * 100)) : 0;
   const matches = matchedInterestsForSession(session, userInterests);
+  const venueName = sessionVenueName(session.venues);
 
   return (
     <Link
@@ -114,10 +126,10 @@ export function SessionCard({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-brand-900/75">
-        {session.venues?.name ? (
+        {venueName ? (
           <span className="inline-flex items-center gap-1">
             <MapPin className="h-3 w-3 text-brand-800/65" />
-            {session.venues.name}
+            {venueName}
           </span>
         ) : null}
         <span className="rounded-[4px] border border-brand-100 bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-800">

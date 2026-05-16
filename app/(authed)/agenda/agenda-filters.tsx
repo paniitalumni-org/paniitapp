@@ -1,38 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams, usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const TRACKS = [
-  { id: "all", label: "All" },
-  { id: "keynote", label: "Keynote" },
-  { id: "ai", label: "AI" },
-  { id: "deeptech", label: "Deep Tech" },
-  { id: "policy", label: "Policy" },
-  { id: "founders", label: "Founders" },
-  { id: "investor", label: "Investors" },
-  { id: "climate", label: "Climate" },
-  { id: "fintech", label: "Fintech" },
-] as const;
+interface VenueOption {
+  id: string;
+  label: string;
+}
 
-export function AgendaFilters() {
+export function AgendaFilters({ venues }: { venues: VenueOption[] }) {
   const pathname = usePathname();
   const sp = useSearchParams();
-  const activeTrack = sp.get("track") ?? "all";
+  const activeVenue = sp.get("venue") ?? "all";
   const mineOnly = sp.get("mine") === "1";
   const recommendedOnly = sp.get("recommended") === "1";
 
   function buildHref(patch: {
-    track?: string;
+    venue?: string;
     mine?: string;
     recommended?: string;
   }): string {
     const next = new URLSearchParams(sp.toString());
-    if (patch.track !== undefined) {
-      if (patch.track === "all") next.delete("track");
-      else next.set("track", patch.track);
+    next.delete("track");
+    if (patch.venue !== undefined) {
+      if (patch.venue === "all") next.delete("venue");
+      else next.set("venue", patch.venue);
     }
     if (patch.mine !== undefined) {
       if (patch.mine === "0") next.delete("mine");
@@ -47,7 +41,7 @@ export function AgendaFilters() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-2">
         <Link
           href={buildHref({ mine: mineOnly ? "0" : "1" })}
@@ -84,15 +78,15 @@ export function AgendaFilters() {
 
       <div>
         <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-800/75">
-          Track
+          Venue
         </p>
         <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 no-scrollbar lg:mx-0 lg:flex-wrap lg:px-0 lg:pb-0">
-          {TRACKS.map((t) => {
-            const active = activeTrack === t.id;
+          {[{ id: "all", label: "All venues" }, ...venues].map((venue) => {
+            const active = activeVenue === venue.id;
             return (
               <Link
-                key={t.id}
-                href={buildHref({ track: t.id })}
+                key={venue.id}
+                href={buildHref({ venue: venue.id })}
                 scroll={false}
                 aria-current={active ? "page" : undefined}
                 className={cn(
@@ -102,7 +96,7 @@ export function AgendaFilters() {
                     : "border-brand-100 bg-white text-brand-900 hover:bg-brand-50/40"
                 )}
               >
-                {t.label}
+                {venue.label}
               </Link>
             );
           })}
