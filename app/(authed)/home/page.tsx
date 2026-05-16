@@ -217,53 +217,57 @@ export default async function HomePage() {
 
       {/* Today's calendar */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="Today's calendar" />
-        {calendar.length === 0 ? (
-          <div className="rounded-lg border border-brand-100 bg-white p-4 text-center">
-            <p className="text-[13px] text-brand-900/75">
+        <div className="rounded-lg border border-brand-100 bg-white p-5">
+          <h2 className="text-base font-semibold tracking-tight text-brand-950">
+            Today&apos;s calendar
+          </h2>
+          {calendar.length === 0 ? (
+            <p className="mt-3 text-[13px] text-brand-900/75">
               Your day is open. Bookmark sessions in Agenda and accept meeting
               requests to fill this in.
             </p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {calendar.map((e, i) => (
-              <li key={`${i}-${e.start}`}>
-                <Link
-                  href={e.href}
-                  className="flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
-                >
-                  <div className="w-14 shrink-0 pt-[2px] text-[12px] font-semibold tabular-nums text-brand-800/85">
-                    {formatInTimeZone(new Date(e.start), SUMMIT_TZ, "h:mm a")}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold leading-tight text-brand-950">
-                      {e.title}
-                    </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
-                        {e.kind}
-                      </span>
-                      {e.presenter ? (
-                        <span className="rounded-[4px] bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-900">
-                          {e.presenter}
-                        </span>
-                      ) : null}
+          ) : (
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {calendar.map((e, i) => (
+                <li key={`${i}-${e.start}`}>
+                  <Link
+                    href={e.href}
+                    className="flex items-start gap-3 rounded-lg border border-brand-100 bg-white p-3 transition-colors hover:bg-brand-50/30"
+                  >
+                    <div className="w-14 shrink-0 pt-[2px] text-[12px] font-semibold tabular-nums text-brand-800/85">
+                      {formatInTimeZone(new Date(e.start), SUMMIT_TZ, "h:mm a")}
                     </div>
-                  </div>
-                  <ChevronRight className="mt-1 size-4 shrink-0 text-brand-800/65" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold leading-tight text-brand-950">
+                        {e.title}
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-800/65">
+                          {e.kind}
+                        </span>
+                        {e.presenter ? (
+                          <span className="rounded-[4px] bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-900">
+                            {e.presenter}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <ChevronRight className="mt-1 size-4 shrink-0 text-brand-800/65" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
 
       {/* About */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="About the summit" />
-        <div className="rounded-lg border border-brand-100 bg-white p-4">
-          <p className="text-[13px] leading-6 text-brand-900">
+        <div className="rounded-lg border border-brand-100 bg-white p-5">
+          <h2 className="text-base font-semibold tracking-tight text-brand-950">
+            About the summit
+          </h2>
+          <p className="mt-2 text-[13px] leading-6 text-brand-900">
             The PAN IIT Bangalore Summit 2026 brings together 2,000+ alumni,
             founders, investors, and policy makers across 23 IIT campuses for
             one day on building the technology backbone of a self-reliant
@@ -282,9 +286,6 @@ export default async function HomePage() {
       {/* Sponsors */}
       {sponsorTiers.length > 0 ? (
         <section className="px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
-            Sponsors
-          </h2>
           <SponsorsBoard tiers={sponsorTiers} />
         </section>
       ) : null}
@@ -308,9 +309,11 @@ export default async function HomePage() {
 
       {/* Connect with us */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="Connect with us" />
-        <div className="rounded-lg border border-brand-100 bg-white p-4">
-          <div className="flex flex-wrap justify-center gap-2">
+        <div className="rounded-lg border border-brand-100 bg-white p-5">
+          <h2 className="text-base font-semibold tracking-tight text-brand-950">
+            Connect with us
+          </h2>
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
             {SOCIALS.map((s) => (
               <a
                 key={s.label}
@@ -334,13 +337,6 @@ export default async function HomePage() {
   );
 }
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-800/75">
-      {title}
-    </h2>
-  );
-}
 
 /* Brand-color social logos — sized 28px so they read at a glance. */
 

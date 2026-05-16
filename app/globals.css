@@ -136,6 +136,10 @@
   .animate-marquee-rtl {
     animation: marquee-rtl 35s linear infinite;
   }
+  .animate-sponsor-slide-rtl {
+    /* Slow + smooth continuous right-to-left for the sponsor strip. */
+    animation: marquee-rtl 60s linear infinite;
+  }
   .animate-sponsor-road-rtl {
     animation: sponsor-road-rtl 42s linear infinite;
   }

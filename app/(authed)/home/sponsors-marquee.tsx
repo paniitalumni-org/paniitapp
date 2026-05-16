@@ -1,85 +1,64 @@
-"use client";
-
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 
 export interface SponsorTier {
-  /** Folder name (e.g. "Title Sponsor") used as the visible heading. */
+  /** Folder name (e.g. "Title Sponsor") used as the visible row label. */
   name: string;
-  /** Public URLs of the tier's logo files. Order = display cycle order. */
+  /** Public URLs of the tier's logo files. Order = marquee order. */
   logos: string[];
 }
 
+// One white card. Each tier is a row inside it: a small label with a
+// vertical brand bar, then the logos sliding right-to-left in a smooth
+// continuous loop. No sponsor names anywhere in the UI — logos only.
 export function SponsorsBoard({ tiers }: { tiers: SponsorTier[] }) {
-  if (tiers.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-3">
-      {tiers.map((tier) => (
-        <SponsorTierBlock key={tier.name} tier={tier} />
-      ))}
-    </div>
-  );
-}
+  const visible = tiers.filter((t) => t.logos.length > 0);
+  if (visible.length === 0) return null;
 
-function SponsorTierBlock({ tier }: { tier: SponsorTier }) {
-  if (tier.logos.length === 0) return null;
   return (
-    <section className="rounded-lg border border-brand-100 bg-white p-4">
-      <div className="flex items-center gap-2.5">
-        <span
-          className="block h-5 w-[3px] rounded-full bg-brand-800"
-          aria-hidden
-        />
-        <h3 className="text-[13px] font-semibold tracking-tight text-brand-950">
-          {tier.name}
-        </h3>
-      </div>
-      <div className="mt-3">
-        <StepMarquee logos={tier.logos} />
+    <section className="rounded-lg border border-brand-100 bg-white p-5">
+      <h2 className="text-base font-semibold tracking-tight text-brand-950">
+        Sponsors
+      </h2>
+      <div className="mt-4 flex flex-col gap-5">
+        {visible.map((tier) => (
+          <TierRow key={tier.name} tier={tier} />
+        ))}
       </div>
     </section>
   );
 }
 
-// One logo visible at a time. Holds ~1s rest + ~0.4s crossfade then
-// advances to the next; loops seamlessly because the index wraps with
-// modulo (no DOM remount, just opacity transitions).
-function StepMarquee({ logos }: { logos: string[] }) {
-  const [active, setActive] = useState(0);
-
-  useEffect(() => {
-    if (logos.length <= 1) return;
-    const id = window.setInterval(() => {
-      setActive((c) => (c + 1) % logos.length);
-    }, 1400);
-    return () => window.clearInterval(id);
-  }, [logos.length]);
-
+function TierRow({ tier }: { tier: SponsorTier }) {
+  // Duplicate so the marquee loops seamlessly via translateX(-50%).
+  const stream = [...tier.logos, ...tier.logos];
   return (
-    <div
-      className="relative mx-auto h-20 w-full max-w-[220px] sm:h-24 sm:max-w-[260px]"
-      aria-label="Sponsor logo"
-    >
-      {logos.map((url, idx) => (
-        <div
-          key={url}
-          className={cn(
-            "absolute inset-0 flex items-center justify-center transition-opacity duration-500 ease-out",
-            idx === active ? "opacity-100" : "opacity-0"
-          )}
-        >
-          <Image
-            src={url}
-            alt=""
-            width={320}
-            height={160}
-            unoptimized
-            sizes="(max-width: 640px) 220px, 260px"
-            className="max-h-full max-w-full object-contain"
-          />
+    <div>
+      <div className="mb-2 flex items-center gap-2.5">
+        <span className="block h-4 w-[3px] rounded-full bg-brand-800" aria-hidden />
+        <h3 className="text-[12px] font-semibold tracking-tight text-brand-900">
+          {tier.name}
+        </h3>
+      </div>
+      <div className="overflow-hidden">
+        <div className="flex w-max animate-sponsor-slide-rtl items-center gap-8 py-1 sm:gap-10">
+          {stream.map((url, i) => (
+            <div
+              key={`${url}-${i}`}
+              className="grid h-14 w-28 shrink-0 place-items-center sm:h-16 sm:w-32"
+              aria-hidden={i >= tier.logos.length}
+            >
+              <Image
+                src={url}
+                alt=""
+                width={240}
+                height={120}
+                unoptimized
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
