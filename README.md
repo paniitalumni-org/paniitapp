@@ -33,12 +33,23 @@ NEXT_PUBLIC_SUPABASE_URL=https://fncnndrexzmqqengbkvi.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=https://app.blr.paniit.space
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_OAUTH_REDIRECT_URI=https://app.blr.paniit.space/auth/google/callback
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 VAPID_SUBJECT=mailto:tech@paniit.org
 ```
 
 The service-role key is **server-only** and never reaches the client bundle. It's used by `lib/supabase/server.ts → createServiceRoleClient()` solely inside server actions and route handlers.
+
+For Google sign-in, configure the OAuth client in Google Cloud Console with:
+
+- Authorized JavaScript origin: `https://app.blr.paniit.space`
+- Authorized redirect URI: `https://app.blr.paniit.space/auth/google/callback`
+
+The app handles the Google authorization-code callback directly on the site domain, then creates the existing server-side Supabase session so `auth.getUser()` and profile RLS keep working.
 
 ## Migrations
 
@@ -59,16 +70,16 @@ The Supabase `profiles` table expects one row per registered attendee, with `ema
 
 After importing, run migration `0002_email_unique.sql` if it hasn't been run yet — it will fail loudly if there are duplicate emails, which is what you want.
 
-## Auth: email-only sign-in (intentional, hardening later)
+## Auth: app-domain Google sign-in
 
-Phase 1 sign-in is intentionally simple:
+Current sign-in uses a first-party Google authorization-code flow:
 
 1. User opens the app → lands on `/` (the sign-in page).
-2. User types an email → server action queries `profiles.email`.
-3. If the email isn't on the registered list → inline error: *"This email isn't on the registered attendee list."*
-4. If it matches → server-side `admin.generateLink({ type: "magiclink" })` returns an OTP that we immediately `verifyOtp` on a Supabase SSR server client. No email round-trip; cookies are set and the user is redirected to `/agenda`.
+2. User clicks **Continue with Google** → app redirects to Google from `/auth/google/start`.
+3. Google redirects back to `https://app.blr.paniit.space/auth/google/callback`.
+4. The callback exchanges the code server-side, creates the existing Supabase SSR session, syncs the profile row by `auth.uid()`, and redirects to onboarding or `/home`.
 
-**No password. No emailed OTP. No magic link.** Threat model for Phase 1: trust the registration list, optimize friction-free entry on summit day. **Anyone who knows another attendee's registered email could currently impersonate them.** A password layer will be added in Phase 7.
+Supabase still stores the session and powers RLS, but the OAuth handshake and redirect URI are owned by the app domain.
 
 See `DECISIONS.md` for the design choice.
 

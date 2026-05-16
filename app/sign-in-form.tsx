@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 
 export function SignInForm() {
   const [oauthError, setOauthError] = useState<string | null>(null);
@@ -16,14 +15,8 @@ export function SignInForm() {
 
   function handleGoogle() {
     setOauthError(null);
-    startGoogle(async () => {
-      const supabase = createClient();
-      const redirectTo = `${window.location.origin}/auth/callback?next=/home`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo },
-      });
-      if (error) setOauthError(error.message);
+    startGoogle(() => {
+      window.location.href = "/auth/google/start?next=/home";
     });
   }
 
