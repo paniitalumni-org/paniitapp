@@ -52,5 +52,5 @@ export function XIcon({ className = "size-[16px]" }: IconProps) {
 export function GmailIcon({ className = "size-[16px]" }: IconProps) {
   // gmail.png envelope only fills ~80% of its canvas; with object-contain in
   // a square box it leaves vertical whitespace too, so zoom a bit more.
-  return <BadgeFrame className={className} src="/icons/gmail.png" scale={1.3} />;
+  return <BadgeFrame className={className} src="/icons/gmail.png" scale={1.1} />;
 }
