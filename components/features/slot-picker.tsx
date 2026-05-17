@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarOff, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildAvailabilitySlots,
@@ -189,22 +188,18 @@ export function SlotPicker({
   return (
     <div className="space-y-3">
       {openProposeMode ? (
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-snug text-amber-900">
-          <CalendarOff className="mt-0.5 size-4 shrink-0" strokeWidth={1.8} />
-          <span>
-            They haven&apos;t set availability yet. Pick any time — both of you will see this is
-            <span className="font-semibold"> proposed outside availability</span>.
-          </span>
-        </div>
+        <p className="text-[12px] leading-snug text-brand-900">
+          They haven&apos;t set availability yet. Pick any time — both of you will see this is
+          <span className="font-semibold"> proposed outside availability</span>.
+        </p>
       ) : null}
 
       <button
         type="button"
         onClick={handleSuggest}
         disabled={!suggestionReady}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-brand-200 bg-brand-50/60 px-3 py-2 text-[12px] font-semibold text-brand-900 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center rounded-md bg-slate-900 px-3 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Sparkles className="size-3.5" strokeWidth={2} />
         Suggest 3 times for me
       </button>
 

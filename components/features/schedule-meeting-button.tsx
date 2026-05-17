@@ -10,6 +10,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ const LOCATIONS = [
   "Lobby café",
   "Open — to be confirmed",
 ];
+const CUSTOM_LOCATION = "__custom__";
 
 export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
   const router = useRouter();
@@ -31,8 +33,14 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [message, setMessage] = useState("");
   const [location, setLocation] = useState(LOCATIONS[0]);
+  const [customLocation, setCustomLocation] = useState("");
   const [inviteeHasSetAvailability, setInviteeHasSetAvailability] = useState<boolean | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const usingCustomLocation = location === CUSTOM_LOCATION;
+  const effectiveLocation = usingCustomLocation
+    ? customLocation.trim().slice(0, 200)
+    : location;
 
   const handleAvailabilityKnown = useCallback((hasSet: boolean) => {
     setInviteeHasSetAvailability(hasSet);
@@ -55,6 +63,14 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
       });
       return;
     }
+    if (usingCustomLocation && effectiveLocation.length === 0) {
+      toast({
+        title: "Add a place",
+        description: "Type a venue or switch back to a preset.",
+        variant: "destructive",
+      });
+      return;
+    }
     startTransition(async () => {
       const res = await fetch("/api/meetings/request", {
         method: "POST",
@@ -62,7 +78,7 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
         body: JSON.stringify({
           invitee_id: inviteeId,
           message: agenda || null,
-          location,
+          location: effectiveLocation,
           proposed_slots: slots,
         }),
       });
@@ -89,6 +105,8 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
       setOpen(false);
       setSlots([]);
       setMessage("");
+      setLocation(LOCATIONS[0]);
+      setCustomLocation("");
       router.refresh();
     });
   }
@@ -120,7 +138,12 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
               htmlFor="meeting-message"
               className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-800/75"
             >
-              What&apos;s the agenda?{openProposeMode ? " · required" : ""}
+              What&apos;s the agenda?
+              {openProposeMode ? (
+                <span aria-label="required" className="ml-0.5 text-red-600">
+                  *
+                </span>
+              ) : null}
             </Label>
             <Textarea
               id="meeting-message"
@@ -135,7 +158,7 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
               className="mt-1.5 rounded-md border-brand-100"
             />
             <div className="mt-1 flex items-center justify-between text-[11px] tabular-nums text-brand-800/55">
-              <span className={agendaRequiredButMissing ? "text-amber-700" : undefined}>
+              <span className={agendaRequiredButMissing ? "font-medium text-black" : undefined}>
                 {agendaRequiredButMissing ? "Add at least a sentence" : " "}
               </span>
               <span>{message.length} / 280</span>
@@ -173,9 +196,21 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
               className="mt-1.5 h-10 w-full rounded-md border border-brand-100 bg-white px-3 text-sm text-brand-950 outline-none focus:border-brand-800 focus:ring-2 focus:ring-brand-100"
             >
               {LOCATIONS.map((l) => (
-                <option key={l}>{l}</option>
+                <option key={l} value={l}>
+                  {l}
+                </option>
               ))}
+              <option value={CUSTOM_LOCATION}>Somewhere else…</option>
             </select>
+            {usingCustomLocation ? (
+              <Input
+                value={customLocation}
+                onChange={(e) => setCustomLocation(e.target.value.slice(0, 200))}
+                placeholder="e.g. Coffee cart by registration"
+                className="mt-2 rounded-md border-brand-100"
+                autoFocus
+              />
+            ) : null}
           </div>
 
           <div className="flex items-center justify-end gap-2">
@@ -184,7 +219,12 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
             </Button>
             <Button
               onClick={submit}
-              disabled={pending || slots.length === 0 || agendaRequiredButMissing}
+              disabled={
+                pending ||
+                slots.length === 0 ||
+                agendaRequiredButMissing ||
+                (usingCustomLocation && effectiveLocation.length === 0)
+              }
               className="rounded-md"
             >
               {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send proposal"}
