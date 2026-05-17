@@ -51,7 +51,7 @@ export function AnnouncementComposer() {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div id="announce" className="rounded-lg border border-slate-200 bg-white p-4 scroll-mt-20">
       <div className="mb-3 flex items-center gap-2">
         <Megaphone className="h-4 w-4 text-brand-800" />
         <h2 className="text-sm font-semibold text-brand-900">Send an announcement</h2>

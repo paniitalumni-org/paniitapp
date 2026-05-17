@@ -50,12 +50,22 @@ const SOCIALS: { href: string; label: string; icon: React.ReactNode }[] = [
 export default async function HomePage() {
   let calendar: CalendarItem[] = [];
   let sponsorTiers: SponsorTier[] = [];
+  let role: string | null = null;
 
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      role = (me?.role as string | null) ?? null;
+    }
 
     const sponsorListings = await Promise.all(
       SPONSOR_TIER_FOLDERS.map((folder) =>
@@ -212,7 +222,7 @@ export default async function HomePage() {
 
       {/* Quick actions — 2 per row, icon + label horizontal, no icon backdrop */}
       <section className="px-4 sm:px-6 lg:px-8">
-        <QuickActions />
+        <QuickActions role={role} />
       </section>
 
       {/* Today's calendar */}
