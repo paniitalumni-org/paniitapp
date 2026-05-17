@@ -75,3 +75,82 @@ export function classifySlot(
   if (bookmarkedSessions.some((s) => overlaps(slot, s))) return "soft";
   return "free";
 }
+
+interface SuggestInput {
+  candidates: Slot[];
+  isPickable: (s: Slot) => boolean;
+  featured: { start: string; end: string }[];
+  inviteeAccepted: { start: string; end: string }[];
+  bookmarks: { start: string; end: string }[];
+}
+
+// Pick up to 3 well-spread, low-friction times for the invitee.
+// Buckets: morning (<12 IST), lunch (12–13 IST), afternoon/evening (>=14 IST).
+// Lunch is preferred at a networking event — casual food-table chats convert
+// better than cold lobby meets — so it gets a small bonus, not a penalty.
+// Penalties: overlapping a featured/keynote session, sitting back-to-back
+// against one of the invitee's already-accepted meetings, or colliding with
+// the proposer's bookmarked session.
+export function suggestThreeSlots(input: SuggestInput): Slot[] {
+  const BACK_TO_BACK_MS = 15 * 60_000;
+
+  function score(slot: Slot): number {
+    let s = 0;
+    if (input.featured.some((f) => overlaps(slot, f))) s += 100;
+    if (input.bookmarks.some((b) => overlaps(slot, b))) s += 25;
+
+    const start = new Date(slot.start).getTime();
+    const end = new Date(slot.end).getTime();
+    for (const m of input.inviteeAccepted) {
+      const mStart = new Date(m.start).getTime();
+      const mEnd = new Date(m.end).getTime();
+      // Distance between this slot and that meeting (0 if touching).
+      const gap = start >= mEnd ? start - mEnd : mStart >= end ? mStart - end : 0;
+      if (gap === 0) continue; // already filtered by isPickable for true overlap
+      if (gap < BACK_TO_BACK_MS) s += 10;
+    }
+
+    const hour = slotHourIST(slot.start);
+    if (hour >= 12 && hour < 14) s -= 2; // gentle lunch bonus
+    return s;
+  }
+
+  const eligible = input.candidates
+    .filter(input.isPickable)
+    .map((slot) => ({ slot, score: score(slot), hour: slotHourIST(slot.start) }))
+    .sort((a, b) => a.score - b.score || new Date(a.slot.start).getTime() - new Date(b.slot.start).getTime());
+  if (eligible.length === 0) return [];
+
+  function pickFromBucket(predicate: (hour: number) => boolean, used: Set<string>): Slot | null {
+    for (const e of eligible) {
+      if (used.has(e.slot.start)) continue;
+      if (predicate(e.hour)) return e.slot;
+    }
+    return null;
+  }
+
+  const used = new Set<string>();
+  const picks: Slot[] = [];
+  const buckets: ((h: number) => boolean)[] = [
+    (h) => h < 12,
+    (h) => h >= 12 && h < 14,
+    (h) => h >= 14,
+  ];
+  for (const b of buckets) {
+    const pick = pickFromBucket(b, used);
+    if (pick) {
+      picks.push(pick);
+      used.add(pick.start);
+    }
+  }
+  // Backfill if any bucket was empty — keep the best remaining slots.
+  for (const e of eligible) {
+    if (picks.length >= 3) break;
+    if (used.has(e.slot.start)) continue;
+    picks.push(e.slot);
+    used.add(e.slot.start);
+  }
+  return picks
+    .slice(0, 3)
+    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+}

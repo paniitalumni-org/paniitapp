@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { CalendarOff } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CalendarOff, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildAvailabilitySlots,
   classifySlot,
   slotLabel,
+  suggestThreeSlots,
   type Slot,
   type SlotConflict,
 } from "@/lib/slots";
@@ -38,9 +39,11 @@ export function SlotPicker({
   const slots = useMemo(() => buildAvailabilitySlots(), []);
   const [bookmarked, setBookmarked] = useState<ConflictWindow[]>([]);
   const [accepted, setAccepted] = useState<ConflictWindow[]>([]);
+  const [featured, setFeatured] = useState<ConflictWindow[]>([]);
   const [inviteeSlots, setInviteeSlots] = useState<Map<string, InviteeSlotStatus> | null>(null);
   const [inviteeHasSetAvailability, setInviteeHasSetAvailability] = useState<boolean | null>(null);
   const [inviteeOccupiedStarts, setInviteeOccupiedStarts] = useState<Set<string>>(new Set());
+  const [inviteeAccepted, setInviteeAccepted] = useState<ConflictWindow[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -49,7 +52,7 @@ export function SlotPicker({
       } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [bm, mt] = await Promise.all([
+      const [bm, mt, feat] = await Promise.all([
         supabase
           .from("session_bookmarks")
           .select("sessions(start_at, end_at)")
@@ -59,6 +62,10 @@ export function SlotPicker({
           .select("accepted_slot, status, requester_id, invitee_id")
           .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
           .eq("status", "accepted"),
+        supabase
+          .from("sessions")
+          .select("start_at, end_at")
+          .eq("is_featured", true),
       ]);
 
       const bms = (bm.data as { sessions: { start_at: string; end_at: string } | null }[] | null) ?? [];
@@ -75,6 +82,9 @@ export function SlotPicker({
           .map((m) => m.accepted_slot)
           .filter((s): s is { start: string; end: string } => !!s)
       );
+
+      const fts = (feat.data as { start_at: string; end_at: string }[] | null) ?? [];
+      setFeatured(fts.map((s) => ({ start: s.start_at, end: s.end_at })));
     })();
   }, [supabase]);
 
@@ -101,12 +111,20 @@ export function SlotPicker({
       setInviteeHasSetAvailability(hasSet);
       onInviteeAvailabilityKnown?.(hasSet);
 
-      setInviteeOccupiedStarts(
-        new Set(
-          ((meetings.data as { accepted_slot: { start: string; end: string } | null }[] | null) ?? [])
-            .flatMap((m) => (m.accepted_slot ? [new Date(m.accepted_slot.start).toISOString()] : []))
-        )
-      );
+      const inviteeAcceptedSlots =
+        ((meetings.data as { accepted_slot: { start: string; end: string } | null }[] | null) ?? [])
+          .flatMap((m) =>
+            m.accepted_slot
+              ? [
+                  {
+                    start: new Date(m.accepted_slot.start).toISOString(),
+                    end: new Date(m.accepted_slot.end).toISOString(),
+                  },
+                ]
+              : []
+          );
+      setInviteeAccepted(inviteeAcceptedSlots);
+      setInviteeOccupiedStarts(new Set(inviteeAcceptedSlots.map((s) => s.start)));
     })();
   }, [inviteeId, supabase, onInviteeAvailabilityKnown]);
 
@@ -117,12 +135,19 @@ export function SlotPicker({
   // A slot is pickable when:
   //   - the invitee marked it available, OR
   //   - the invitee hasn't set any availability at all (open-propose mode)
-  // …and it doesn't collide with one of their already-accepted meetings.
-  function isPickable(s: Slot): boolean {
-    if (inviteeOccupiedStarts.has(s.start)) return false;
-    if (inviteeHasSetAvailability === false) return true;
-    return inviteeSlots?.get(s.start) === "available";
-  }
+  // …and it doesn't collide with one of their already-accepted meetings or
+  // with one of the proposer's accepted meetings.
+  const isPickable = useCallback(
+    (s: Slot): boolean => {
+      if (inviteeOccupiedStarts.has(s.start)) return false;
+      if (accepted.some((m) => new Date(s.start) < new Date(m.end) && new Date(m.start) < new Date(s.end))) {
+        return false;
+      }
+      if (inviteeHasSetAvailability === false) return true;
+      return inviteeSlots?.get(s.start) === "available";
+    },
+    [accepted, inviteeHasSetAvailability, inviteeOccupiedStarts, inviteeSlots]
+  );
 
   function toggle(s: Slot) {
     if (isPicked(s)) {
@@ -148,6 +173,18 @@ export function SlotPicker({
   }, [slots]);
 
   const openProposeMode = inviteeHasSetAvailability === false;
+  const suggestionReady = inviteeHasSetAvailability !== null;
+
+  function handleSuggest() {
+    const picks = suggestThreeSlots({
+      candidates: slots,
+      isPickable,
+      featured,
+      inviteeAccepted,
+      bookmarks: bookmarked,
+    });
+    onChange(picks.slice(0, max));
+  }
 
   return (
     <div className="space-y-3">
@@ -160,6 +197,16 @@ export function SlotPicker({
           </span>
         </div>
       ) : null}
+
+      <button
+        type="button"
+        onClick={handleSuggest}
+        disabled={!suggestionReady}
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-brand-200 bg-brand-50/60 px-3 py-2 text-[12px] font-semibold text-brand-900 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <Sparkles className="size-3.5" strokeWidth={2} />
+        Suggest 3 times for me
+      </button>
 
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
         <LegendDot color="bg-white border border-slate-300" /> Open
