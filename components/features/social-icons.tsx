@@ -21,15 +21,20 @@ export function LinkedInIcon({ className = "size-[16px]" }: IconProps) {
   );
 }
 
-export function XIcon({ className = "size-[15px]" }: IconProps) {
+export function XIcon({ className = "size-[16px]" }: IconProps) {
+  // The source PNG has ~18% transparent padding around the rounded-square mark,
+  // so at parity sizes it reads smaller than LinkedIn. Zoom the inner image
+  // inside a fixed-size box so the mark itself matches LinkedIn's weight.
   return (
-    <Image
-      src="/icons/x.png"
-      alt=""
-      width={32}
-      height={32}
-      className={className}
-    />
+    <span className={`relative inline-flex items-center justify-center overflow-hidden ${className}`}>
+      <Image
+        src="/icons/x.png"
+        alt=""
+        width={32}
+        height={32}
+        className="h-full w-full scale-[1.35]"
+      />
+    </span>
   );
 }
 

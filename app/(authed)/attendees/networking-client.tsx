@@ -511,7 +511,7 @@ function SocialIcons({ p }: { p: AttendeeRow }) {
     items.push({
       href: p.twitter_url,
       label: "Twitter / X",
-      icon: <XIcon className="size-[15px]" />,
+      icon: <XIcon className="size-[16px]" />,
     });
   }
   if (items.length === 0) return null;
