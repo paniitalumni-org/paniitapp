@@ -104,6 +104,11 @@ const config: Config = {
   				'system-ui',
   				'sans-serif'
   			],
+  			display: [
+  				'var(--font-display)',
+  				'Georgia',
+  				'serif'
+  			],
   			kannada: [
   				'var(--font-kannada)',
   				'var(--font-inter)',
