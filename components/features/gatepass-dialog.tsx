@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
@@ -73,22 +74,37 @@ export function GatePassDialog({
   }, [open, supabase]);
 
   const passNo = userId ? passNumberFromId(userId) : null;
+  // iit_campus is already stored with the "IIT " prefix (e.g. "IIT Bombay"),
+  // so just print it as-is — don't prepend another "IIT".
   const iitLine = p
-    ? [p.iit_campus ? `IIT ${p.iit_campus}` : null, p.graduation_year]
-        .filter(Boolean)
-        .join(" · ")
+    ? [p.iit_campus, p.graduation_year].filter(Boolean).join(" · ")
     : "";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm gap-0 overflow-hidden p-0">
-        <DialogHeader className="space-y-0 bg-brand-900 px-5 py-4 text-white">
-          <DialogTitle className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/75">
-            PAN IIT Bangalore Summit 2026
+      <DialogContent className="max-w-sm gap-0 overflow-hidden p-0 [&>button]:text-brand-900 [&>button]:opacity-100">
+        <DialogHeader className="space-y-0 border-b border-brand-100 bg-white px-5 py-4">
+          {/* Title/description are required by Radix for screen-reader labels
+              but visually we want the logo + "GATE PASS" on a single row. */}
+          <DialogTitle className="sr-only">
+            PAN IIT Bangalore Summit 2026 — Gate Pass
           </DialogTitle>
-          <DialogDescription className="text-[18px] font-semibold text-white">
-            Gate Pass
+          <DialogDescription className="sr-only">
+            Your single-attendee venue entry pass.
           </DialogDescription>
+          <div className="flex items-center justify-between gap-3 pr-7">
+            <Image
+              src="/logo/paniit.png"
+              alt="PAN IIT Bangalore Summit 2026"
+              width={520}
+              height={196}
+              priority
+              className="h-8 w-auto"
+            />
+            <span className="shrink-0 text-[13px] font-semibold uppercase tracking-[0.18em] text-brand-950">
+              Gate Pass
+            </span>
+          </div>
         </DialogHeader>
 
         {loading ? (
