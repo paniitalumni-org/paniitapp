@@ -148,7 +148,7 @@ export default async function AttendeeProfilePage({
                 aria-label="X / Twitter"
                 className="inline-flex transition-opacity hover:opacity-75"
               >
-                <XIcon className="size-[20px]" />
+                <XIcon className="size-[22px]" />
               </a>
             ) : null}
             {profile.email ? (
@@ -157,7 +157,7 @@ export default async function AttendeeProfilePage({
                 aria-label="Email"
                 className="inline-flex transition-opacity hover:opacity-75"
               >
-                <GmailIcon className="h-[20px] w-auto" />
+                <GmailIcon className="size-[22px]" />
               </a>
             ) : null}
           </div>

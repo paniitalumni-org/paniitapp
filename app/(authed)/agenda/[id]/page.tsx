@@ -426,7 +426,7 @@ function SpeakerCard({
                   aria-label="X"
                   className="inline-flex transition-opacity hover:opacity-80"
                 >
-                  <XIcon className="size-[16px]" />
+                  <XIcon className="size-[18px]" />
                 </a>
               ) : null}
             </div>

@@ -2,50 +2,55 @@ import Image from "next/image";
 
 // Branded social marks served from /public/icons. Single source of truth so
 // every "candidate details" surface (networking, attendee detail, exhibitor
-// team, speaker card) renders the same icon set.
+// team, speaker card) renders the same icon set at matching visual weight.
+//
+// Each source PNG has a different amount of internal padding, so a uniform
+// CSS size alone won't make them look the same. We render every mark inside
+// the same square frame and apply a per-asset zoom so the visible glyph
+// matches LinkedIn's edge-to-edge weight.
 
 interface IconProps {
-  /** Tailwind size token. Defaults to `size-[16px]` for inline use. */
+  /** Tailwind square size token (e.g. `size-[16px]`). Defaults to 16px. */
   className?: string;
 }
 
-export function LinkedInIcon({ className = "size-[16px]" }: IconProps) {
+function BadgeFrame({
+  className,
+  src,
+  scale,
+}: {
+  className: string;
+  src: string;
+  scale: number;
+}) {
   return (
-    <Image
-      src="/icons/linkedin.png"
-      alt=""
-      width={32}
-      height={32}
-      className={className}
-    />
-  );
-}
-
-export function XIcon({ className = "size-[16px]" }: IconProps) {
-  // The source PNG has ~18% transparent padding around the rounded-square mark,
-  // so at parity sizes it reads smaller than LinkedIn. Zoom the inner image
-  // inside a fixed-size box so the mark itself matches LinkedIn's weight.
-  return (
-    <span className={`relative inline-flex items-center justify-center overflow-hidden ${className}`}>
+    <span
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden ${className}`}
+    >
       <Image
-        src="/icons/x.png"
+        src={src}
         alt=""
-        width={32}
-        height={32}
-        className="h-full w-full scale-[1.55]"
+        width={48}
+        height={48}
+        style={{ transform: `scale(${scale})` }}
+        className="h-full w-full object-contain"
       />
     </span>
   );
 }
 
-export function GmailIcon({ className = "h-[18px] w-auto" }: IconProps) {
-  return (
-    <Image
-      src="/icons/gmail.png"
-      alt=""
-      width={48}
-      height={36}
-      className={className}
-    />
-  );
+export function LinkedInIcon({ className = "size-[16px]" }: IconProps) {
+  // linkedin.png is edge-to-edge — no internal padding to compensate for.
+  return <BadgeFrame className={className} src="/icons/linkedin.png" scale={1} />;
+}
+
+export function XIcon({ className = "size-[16px]" }: IconProps) {
+  // x.png has ~18% transparent padding around the rounded-square mark.
+  return <BadgeFrame className={className} src="/icons/x.png" scale={1.55} />;
+}
+
+export function GmailIcon({ className = "size-[16px]" }: IconProps) {
+  // gmail.png envelope only fills ~80% of its canvas; with object-contain in
+  // a square box it leaves vertical whitespace too, so zoom a bit more.
+  return <BadgeFrame className={className} src="/icons/gmail.png" scale={1.3} />;
 }

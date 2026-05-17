@@ -210,7 +210,7 @@ function TeamRow({ t }: { t: TeamRow }) {
           aria-label="Email"
           className="inline-flex transition-opacity hover:opacity-75"
         >
-          <GmailIcon className="h-[18px] w-auto" />
+          <GmailIcon className="size-[18px]" />
         </a>
       ) : null}
     </div>
