@@ -55,21 +55,39 @@ export async function POST(req: Request) {
   const { data: availability, error: availErr } = await supabase
     .from("availability_slots")
     .select("slot_start, slot_end, status")
-    .eq("user_id", parsed.data.invitee_id)
-    .eq("status", "available");
+    .eq("user_id", parsed.data.invitee_id);
   if (availErr) return NextResponse.json({ error: availErr.message }, { status: 500 });
 
-  const available = new Map(
-    ((availability as AvailabilityRow[] | null) ?? []).map((row) => [
-      new Date(row.slot_start).toISOString(),
-      new Date(row.slot_end).toISOString(),
-    ])
-  );
-  const allSlotsAreAvailable = proposed.every(
-    (slot) => available.get(slot.start) === slot.end
-  );
-  if (!allSlotsAreAvailable) {
-    return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
+  const availRows = (availability as AvailabilityRow[] | null) ?? [];
+  // Treat "has set availability" as any row at all for this user — if they
+  // engaged with the picker (even to block everything), we respect that.
+  // Zero rows = they never touched it; we let proposers reach out anyway
+  // and badge the meeting as "Proposed outside availability".
+  const inviteeHasSetAvailability = availRows.length > 0;
+  const proposedOutsideAvailability = !inviteeHasSetAvailability;
+
+  if (inviteeHasSetAvailability) {
+    const available = new Map(
+      availRows
+        .filter((row) => row.status === "available")
+        .map((row) => [
+          new Date(row.slot_start).toISOString(),
+          new Date(row.slot_end).toISOString(),
+        ])
+    );
+    const allSlotsAreAvailable = proposed.every(
+      (slot) => available.get(slot.start) === slot.end
+    );
+    if (!allSlotsAreAvailable) {
+      return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
+    }
+  } else {
+    // When bypassing availability, require a written agenda so the invitee
+    // sees a clear reason for the out-of-band ask.
+    const agenda = (parsed.data.message ?? "").trim();
+    if (agenda.length < 5) {
+      return NextResponse.json({ error: "agenda_required" }, { status: 400 });
+    }
   }
 
   const { data: acceptedMeetings, error: acceptedErr } = await supabase
@@ -100,6 +118,7 @@ export async function POST(req: Request) {
     location: parsed.data.location ?? null,
     proposed_slots: proposed,
     status: "pending",
+    proposed_outside_availability: proposedOutsideAvailability,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

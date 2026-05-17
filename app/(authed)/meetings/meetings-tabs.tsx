@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { Check, Clock4, Loader2, X } from "lucide-react";
+import { CalendarOff, Check, Clock4, Loader2, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,6 +44,7 @@ export interface MeetingRow {
   proposed_slots: Slot[] | null;
   accepted_slot: Slot | null;
   status: "pending" | "accepted" | "declined" | "rescheduled" | "cancelled";
+  proposed_outside_availability: boolean | null;
   created_at: string;
   requester: MiniProfile | null;
   invitee: MiniProfile | null;
@@ -552,6 +553,8 @@ function InboxRow({
         <StatusPill status={m.status} />
       </div>
 
+      {m.proposed_outside_availability ? <OutsideAvailabilityNote side="invitee" /> : null}
+
       {m.message ? (
         <p className="mt-3 whitespace-pre-line text-sm leading-6 text-brand-900">
           {m.message}
@@ -671,6 +674,7 @@ function SentRow({
         </div>
         <StatusPill status={m.status} />
       </div>
+      {m.proposed_outside_availability ? <OutsideAvailabilityNote side="requester" /> : null}
       {s ? (
         <p className="mt-3 text-sm font-medium tabular-nums text-brand-900">
           {rangeIST(s.start, s.end)}
@@ -685,6 +689,19 @@ function SentRow({
         />
       ) : null}
     </li>
+  );
+}
+
+function OutsideAvailabilityNote({ side }: { side: "requester" | "invitee" }) {
+  return (
+    <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] leading-snug text-amber-900">
+      <CalendarOff className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.8} />
+      <span>
+        {side === "requester"
+          ? "Proposed outside their availability — they hadn't set times when you reached out."
+          : "Proposed outside your availability — you hadn't set times when this came in."}
+      </span>
+    </div>
   );
 }
 

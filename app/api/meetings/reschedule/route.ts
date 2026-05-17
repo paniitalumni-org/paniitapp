@@ -19,6 +19,7 @@ interface MeetingRow {
 interface AvailabilityRow {
   slot_start: string;
   slot_end: string;
+  status: "available" | "booked" | "blocked";
 }
 
 interface AcceptedRow {
@@ -72,19 +73,26 @@ export async function POST(req: Request) {
 
   const { data: availability, error: availErr } = await admin
     .from("availability_slots")
-    .select("slot_start, slot_end")
-    .eq("user_id", nextInviteeId)
-    .eq("status", "available");
+    .select("slot_start, slot_end, status")
+    .eq("user_id", nextInviteeId);
   if (availErr) return NextResponse.json({ error: availErr.message }, { status: 500 });
 
-  const available = new Map(
-    ((availability as AvailabilityRow[] | null) ?? []).map((row) => [
-      new Date(row.slot_start).toISOString(),
-      new Date(row.slot_end).toISOString(),
-    ])
-  );
-  if (!proposed.every((slot) => available.get(slot.start) === slot.end)) {
-    return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
+  const availRows = (availability as AvailabilityRow[] | null) ?? [];
+  const inviteeHasSetAvailability = availRows.length > 0;
+  const proposedOutsideAvailability = !inviteeHasSetAvailability;
+
+  if (inviteeHasSetAvailability) {
+    const available = new Map(
+      availRows
+        .filter((row) => row.status === "available")
+        .map((row) => [
+          new Date(row.slot_start).toISOString(),
+          new Date(row.slot_end).toISOString(),
+        ])
+    );
+    if (!proposed.every((slot) => available.get(slot.start) === slot.end)) {
+      return NextResponse.json({ error: "slot_not_available" }, { status: 409 });
+    }
   }
 
   const { data: acceptedMeetings, error: acceptedErr } = await admin
@@ -128,6 +136,7 @@ export async function POST(req: Request) {
       proposed_slots: proposed,
       accepted_slot: null,
       status: "pending",
+      proposed_outside_availability: proposedOutsideAvailability,
       updated_at: new Date().toISOString(),
     })
     .eq("id", meeting.id);

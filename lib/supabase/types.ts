@@ -191,6 +191,7 @@ export interface Meeting {
   message: string | null;
   location: string | null;
   invitee_message: string | null;
+  proposed_outside_availability: boolean | null; // added by 0011
   created_at: string;
   updated_at: string;
 }

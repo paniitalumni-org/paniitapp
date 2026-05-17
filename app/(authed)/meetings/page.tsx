@@ -20,7 +20,7 @@ export default async function MeetingsPage() {
       const { data: rows } = await supabase
         .from("meetings")
         .select(
-          "id, requester_id, invitee_id, message, location, proposed_slots, accepted_slot, status, created_at, requester:requester_id(id, full_name, photo_url, designation, company), invitee:invitee_id(id, full_name, photo_url, designation, company)"
+          "id, requester_id, invitee_id, message, location, proposed_slots, accepted_slot, status, proposed_outside_availability, created_at, requester:requester_id(id, full_name, photo_url, designation, company), invitee:invitee_id(id, full_name, photo_url, designation, company)"
         )
         .or(`requester_id.eq.${user.id},invitee_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
