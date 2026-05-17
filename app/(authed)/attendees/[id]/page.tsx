@@ -113,7 +113,7 @@ export default async function AttendeeProfilePage({
           className="mx-auto size-24"
           ringClassName="ring-4 ring-brand-50"
         />
-        <h1 className="mt-4 text-[22px] font-semibold leading-tight tracking-tight text-brand-950">
+        <h1 className="mt-4 text-[22px] font-semibold leading-tight text-brand-950">
           {profile.full_name ?? "Attendee"}
         </h1>
         {profile.designation || profile.company ? (
@@ -169,57 +169,58 @@ export default async function AttendeeProfilePage({
         <ScheduleMeetingButton inviteeId={profile.id} />
         <Link
           href={`/chat/${profile.id}`}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-brand-100 bg-white text-[13px] font-semibold tracking-tight text-brand-900 transition-colors hover:bg-brand-50/30"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-brand-100 bg-white text-[13px] font-semibold text-brand-900 transition-colors hover:bg-brand-50/30"
         >
           <ChatBubbleGlyph className="size-[18px]" strokeWidth={1.6} />
           Chat
         </Link>
       </div>
 
-      {/* About */}
-      {profile.bio ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
-            About
-          </h2>
-          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-brand-900">
-            {profile.bio}
-          </p>
-        </section>
-      ) : null}
+      {/* Combined About — bio, interests, looking-for / can-offer, and
+          education live in one card with subheads, so the profile reads as
+          a single "who they are" block instead of five stacked cards. */}
+      {profile.bio ||
+      profile.interests?.length ||
+      profile.asks?.length ||
+      profile.offers?.length ||
+      eduLine ? (
+        <section className="space-y-5 rounded-lg border border-brand-100 bg-white p-5">
+          <h2 className="text-[15px] font-semibold text-brand-950">About</h2>
 
-      {/* Areas of interest */}
-      {profile.interests?.length ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
-            Areas of interest
-          </h2>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {profile.interests.map((i) => (
-              <span
-                key={i}
-                className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
-              >
-                {i}
-              </span>
-            ))}
-          </div>
-        </section>
-      ) : null}
+          {profile.bio ? (
+            <p className="whitespace-pre-line text-sm leading-6 text-brand-900">
+              {profile.bio}
+            </p>
+          ) : null}
 
-      {/* Asks / Offers */}
-      {(profile.asks?.length ?? 0) + (profile.offers?.length ?? 0) > 0 ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
+          {profile.interests?.length ? (
+            <div>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wide text-brand-800/70">
+                Areas of interest
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {profile.interests.map((i) => (
+                  <span
+                    key={i}
+                    className="rounded-md border border-brand-100 bg-brand-50/70 px-2.5 py-1 text-[12px] font-medium text-brand-800"
+                  >
+                    {i}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {profile.asks?.length ? (
             <div>
-              <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
+              <h3 className="text-[12px] font-semibold uppercase tracking-wide text-brand-800/70">
                 Looking for
-              </h2>
+              </h3>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.asks.map((i) => (
                   <span
                     key={i}
-                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
+                    className="rounded-md border border-brand-100 bg-brand-50/70 px-2.5 py-1 text-[12px] font-medium text-brand-800"
                   >
                     {i}
                   </span>
@@ -227,16 +228,17 @@ export default async function AttendeeProfilePage({
               </div>
             </div>
           ) : null}
+
           {profile.offers?.length ? (
-            <div className={profile.asks?.length ? "mt-4" : ""}>
-              <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
+            <div>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wide text-brand-800/70">
                 Can offer
-              </h2>
+              </h3>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {profile.offers.map((i) => (
                   <span
                     key={i}
-                    className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-brand-800"
+                    className="rounded-md border border-brand-100 bg-brand-50/70 px-2.5 py-1 text-[12px] font-medium text-brand-800"
                   >
                     {i}
                   </span>
@@ -244,23 +246,24 @@ export default async function AttendeeProfilePage({
               </div>
             </div>
           ) : null}
-        </section>
-      ) : null}
 
-      {/* Education */}
-      {eduLine ? (
-        <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
-            Education
-          </h2>
-          <p className="mt-2 text-sm font-medium text-brand-900">{eduLine}</p>
+          {eduLine ? (
+            <div>
+              <h3 className="text-[12px] font-semibold uppercase tracking-wide text-brand-800/70">
+                Education
+              </h3>
+              <p className="mt-1.5 text-sm font-medium text-brand-900">
+                {eduLine}
+              </p>
+            </div>
+          ) : null}
         </section>
       ) : null}
 
       {/* Speaking at */}
       {speakingAt.length > 0 ? (
         <section className="rounded-lg border border-brand-100 bg-white p-5">
-          <h2 className="text-[14px] font-bold tracking-tight text-brand-950">
+          <h2 className="text-[15px] font-semibold text-brand-950">
             Speaking at
           </h2>
           <ul className="mt-3 space-y-3">
