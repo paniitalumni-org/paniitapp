@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif, Noto_Sans_Kannada } from "next/font/google";
+import { Inter, Noto_Sans_Kannada } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -8,16 +8,6 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
   axes: ["opsz"],
-  preload: true,
-});
-
-// Display serif used for headings — mirrors neuralai.in's Inter + Instrument
-// Serif pairing so the app reads as "designed" rather than default-Inter.
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-  weight: "400",
   preload: true,
 });
 
@@ -58,10 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${instrumentSerif.variable} ${notoKannada.variable}`}
-    >
+    <html lang="en" className={`${inter.variable} ${notoKannada.variable}`}>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         {children}
         <Toaster />

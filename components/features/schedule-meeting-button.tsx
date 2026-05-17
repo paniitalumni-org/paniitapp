@@ -123,15 +123,13 @@ export function ScheduleMeetingButton({ inviteeId }: { inviteeId: string }) {
       </button>
       <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="font-display text-[26px] font-normal leading-tight tracking-tight">
-            Propose a 15-min meeting
-          </SheetTitle>
+          <SheetTitle>Propose a 15-min meeting</SheetTitle>
         </SheetHeader>
         <div className="space-y-5 px-6 pb-6 pt-2">
           {/* Contract banner — sets expectations before any input */}
           <p className="text-[13px] leading-snug text-brand-900">
             Propose up to 3 times. They pick one to confirm —{" "}
-            <span className="font-display italic text-brand-950">
+            <span className="font-semibold text-brand-950">
               nothing&apos;s booked until they accept.
             </span>
           </p>
