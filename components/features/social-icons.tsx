@@ -32,7 +32,7 @@ export function XIcon({ className = "size-[16px]" }: IconProps) {
         alt=""
         width={32}
         height={32}
-        className="h-full w-full scale-[1.35]"
+        className="h-full w-full scale-[1.55]"
       />
     </span>
   );
